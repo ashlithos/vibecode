@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team Vibe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; padding: 0; background: #0a0a0f; color: #fff; overflow-x: hidden; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  #root { min-height: 100svh; }
+
+  /* Framer Motion stand-in: we'll use CSS transitions + JS classes */
+  .fade-in { animation: fadeIn 0.5s ease forwards; }
+  .fade-out { animation: fadeOut 0.4s ease forwards; }
+  .slide-up { animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  .scale-in { animation: scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  .slide-left-in { animation: slideLeftIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+  .slide-right-in { animation: slideRightIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+  @keyframes slideLeftIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes slideRightIn { from { opacity: 0; transform: translateX(-100%); } to { opacity: 1; transform: translateX(0); } }
+
+  .bar-grow { animation: barGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  @keyframes barGrow { from { height: 0; } }
+
+  .option-btn { transition: all 0.2s ease; }
+  .option-btn:hover { transform: scale(1.04); border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); }
+  .option-btn:active { transform: scale(0.97); }
+  .option-btn.selected { border-color: rgb(139,92,246); background: rgba(139,92,246,0.15); box-shadow: 0 8px 25px rgba(139,92,246,0.2); }
+  .option-btn.selected:hover { border-color: rgb(139,92,246); background: rgba(139,92,246,0.15); }
+
+  .nav-btn { transition: all 0.2s ease; }
+  .nav-btn:hover { transform: scale(1.03); }
+  .nav-btn:active { transform: scale(0.97); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .progress-fill { transition: width 0.4s ease; }
+  .dot-indicator { transition: all 0.3s ease; }
+
+  .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+  .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+  .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+  .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+  .stagger-5 { animation-delay: 0.5s; opacity: 0; }
+  .stagger-6 { animation-delay: 0.6s; opacity: 0; }
+  .stagger-7 { animation-delay: 0.7s; opacity: 0; }
+  .stagger-8 { animation-delay: 0.8s; opacity: 0; }
+  .stagger-9 { animation-delay: 0.9s; opacity: 0; }
+  .stagger-10 { animation-delay: 1.0s; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ── Data ──────────────────────────────────────────────────
+
+const questions = [
+  {
+    id: "focus",
+    question: "What's your peak focus time?",
+    options: [
+      { label: "Early Bird", emoji: "🌅", value: "early-bird" },
+      { label: "Afternoon Hustler", emoji: "☀️", value: "afternoon-hustler" },
+      { label: "Night Owl", emoji: "🦉", value: "night-owl" },
+    ],
+  },
+  {
+    id: "collab",
+    question: "How do you prefer to collaborate?",
+    options: [
+      { label: "Quick Huddle", emoji: "🤝", value: "quick-huddle" },
+      { label: "Async Docs", emoji: "📝", value: "async-docs" },
+      { label: "Slack Only", emoji: "💬", value: "slack-only" },
+    ],
+  },
+  {
+    id: "weapon",
+    question: "Choose your ultimate weapon:",
+    options: [
+      { label: "Figma", emoji: "🎨", value: "figma" },
+      { label: "VS Code", emoji: "💻", value: "vscode" },
+      { label: "Jira", emoji: "📋", value: "jira" },
+      { label: "Spreadsheets", emoji: "📊", value: "spreadsheets" },
+    ],
+  },
+];
+
+const focusCopy = {
+  "early-bird": {
+    title: "The Early Bird", sub: "You crush it before most people hit snooze.",
+    gradient: "from-amber-400 via-orange-500 to-rose-500",
+    icon: "🌅", hours: ["5am","6am","7am","8am","9am","10am"], peak: 2,
+    barColors: ["#fbbf24","#f59e0b","#f97316","#ea580c","#dc2626","#b91c1c"],
+  },
+  "afternoon-hustler": {
+    title: "The Afternoon Hustler", sub: "Post-lunch is your power hour (or three).",
+    gradient: "from-yellow-400 via-amber-500 to-orange-500",
+    icon: "☀️", hours: ["12pm","1pm","2pm","3pm","4pm","5pm"], peak: 2,
+    barColors: ["#facc15","#f59e0b","#f97316","#ea580c","#dc2626","#b91c1c"],
+  },
+  "night-owl": {
+    title: "The Night Owl", sub: "Deadlines fear your midnight commits.",
+    gradient: "from-indigo-400 via-purple-500 to-violet-600",
+    icon: "🦉", hours: ["8pm","9pm","10pm","11pm","12am","1am"], peak: 3,
+    barColors: ["#818cf8","#7c3aed","#8b5cf6","#a78bfa","#6d28d9","#5b21b6"],
+  },
+};
+
+const collabCopy = {
+  "quick-huddle": {
+    title: "The Huddle Master", sub: "5 minutes face-to-face > 50 Slack threads.",
+    gradient: "from-emerald-400 via-teal-500 to-cyan-500",
+    icon: "🤝", vibe: "Sync-first, always in the room",
+    accentColor: "#34d399",
+  },
+  "async-docs": {
+    title: "The Doc Whisperer", sub: "If it's not in the doc, it didn't happen.",
+    gradient: "from-blue-400 via-indigo-500 to-violet-500",
+    icon: "📝", vibe: "Async-first, beautifully documented",
+    accentColor: "#60a5fa",
+  },
+  "slack-only": {
+    title: "The Slack Ninja", sub: "Thread game: immaculate. Emoji game: legendary.",
+    gradient: "from-fuchsia-400 via-pink-500 to-rose-500",
+    icon: "💬", vibe: "Digital-first, emoji-powered",
+    accentColor: "#e879f9",
+  },
+};
+
+const weaponCopy = {
+  figma: {
+    title: "Figma Virtuoso", sub: "You see the world in auto-layout and components.",
+    gradient: "from-purple-400 via-pink-500 to-red-500",
+    icon: "🎨", class: "Designer", accentColor: "#c084fc",
+  },
+  vscode: {
+    title: "Code Wizard", sub: "Your keyboard shortcuts have keyboard shortcuts.",
+    gradient: "from-blue-400 via-cyan-500 to-teal-500",
+    icon: "💻", class: "Engineer", accentColor: "#22d3ee",
+  },
+  jira: {
+    title: "Jira Wrangler", sub: "Tickets bow before your sprint planning skills.",
+    gradient: "from-sky-400 via-blue-500 to-indigo-500",
+    icon: "📋", class: "PM / Lead", accentColor: "#38bdf8",
+  },
+  spreadsheets: {
+    title: "Spreadsheet Sorcerer", sub: "VLOOKUP is your love language.",
+    gradient: "from-green-400 via-emerald-500 to-teal-500",
+    icon: "📊", class: "Ops / Analyst", accentColor: "#4ade80",
+  },
+};
+
+// ── State ─────────────────────────────────────────────────
+
+let state = { phase: "quiz", step: 0, answers: {}, slideIndex: 0, direction: 1 };
+
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+// ── Helpers ───────────────────────────────────────────────
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "className") node.className = v;
+    else if (k === "style" && typeof v === "object") Object.assign(node.style, v);
+    else if (k.startsWith("on")) node.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === "disabled") { if (v) node.setAttribute("disabled", ""); }
+    else if (k === "innerHTML") node.innerHTML = v;
+    else node.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (typeof c === "string") node.appendChild(document.createTextNode(c));
+    else if (c) node.appendChild(c);
+  }
+  return node;
+}
+
+function gradientText(text, gradientClass, extraClass = "") {
+  return el("span", { className: `bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent ${extraClass}` }, text);
+}
+
+// ── Quiz Phase ────────────────────────────────────────────
+
+function renderQuiz() {
+  const { step, answers } = state;
+  const q = questions[step];
+  const allAnswered = Object.keys(answers).length === questions.length;
+
+  const container = el("div", { className: "min-h-svh flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden fade-in" });
+
+  // Background glows
+  container.appendChild(el("div", { className: "absolute inset-0 pointer-events-none" },
+    el("div", { className: "absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-violet-600/15 rounded-full blur-[120px]" }),
+    el("div", { className: "absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[100px]" })
+  ));
+
+  const inner = el("div", { className: "relative z-10 w-full max-w-md" });
+
+  // Logo
+  const logo = el("div", { className: "text-center mb-10 slide-up" });
+  const h1 = el("h1", { className: "text-4xl font-bold" });
+  h1.appendChild(gradientText("Team Vibe", "from-violet-400 via-fuchsia-400 to-pink-400"));
+  logo.appendChild(h1);
+  logo.appendChild(el("p", { className: "text-white/50 mt-2 text-sm" }, "Discover your working style"));
+  inner.appendChild(logo);
+
+  // Progress bar
+  const progress = el("div", { className: "flex gap-2 mb-8" });
+  for (let i = 0; i < questions.length; i++) {
+    const track = el("div", { className: "h-1 flex-1 rounded-full overflow-hidden bg-white/10" });
+    let w = "0%";
+    if (i < step) w = "100%";
+    else if (i === step && answers[q.id]) w = "100%";
+    else if (i === step) w = "50%";
+    const fill = el("div", { className: "h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full progress-fill", style: { width: w } });
+    track.appendChild(fill);
+    progress.appendChild(track);
+  }
+  inner.appendChild(progress);
+
+  // Question card
+  const card = el("div", { className: "relative overflow-hidden rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-sm p-6 " + (state.direction > 0 ? "slide-left-in" : "slide-right-in") });
+  card.appendChild(el("p", { className: "text-xs font-semibold uppercase tracking-widest text-violet-400 mb-1" }, `Question ${step + 1} of ${questions.length}`));
+  card.appendChild(el("h2", { className: "text-xl font-bold text-white mb-6" }, q.question));
+
+  const optionsDiv = el("div", { className: "flex flex-col gap-3" });
+  q.options.forEach((opt) => {
+    const isSelected = answers[q.id] === opt.value;
+    const btn = el("button", {
+      className: `option-btn relative flex items-center gap-3 px-5 py-4 rounded-2xl border-2 text-left cursor-pointer w-full ${isSelected ? "selected" : "border-white/10 bg-white/5"}`,
+      onClick: () => setState({ answers: { ...state.answers, [q.id]: opt.value } }),
+    },
+      el("span", { className: "text-2xl" }, opt.emoji),
+      el("span", { className: "text-lg font-medium text-white" }, opt.label)
+    );
+    if (isSelected) {
+      const check = el("div", { className: "ml-auto w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center scale-in" });
+      check.innerHTML = '<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+      btn.appendChild(check);
+    }
+    optionsDiv.appendChild(btn);
+  });
+  card.appendChild(optionsDiv);
+  inner.appendChild(card);
+
+  // Nav
+  const nav = el("div", { className: "flex gap-3 mt-6" });
+  if (step > 0) {
+    nav.appendChild(el("button", {
+      className: "nav-btn px-6 py-3 rounded-xl border border-white/15 text-white/70 hover:text-white hover:border-white/30 cursor-pointer",
+      onClick: () => setState({ step: state.step - 1, direction: -1 }),
+    }, "Back"));
+  }
+  if (step < questions.length - 1) {
+    nav.appendChild(el("button", {
+      className: "nav-btn flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold cursor-pointer",
+      disabled: !answers[q.id],
+      onClick: () => { if (answers[q.id]) setState({ step: state.step + 1, direction: 1 }); },
+    }, "Next"));
+  } else {
+    nav.appendChild(el("button", {
+      className: "nav-btn flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white font-bold cursor-pointer",
+      disabled: !allAnswered,
+      onClick: () => { if (allAnswered) setState({ phase: "story", slideIndex: 0, direction: 1 }); },
+    }, "Generate My Vibe ✨"));
+  }
+  inner.appendChild(nav);
+  container.appendChild(inner);
+  return container;
+}
+
+// ── Story Slides ──────────────────────────────────────────
+
+function renderFocusSlide() {
+  const info = focusCopy[state.answers.focus];
+  const barHeights = [35, 55, 90, 70, 45, 25];
+  const animClass = state.direction > 0 ? "slide-left-in" : "slide-right-in";
+
+  const slide = el("div", { className: `flex flex-col items-center justify-center h-full px-6 text-center ${animClass}` });
+
+  slide.appendChild(el("div", { className: "text-7xl mb-6 scale-in stagger-2" }, info.icon));
+
+  const title = el("h2", { className: "text-3xl sm:text-4xl font-extrabold mb-3 slide-up stagger-3" });
+  title.appendChild(gradientText(info.title, `${info.gradient}`));
+  slide.appendChild(title);
+
+  slide.appendChild(el("p", { className: "text-white/60 text-lg max-w-xs mb-10 fade-in stagger-5" }, info.sub));
+
+  // Bar chart
+  const chart = el("div", { className: "flex items-end gap-2 sm:gap-3 fade-in stagger-6", style: { height: "128px" } });
+  barHeights.forEach((h, i) => {
+    const col = el("div", { className: "flex flex-col items-center gap-1.5" });
+    const isPeak = i === info.peak;
+    const bar = el("div", {
+      className: `w-8 sm:w-10 rounded-lg bar-grow`,
+      style: {
+        height: `${h}%`,
+        background: isPeak ? `linear-gradient(to top, ${info.barColors[0]}, ${info.barColors[2]})` : "rgba(255,255,255,0.15)",
+        boxShadow: isPeak ? `0 4px 20px ${info.barColors[0]}44` : "none",
+        animationDelay: `${0.8 + i * 0.1}s`,
+        minHeight: "8px",
+      }
+    });
+    col.appendChild(bar);
+    col.appendChild(el("span", { className: "text-[10px] sm:text-xs text-white/40 font-mono" }, info.hours[i]));
+    chart.appendChild(col);
+  });
+  slide.appendChild(chart);
+  return slide;
+}
+
+function renderCollabSlide() {
+  const info = collabCopy[state.answers.collab];
+  const animClass = state.direction > 0 ? "slide-left-in" : "slide-right-in";
+
+  const slide = el("div", { className: `flex flex-col items-center justify-center h-full px-6 text-center ${animClass}` });
+
+  slide.appendChild(el("div", { className: "text-7xl mb-6 scale-in stagger-2" }, info.icon));
+
+  const title = el("h2", { className: "text-3xl sm:text-4xl font-extrabold mb-3 slide-up stagger-3" });
+  title.appendChild(gradientText(info.title, `${info.gradient}`));
+  slide.appendChild(title);
+
+  slide.appendChild(el("p", { className: "text-white/60 text-lg max-w-xs mb-10 fade-in stagger-5" }, info.sub));
+
+  // Vibe tag
+  const tag = el("div", {
+    className: "px-6 py-3 rounded-2xl border border-white/10 scale-in stagger-7",
+    style: { background: "rgba(255,255,255,0.06)" }
+  });
+  tag.appendChild(el("p", { className: "text-sm text-white/50 uppercase tracking-wider font-semibold mb-0.5" }, "Your collab style"));
+  const vibeText = el("p", { className: "text-lg font-bold" });
+  vibeText.appendChild(gradientText(info.vibe, `${info.gradient}`));
+  tag.appendChild(vibeText);
+  slide.appendChild(tag);
+
+  return slide;
+}
+
+function renderWeaponSlide() {
+  const info = weaponCopy[state.answers.weapon];
+  const focus = focusCopy[state.answers.focus];
+  const collab = collabCopy[state.answers.collab];
+  const animClass = state.direction > 0 ? "slide-left-in" : "slide-right-in";
+
+  const slide = el("div", { className: `flex flex-col items-center justify-center h-full px-6 text-center ${animClass}` });
+
+  slide.appendChild(el("div", { className: "text-7xl mb-4 scale-in stagger-2" }, info.icon));
+
+  const title = el("h2", { className: "text-3xl sm:text-4xl font-extrabold mb-2 slide-up stagger-3" });
+  title.appendChild(gradientText(info.title, `${info.gradient}`));
+  slide.appendChild(title);
+
+  slide.appendChild(el("p", { className: "text-white/60 text-lg max-w-xs mb-8 fade-in stagger-4" }, info.sub));
+
+  // Summary card
+  const card = el("div", { className: "w-full max-w-xs rounded-3xl overflow-hidden border border-white/10 bg-white/[0.04] backdrop-blur-md scale-in stagger-6" });
+
+  // Gradient top bar
+  const topBar = el("div", { className: `h-2 w-full bg-gradient-to-r ${info.gradient}` });
+  card.appendChild(topBar);
+
+  const cardInner = el("div", { className: "p-5" });
+  cardInner.appendChild(el("p", { className: "text-xs uppercase tracking-widest text-white/40 mb-3 font-semibold" }, "Your Team Vibe Card"));
+
+  const items = el("div", { className: "space-y-2.5 text-left" });
+  [
+    { icon: focus.icon, label: focus.title },
+    { icon: collab.icon, label: collab.title },
+    { icon: info.icon, label: info.title },
+  ].forEach(({ icon, label }) => {
+    items.appendChild(el("div", { className: "flex items-center gap-2" },
+      el("span", { className: "text-lg" }, icon),
+      el("span", { className: "text-sm text-white/80" }, label)
+    ));
+  });
+  cardInner.appendChild(items);
+
+  const footer = el("div", { className: "mt-4 pt-3 border-t border-white/10" });
+  const classLine = el("p", { className: "text-xs text-white/30" }, "Class: ");
+  classLine.appendChild(gradientText(info.class, `${info.gradient}`, "font-bold"));
+  footer.appendChild(classLine);
+  cardInner.appendChild(footer);
+  card.appendChild(cardInner);
+  slide.appendChild(card);
+
+  // Copy button
+  const copyBtn = el("button", {
+    className: "nav-btn mt-6 px-6 py-2.5 rounded-xl bg-white/10 text-white/70 text-sm hover:bg-white/15 hover:text-white cursor-pointer border border-white/10 fade-in stagger-10",
+    onClick: () => {
+      const text = `My Team Vibe: ${focus.title} + ${collab.title} + ${info.title} (${info.class}) ✨`;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = "Copied! ✅";
+        setTimeout(() => { copyBtn.textContent = "Copy to clipboard 📋"; }, 2000);
+      });
+    },
+  }, "Copy to clipboard 📋");
+  slide.appendChild(copyBtn);
+
+  return slide;
+}
+
+// ── Story Phase ───────────────────────────────────────────
+
+function renderStory() {
+  const { slideIndex } = state;
+  const slideLabels = ["Focus Time", "Collab Style", "Your Weapon"];
+
+  const container = el("div", { className: "min-h-svh flex flex-col relative overflow-hidden fade-in" });
+
+  // Ambient bg
+  container.appendChild(el("div", { className: "absolute inset-0 pointer-events-none" },
+    el("div", { className: "absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-violet-600/10 rounded-full blur-[150px]" }),
+    el("div", { className: "absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-fuchsia-600/8 rounded-full blur-[120px]" })
+  ));
+
+  // Top bar
+  const topBar = el("div", { className: "relative z-20 flex items-center justify-between px-5 pt-5" });
+  topBar.appendChild(el("button", {
+    className: "text-white/40 hover:text-white/70 text-sm cursor-pointer",
+    onClick: () => setState({ phase: "quiz", step: 0, answers: {}, slideIndex: 0 }),
+  }, "← Retake"));
+
+  const dots = el("div", { className: "flex gap-1.5" });
+  for (let i = 0; i < 3; i++) {
+    dots.appendChild(el("button", {
+      className: `dot-indicator h-1 rounded-full cursor-pointer ${i === slideIndex ? "w-8 bg-gradient-to-r from-violet-500 to-fuchsia-500" : "w-4 bg-white/20 hover:bg-white/30"}`,
+      onClick: () => setState({ slideIndex: i, direction: i > state.slideIndex ? 1 : -1 }),
+    }));
+  }
+  topBar.appendChild(dots);
+  topBar.appendChild(el("span", { className: "text-white/30 text-xs font-mono" }, `${slideIndex + 1}/3`));
+  container.appendChild(topBar);
+
+  // Slide label
+  container.appendChild(el("div", { className: "relative z-20 text-center mt-4" },
+    el("span", { className: "text-xs uppercase tracking-[0.2em] text-white/30 font-semibold" }, slideLabels[slideIndex])
+  ));
+
+  // Slide content
+  const slideArea = el("div", { className: "flex-1 relative z-10 flex items-center justify-center" });
+  const slides = [renderFocusSlide, renderCollabSlide, renderWeaponSlide];
+  slideArea.appendChild(slides[slideIndex]());
+  container.appendChild(slideArea);
+
+  // Bottom nav
+  const bottomNav = el("div", { className: "relative z-20 flex items-center justify-between px-6 pb-8" });
+
+  const prevBtn = el("button", {
+    className: "nav-btn px-5 py-2.5 rounded-xl text-white/50 hover:text-white cursor-pointer",
+    disabled: slideIndex === 0,
+    style: { opacity: slideIndex === 0 ? 0 : 1 },
+    onClick: () => { if (slideIndex > 0) setState({ slideIndex: state.slideIndex - 1, direction: -1 }); },
+  }, "‹ Prev");
+  bottomNav.appendChild(prevBtn);
+
+  if (slideIndex < 2) {
+    bottomNav.appendChild(el("button", {
+      className: "nav-btn px-8 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold cursor-pointer hover:shadow-lg hover:shadow-violet-500/25",
+      onClick: () => setState({ slideIndex: state.slideIndex + 1, direction: 1 }),
+    }, "Next ›"));
+  } else {
+    bottomNav.appendChild(el("button", {
+      className: "nav-btn px-8 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white font-semibold cursor-pointer hover:shadow-lg hover:shadow-pink-500/25",
+      onClick: () => setState({ phase: "quiz", step: 0, answers: {}, slideIndex: 0 }),
+    }, "Start Over 🔄"));
+  }
+  container.appendChild(bottomNav);
+
+  // Keyboard nav
+  document.onkeydown = (e) => {
+    if (e.key === "ArrowRight" && state.slideIndex < 2) setState({ slideIndex: state.slideIndex + 1, direction: 1 });
+    if (e.key === "ArrowLeft" && state.slideIndex > 0) setState({ slideIndex: state.slideIndex - 1, direction: -1 });
+  };
+
+  return container;
+}
+
+// ── Render ────────────────────────────────────────────────
+
+function render() {
+  const root = document.getElementById("root");
+  root.innerHTML = "";
+  root.appendChild(state.phase === "quiz" ? renderQuiz() : renderStory());
+}
+
+render();
+</script>
+</body>
+</html>

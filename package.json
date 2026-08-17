@@ -20,7 +20,8 @@
     "db:seed": "npm run db:seed --workspace @gym/server",
     "db:reset": "npm run db:reset --workspace @gym/server",
     "db:studio": "npm run db:studio --workspace @gym/server",
-    "postinstall": "npm run db:generate --workspace @gym/server"
+    "postinstall": "npm run db:generate --workspace @gym/server",
+    "dev": "npm run dev:server & npm run dev:web"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

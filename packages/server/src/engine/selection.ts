@@ -1,5 +1,5 @@
 import {
-  MOVEMENT_PATTERN_LABELS,
+  MUSCLE_LABELS,
   TUNING,
   type Equipment,
   type ExerciseCatalogEntry,
@@ -265,7 +265,9 @@ function explain(
       : `${cap(primary)} is fresh.`;
   }
 
-  return `Covers ${MOVEMENT_PATTERN_LABELS[exercise.movementPatterns[0]].toLowerCase()}.`;
+  // Movement-pattern names are internal vocabulary — "Covers isolation" means
+  // nothing to a reader. Name the muscle instead.
+  return `Targets ${exercise.primaryMuscles.map((m) => MUSCLE_LABELS[m].toLowerCase()).join(' and ')}.`;
 }
 
 function buildLastPerformedMap(history: SetRecord[]): Map<string, number> {

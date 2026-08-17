@@ -15,3 +15,6 @@ packages/server/prisma/*.db*
 *.log
 .vite/
 coverage/
+
+# Prisma 7 generates a TS client into src/ — build output, not source
+packages/server/src/generated/

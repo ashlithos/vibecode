@@ -1,0 +1,289 @@
+[
+  {
+    "id": "shoulder-press-machine",
+    "name": "Shoulder Press Machine",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps"],
+    "movementPatterns": ["vertical_push"],
+    "machineIdentification": "A seat with an upright back pad and handles level with your ears that travel straight up overhead.",
+    "instructions": [
+      "Set the seat so the handles start at about shoulder height.",
+      "Sit with your back flat against the pad.",
+      "Take both handles, palms facing forward.",
+      "Press straight up until your arms are almost locked.",
+      "Lower under control back to ear level."
+    ],
+    "keyCues": [
+      "Keep your ribs down and your core braced.",
+      "Stop just short of locking the elbows.",
+      "Press up, not forward."
+    ],
+    "commonMistakes": [
+      "Arching the lower back away from the pad.",
+      "Setting the seat so low the range gets uncomfortably deep.",
+      "Letting the handles crash back down."
+    ],
+    "alternatives": ["dumbbell-shoulder-press", "smith-machine-shoulder-press", "barbell-overhead-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-shoulder-press",
+    "name": "Dumbbell Shoulder Press",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps", "core"],
+    "movementPatterns": ["vertical_push"],
+    "machineIdentification": "An adjustable bench set upright, plus a pair of dumbbells.",
+    "instructions": [
+      "Set a bench back to just short of vertical.",
+      "Sit with a dumbbell resting on each thigh.",
+      "Kick them up to shoulder height, palms facing forward.",
+      "Press overhead until your arms are nearly straight.",
+      "Lower back to ear level under control."
+    ],
+    "keyCues": [
+      "Keep your lower back in contact with the pad.",
+      "Don't clash the dumbbells at the top.",
+      "Keep your wrists stacked over your elbows."
+    ],
+    "commonMistakes": [
+      "Arching the back to press heavier weights.",
+      "Only lowering halfway.",
+      "Letting the elbows drift far forward at the bottom."
+    ],
+    "alternatives": ["shoulder-press-machine", "barbell-overhead-press", "smith-machine-shoulder-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "barbell-overhead-press",
+    "name": "Barbell Overhead Press",
+    "bodyRegion": "upper",
+    "equipment": "barbell",
+    "difficulty": "advanced",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 5,
+    "defaultRepsHigh": 8,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps", "core"],
+    "movementPatterns": ["vertical_push"],
+    "machineIdentification": "A barbell in a rack set at roughly upper-chest height. You press it standing, so nothing supports your torso.",
+    "instructions": [
+      "Set the bar at upper-chest height and grip just outside your shoulders.",
+      "Unrack and step back, bar resting on your front shoulders.",
+      "Brace your core and squeeze your glutes.",
+      "Press the bar overhead, moving your head back out of the way.",
+      "Lower under control to your collarbone."
+    ],
+    "keyCues": [
+      "Finish with the bar over the middle of your feet.",
+      "Squeeze your glutes to stop the back arching.",
+      "Push your head through once the bar clears it."
+    ],
+    "commonMistakes": [
+      "Leaning back into a standing incline press.",
+      "Pressing around the face instead of moving the head.",
+      "Losing core brace between reps."
+    ],
+    "alternatives": ["dumbbell-shoulder-press", "shoulder-press-machine", "smith-machine-shoulder-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "smith-machine-shoulder-press",
+    "name": "Smith Machine Shoulder Press",
+    "bodyRegion": "upper",
+    "equipment": "smith_machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps"],
+    "movementPatterns": ["vertical_push"],
+    "machineIdentification": "A barbell fixed inside vertical rails so it can only travel straight up and down. Twist the bar to lock it at any height.",
+    "instructions": [
+      "Set an upright bench under the bar.",
+      "Sit so the bar lines up just in front of your face.",
+      "Unlock the bar with a small twist of the wrists.",
+      "Press up until your arms are almost straight.",
+      "Lower to chin height under control."
+    ],
+    "keyCues": [
+      "Position the bench so the bar path clears your nose.",
+      "Keep your back flat against the pad.",
+      "Re-lock the bar before letting go."
+    ],
+    "commonMistakes": [
+      "Sitting too far back so the bar scrapes your face.",
+      "Bouncing the bar off the bottom of the range.",
+      "Forgetting to lock the bar at the end of the set."
+    ],
+    "alternatives": ["shoulder-press-machine", "dumbbell-shoulder-press", "barbell-overhead-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-lateral-raise",
+    "name": "Dumbbell Lateral Raise",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": null,
+    "instructions": [
+      "Stand with a light dumbbell in each hand, arms at your sides.",
+      "Keep a slight bend in the elbows.",
+      "Raise both arms out to the sides until they reach shoulder height.",
+      "Lower slowly back to your sides."
+    ],
+    "keyCues": [
+      "Lead with your elbows, not your hands.",
+      "Stop at shoulder height — no higher.",
+      "Go lighter than feels right; this one rewards control."
+    ],
+    "commonMistakes": [
+      "Swinging the weights up with a hip thrust.",
+      "Shrugging so the traps take over from the shoulders.",
+      "Raising past shoulder height and losing tension."
+    ],
+    "alternatives": ["cable-lateral-raise", "shoulder-press-machine", "rear-delt-fly-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "cable-lateral-raise",
+    "name": "Cable Lateral Raise",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A single cable pulley set at the lowest position with a D-handle. You stand side-on to the tower.",
+    "instructions": [
+      "Set a pulley at the bottom with a D-handle.",
+      "Stand side-on and take the handle in your outside hand.",
+      "Let your arm hang across your body.",
+      "Raise your arm out to shoulder height.",
+      "Lower slowly, then switch sides."
+    ],
+    "keyCues": [
+      "Keep tension on the cable even at the bottom.",
+      "Lead with the elbow.",
+      "Stand tall — don't lean away from the tower."
+    ],
+    "commonMistakes": [
+      "Leaning hard away to use body weight as a counterbalance.",
+      "Letting the arm swing rather than lift.",
+      "Going too heavy and recruiting the traps."
+    ],
+    "alternatives": ["dumbbell-lateral-raise", "rear-delt-fly-machine", "shoulder-press-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "rear-delt-fly-machine",
+    "name": "Rear Delt Fly Machine",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["back"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "Usually the pec deck run in reverse — you sit facing the chest pad and pull the arms backward instead of together. Some gyms have a dedicated station.",
+    "instructions": [
+      "Set the handles so they start in front of you at shoulder height.",
+      "Sit facing the pad with your chest against it.",
+      "Take a handle in each hand, elbows slightly bent.",
+      "Sweep your arms out and back in a wide arc.",
+      "Return slowly to the front."
+    ],
+    "keyCues": [
+      "Think about pulling your elbows apart.",
+      "Keep your chest on the pad throughout.",
+      "Pause for a beat at the back."
+    ],
+    "commonMistakes": [
+      "Bending the elbows and rowing instead of flying.",
+      "Using momentum from the torso.",
+      "Shrugging the shoulders up as the arms travel back."
+    ],
+    "alternatives": ["face-pull", "dumbbell-lateral-raise", "cable-lateral-raise"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "face-pull",
+    "name": "Face Pull",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["back", "biceps"],
+    "movementPatterns": ["horizontal_pull"],
+    "machineIdentification": "A cable pulley set at roughly face height with a rope attachment. You stand facing it and pull the rope toward your eyes.",
+    "instructions": [
+      "Set a pulley just above head height and attach a rope.",
+      "Grip both rope ends with thumbs pointing back.",
+      "Step back until the cable is taut, arms extended.",
+      "Pull the rope toward your forehead, spreading your hands apart.",
+      "Return slowly to full extension."
+    ],
+    "keyCues": [
+      "Keep your elbows high, level with your shoulders.",
+      "Pull the rope apart as much as back.",
+      "Stay light — this is a health move, not a strength one."
+    ],
+    "commonMistakes": [
+      "Dropping the elbows so it becomes a row.",
+      "Leaning back to counterbalance heavy weight.",
+      "Rushing reps without pausing at the finish."
+    ],
+    "alternatives": ["rear-delt-fly-machine", "seated-cable-row", "cable-lateral-raise"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

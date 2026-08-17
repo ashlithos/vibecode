@@ -1,0 +1,217 @@
+[
+  {
+    "id": "barbell-hip-thrust",
+    "name": "Barbell Hip Thrust",
+    "bodyRegion": "lower",
+    "equipment": "barbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "movementPatterns": ["hip_extension"],
+    "machineIdentification": "A flat bench plus a loaded barbell, usually with a thick pad wrapped around the bar. Your upper back rests on the bench and the bar sits across your hips.",
+    "instructions": [
+      "Sit on the floor with your upper back against the long edge of a bench.",
+      "Roll a padded barbell over your legs to sit in your hip crease.",
+      "Plant your feet flat, shins vertical at the top of the movement.",
+      "Drive your hips up until your body is flat from knees to shoulders.",
+      "Lower under control without resting the bar down."
+    ],
+    "keyCues": [
+      "Tuck your chin and keep your ribs down.",
+      "Squeeze your glutes hard for a beat at the top.",
+      "Push through your heels."
+    ],
+    "commonMistakes": [
+      "Arching the lower back instead of extending the hips.",
+      "Setting the feet too far away, which recruits the hamstrings.",
+      "Cutting the range short and never reaching lockout."
+    ],
+    "alternatives": ["hip-thrust-machine", "smith-machine-hip-thrust", "glute-bridge"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "hip-thrust-machine",
+    "name": "Hip Thrust Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "movementPatterns": ["hip_extension"],
+    "machineIdentification": "A low seat with a back rest and a padded belt or lap bar across your hips, facing a foot platform. Newer gyms have these; look near the leg press.",
+    "instructions": [
+      "Sit with your back against the pad and feet on the platform.",
+      "Pull the hip pad down across your hip crease.",
+      "Set your feet so your shins are vertical at lockout.",
+      "Drive your hips forward until fully extended.",
+      "Return under control without letting the stack rest."
+    ],
+    "keyCues": [
+      "Keep your ribs down — extend the hips, not the spine.",
+      "Pause at full lockout each rep.",
+      "Push through your heels, not your toes."
+    ],
+    "commonMistakes": [
+      "Arching the lower back to fake more range.",
+      "Setting the pad on the stomach instead of the hips.",
+      "Bouncing off the bottom of each rep."
+    ],
+    "alternatives": ["barbell-hip-thrust", "smith-machine-hip-thrust", "glute-bridge"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "smith-machine-hip-thrust",
+    "name": "Smith Machine Hip Thrust",
+    "bodyRegion": "lower",
+    "equipment": "smith_machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "movementPatterns": ["hip_extension"],
+    "machineIdentification": "The Smith machine with a bench set inside the rails, bar padded and set low over your hips. The fixed bar path makes setup much easier than a free barbell.",
+    "instructions": [
+      "Set a bench inside the Smith rails, parallel to the bar.",
+      "Sit with your upper back on the bench, under the padded bar.",
+      "Unlock the bar and settle it into your hip crease.",
+      "Drive your hips up to full extension.",
+      "Lower under control and re-lock the bar at the end."
+    ],
+    "keyCues": [
+      "Position the bench so the bar lands on your hips, not your stomach.",
+      "Keep shins vertical at the top.",
+      "Squeeze at lockout for one full second."
+    ],
+    "commonMistakes": [
+      "Placing the bench too far forward or back.",
+      "Hyperextending the lower back at the top.",
+      "Forgetting to re-lock the bar before sliding out."
+    ],
+    "alternatives": ["barbell-hip-thrust", "hip-thrust-machine", "glute-bridge"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "glute-bridge",
+    "name": "Glute Bridge",
+    "bodyRegion": "lower",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "movementPatterns": ["hip_extension"],
+    "machineIdentification": null,
+    "instructions": [
+      "Lie on your back with knees bent and feet flat, hip width.",
+      "Set your heels about a hand's length from your glutes.",
+      "Drive your hips up until your body is flat from knees to shoulders.",
+      "Squeeze at the top, then lower under control."
+    ],
+    "keyCues": [
+      "Squeeze your glutes to lift, not your lower back.",
+      "Keep your ribs down as you extend.",
+      "Hold the top for two seconds."
+    ],
+    "commonMistakes": [
+      "Arching the lower back at the top.",
+      "Pushing through the toes instead of the heels.",
+      "Feet too far away, turning it into a hamstring exercise."
+    ],
+    "alternatives": ["barbell-hip-thrust", "hip-thrust-machine", "back-extension"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "cable-glute-kickback",
+    "name": "Cable Glute Kickback",
+    "bodyRegion": "lower",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "movementPatterns": ["hip_extension", "isolation"],
+    "machineIdentification": "A low cable pulley with an ankle strap attachment. You face the tower and drive one leg back against the cable.",
+    "instructions": [
+      "Set a pulley at the bottom and fit the ankle strap.",
+      "Face the tower and hold the frame for balance.",
+      "Shift your weight onto the free leg.",
+      "Drive the strapped leg straight back, squeezing the glute.",
+      "Return under control, then switch legs."
+    ],
+    "keyCues": [
+      "Keep your torso still — no rocking forward.",
+      "Squeeze at the end of the kick, then hold briefly.",
+      "Keep the working leg mostly straight."
+    ],
+    "commonMistakes": [
+      "Arching the lower back to swing the leg higher.",
+      "Rotating the hips open at the top.",
+      "Going heavy enough that momentum takes over."
+    ],
+    "alternatives": ["cable-pull-through", "glute-bridge", "hip-abduction-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "hip-abduction-machine",
+    "name": "Hip Abduction Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A seat with two pads on the outsides of your knees that you push apart. Often paired back-to-back with the adduction machine, which works the opposite way.",
+    "instructions": [
+      "Sit with your back against the pad and knees inside the pads.",
+      "Set the starting width so your knees begin close together.",
+      "Push your knees apart against the resistance.",
+      "Pause at the widest point.",
+      "Return slowly under control."
+    ],
+    "keyCues": [
+      "Lean forward slightly to bias the upper glute.",
+      "Hold the open position for a beat.",
+      "Return slowly rather than letting it snap shut."
+    ],
+    "commonMistakes": [
+      "Using the whole torso to rock the pads open.",
+      "Letting the stack slam closed on the return.",
+      "Very short reps with heavy weight."
+    ],
+    "alternatives": ["cable-glute-kickback", "glute-bridge", "hip-thrust-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

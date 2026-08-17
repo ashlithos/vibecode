@@ -1,0 +1,361 @@
+[
+  {
+    "id": "assisted-pull-up",
+    "name": "Assisted Pull-up",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "assistance",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 6,
+    "defaultRepsHigh": 10,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "forearms", "core"],
+    "movementPatterns": ["vertical_pull"],
+    "machineIdentification": "A tall frame with pull-up handles at the top and a padded platform for your knees hanging below. The weight stack is behind the platform — more weight means more help, not less.",
+    "instructions": [
+      "Set the assistance weight, then step onto the side rails.",
+      "Grip the handles slightly wider than your shoulders.",
+      "Kneel carefully onto the padded platform and let it settle.",
+      "Pull yourself up until your chin clears the handles.",
+      "Lower under control until your arms are straight."
+    ],
+    "keyCues": [
+      "Drive your elbows down toward your ribs, not back.",
+      "Start each rep from a full hang.",
+      "Take three seconds to lower yourself."
+    ],
+    "commonMistakes": [
+      "Bouncing out of the bottom instead of pulling from a dead hang.",
+      "Using so much assistance that the top half does all the work.",
+      "Shrugging the shoulders up toward the ears at the start."
+    ],
+    "alternatives": ["lat-pulldown", "neutral-grip-lat-pulldown", "pull-up"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "forearms"],
+    "movementPatterns": ["vertical_pull"],
+    "machineIdentification": "A seat with a thigh pad above it and a long straight bar hanging from a high pulley. The thigh pad is what stops you lifting off the seat.",
+    "instructions": [
+      "Set the thigh pad so it holds your legs down firmly.",
+      "Grip the bar wider than shoulder width, palms facing away.",
+      "Sit down and let your arms straighten fully.",
+      "Pull the bar to your upper chest, leaning back slightly.",
+      "Let the bar rise back up under control."
+    ],
+    "keyCues": [
+      "Pull with your elbows, not your hands.",
+      "Keep your chest lifted toward the bar.",
+      "Stop the bar at your collarbone, not behind your neck."
+    ],
+    "commonMistakes": [
+      "Leaning far back and turning it into a row.",
+      "Letting the weight yank your shoulders up at the top.",
+      "Pulling the bar behind the neck, which stresses the shoulders."
+    ],
+    "alternatives": ["assisted-pull-up", "neutral-grip-lat-pulldown", "pull-up"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "neutral-grip-lat-pulldown",
+    "name": "Neutral-Grip Lat Pulldown",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "forearms"],
+    "movementPatterns": ["vertical_pull"],
+    "machineIdentification": "Same station as the lat pulldown, but clip on the V-shaped handle or the bar with parallel grips at the ends, so your palms face each other.",
+    "instructions": [
+      "Attach the V-handle or parallel-grip bar to the high pulley.",
+      "Set the thigh pad snug against your legs.",
+      "Sit and take the handle with palms facing each other.",
+      "Pull the handle to your upper chest.",
+      "Return to a full stretch under control."
+    ],
+    "keyCues": [
+      "Keep your wrists straight and neutral.",
+      "Lead with the elbows, finish with the chest.",
+      "Pause briefly at the bottom of each rep."
+    ],
+    "commonMistakes": [
+      "Rocking the torso to generate momentum.",
+      "Cutting the range short at the top.",
+      "Gripping so hard the forearms fail before the back does."
+    ],
+    "alternatives": ["lat-pulldown", "assisted-pull-up", "seated-cable-row"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "pull-up",
+    "name": "Pull-up",
+    "bodyRegion": "upper",
+    "equipment": "bodyweight",
+    "difficulty": "advanced",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 3,
+    "defaultRepsHigh": 8,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "forearms", "core"],
+    "movementPatterns": ["vertical_pull"],
+    "machineIdentification": "A fixed horizontal bar above head height — on a power rack, a wall-mounted frame, or the top of a cable tower.",
+    "instructions": [
+      "Grip the bar slightly wider than your shoulders, palms away.",
+      "Hang with arms straight and shoulders engaged.",
+      "Pull until your chin clears the bar.",
+      "Lower all the way down under control."
+    ],
+    "keyCues": [
+      "Squeeze your glutes to stop the legs swinging.",
+      "Pull your chest toward the bar.",
+      "Own the lowering half — that's where the growth is."
+    ],
+    "commonMistakes": [
+      "Kipping or swinging to get through the sticking point.",
+      "Stopping halfway down and losing the stretch.",
+      "Letting the shoulders creep up into a shrug at the bottom."
+    ],
+    "alternatives": ["assisted-pull-up", "lat-pulldown", "neutral-grip-lat-pulldown"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "seated-cable-row",
+    "name": "Seated Cable Row",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "forearms", "shoulders"],
+    "movementPatterns": ["horizontal_pull"],
+    "machineIdentification": "A long bench or seat at floor level with a foot plate in front and a low pulley between your feet. Usually a V-handle is already clipped on.",
+    "instructions": [
+      "Sit with feet braced on the plate, knees slightly bent.",
+      "Take the handle and sit tall with arms extended.",
+      "Pull the handle to your belly button.",
+      "Hold for a beat with shoulder blades squeezed.",
+      "Let your arms straighten fully before the next rep."
+    ],
+    "keyCues": [
+      "Keep your torso still — the arms move, not the back.",
+      "Pull the handle low, to the navel not the chest.",
+      "Let the shoulder blades spread apart at the front."
+    ],
+    "commonMistakes": [
+      "Rowing with the lower back by rocking forward and back.",
+      "Rounding the spine at the front of the movement.",
+      "Shrugging the shoulders instead of retracting them."
+    ],
+    "alternatives": ["chest-supported-row-machine", "single-arm-dumbbell-row", "inverted-row"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "chest-supported-row-machine",
+    "name": "Chest-Supported Row Machine",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "shoulders", "forearms"],
+    "movementPatterns": ["horizontal_pull"],
+    "machineIdentification": "A seat facing a large angled chest pad, with handles either side at chest height. Your chest rests against the pad so your lower back does nothing.",
+    "instructions": [
+      "Set the seat height so the handles line up with your mid-chest.",
+      "Sit with your chest firmly against the pad.",
+      "Take the handles with arms extended.",
+      "Pull the handles back until your elbows pass your ribs.",
+      "Return slowly to a full stretch."
+    ],
+    "keyCues": [
+      "Keep your chest glued to the pad the whole set.",
+      "Drive the elbows back and slightly down.",
+      "Pause for a second at the squeeze."
+    ],
+    "commonMistakes": [
+      "Peeling the chest off the pad to move more weight.",
+      "Jerking the handles and letting them snap back.",
+      "Setting the seat too low, which turns it into a shrug."
+    ],
+    "alternatives": ["seated-cable-row", "single-arm-dumbbell-row", "barbell-bent-over-row"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "single-arm-dumbbell-row",
+    "name": "Single-Arm Dumbbell Row",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "forearms", "core"],
+    "movementPatterns": ["horizontal_pull"],
+    "machineIdentification": "Any flat bench plus a single dumbbell. You brace one hand and one knee on the bench and row with the other arm.",
+    "instructions": [
+      "Place your left hand and left knee on a flat bench.",
+      "Set your right foot on the floor, back roughly parallel to the ground.",
+      "Hold the dumbbell in your right hand, arm hanging straight.",
+      "Row the dumbbell to the side of your ribs.",
+      "Lower it all the way down, then repeat and switch sides."
+    ],
+    "keyCues": [
+      "Keep your back flat like a tabletop.",
+      "Pull the dumbbell toward your hip, not your shoulder.",
+      "Don't let your torso rotate as you pull."
+    ],
+    "commonMistakes": [
+      "Twisting the shoulders open to finish the rep.",
+      "Rounding the lower back under heavier dumbbells.",
+      "Yanking with the arm instead of driving the elbow back."
+    ],
+    "alternatives": ["chest-supported-row-machine", "seated-cable-row", "barbell-bent-over-row"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "barbell-bent-over-row",
+    "name": "Barbell Bent-Over Row",
+    "bodyRegion": "upper",
+    "equipment": "barbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 6,
+    "defaultRepsHigh": 10,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "hamstrings", "core", "forearms"],
+    "movementPatterns": ["horizontal_pull"],
+    "machineIdentification": "A standard barbell, loaded on the floor or in a rack at knee height. No dedicated machine.",
+    "instructions": [
+      "Stand with feet hip width, barbell over your mid-foot.",
+      "Hinge at the hips until your torso is 45 degrees or lower.",
+      "Grip the bar just outside your knees.",
+      "Row the bar to your lower ribs.",
+      "Lower it under control without standing up."
+    ],
+    "keyCues": [
+      "Lock your torso angle and hold it all set.",
+      "Brace your core hard before the first rep.",
+      "Pull the bar into your body, not up toward your chest."
+    ],
+    "commonMistakes": [
+      "Standing up a little on every rep to help the weight.",
+      "Rounding the lower back under load.",
+      "Choosing a weight that turns it into a partial-range jerk."
+    ],
+    "alternatives": ["chest-supported-row-machine", "single-arm-dumbbell-row", "seated-cable-row"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "inverted-row",
+    "name": "Inverted Row",
+    "bodyRegion": "upper",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps", "core", "forearms"],
+    "movementPatterns": ["horizontal_pull"],
+    "machineIdentification": "A bar fixed at roughly hip height — a Smith machine bar or a rack's safety bar both work. You hang underneath it with your heels on the floor.",
+    "instructions": [
+      "Set a bar at about hip height.",
+      "Lie underneath and grip it slightly wider than your shoulders.",
+      "Hang with heels on the floor and body in a straight line.",
+      "Pull your chest to the bar.",
+      "Lower until your arms are straight."
+    ],
+    "keyCues": [
+      "Squeeze your glutes so your hips don't sag.",
+      "Touch your chest to the bar on every rep.",
+      "Raise the bar to make it easier, lower it to make it harder."
+    ],
+    "commonMistakes": [
+      "Letting the hips drop so it becomes an arm pull.",
+      "Only going halfway up.",
+      "Craning the neck to reach the bar first."
+    ],
+    "alternatives": ["seated-cable-row", "chest-supported-row-machine", "single-arm-dumbbell-row"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "straight-arm-pulldown",
+    "name": "Straight-Arm Pulldown",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["triceps", "core"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A cable tower with the pulley set high and a straight bar or rope attached. You stand facing it, a step back from the frame.",
+    "instructions": [
+      "Set the pulley high and attach a straight bar.",
+      "Stand a step back, feet hip width, slight hinge at the hips.",
+      "Hold the bar with arms straight, roughly at eye level.",
+      "Sweep the bar down to your thighs, keeping arms straight.",
+      "Let it rise back up under control."
+    ],
+    "keyCues": [
+      "Keep a soft, fixed bend in the elbows the whole time.",
+      "Feel the stretch under your armpits at the top.",
+      "Move only at the shoulder joint."
+    ],
+    "commonMistakes": [
+      "Bending the elbows and turning it into a pushdown.",
+      "Using so much weight the torso rocks to help.",
+      "Standing too close, which kills the range of motion."
+    ],
+    "alternatives": ["lat-pulldown", "neutral-grip-lat-pulldown", "assisted-pull-up"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

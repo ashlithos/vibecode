@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# SQLite database + Prisma local artifacts
+*.db
+*.db-journal
+*.sqlite
+packages/server/prisma/*.db*
+
+.env
+.env.local
+.DS_Store
+*.log
+.vite/
+coverage/

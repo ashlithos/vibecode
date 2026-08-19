@@ -1,0 +1,38 @@
+# secrets — never commit real credentials, even here
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.*
+
+# deps
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.egg-info/
+target/
+
+# build output
+dist/
+build/
+.next/
+out/
+*.log
+
+# scratch data — experiments pull down datasets, don't commit them
+data/
+*.csv
+*.parquet
+*.sqlite
+*.db
+!**/sample*.csv
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.ipynb_checkpoints/

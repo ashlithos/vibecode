@@ -8,8 +8,8 @@
 // Muscles and movement patterns are join tables rather than JSON columns
 // because recovery and variety scoring query them on every recommendation.
 //
-// There is no auth in the MVP, but every user-scoped row carries a userId
-// defaulting to "local" so adding accounts later is a migration, not a rewrite.
+// Every user-scoped row carries a userId foreign key to User. Identity comes
+// from Google OAuth; see src/auth.ts.
 
 generator client {
   provider = "prisma-client"
@@ -17,7 +17,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ---------------------------------------------------------------------------
@@ -92,24 +92,50 @@ model ExerciseAlternative {
   @@id([exerciseId, alternativeId])
 }
 
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+// Identity comes from Google; we store only what the UI shows. No password
+// column exists because there is no password to leak.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  lastSeenAt DateTime @updatedAt
+
+  settings      UserSettings?
+  equipment     EquipmentAvailability[]
+  preferences   ExercisePreference[]
+  recoveryReports RecoveryReport[]
+  workouts      Workout[]
+}
+
 // ---------------------------------------------------------------------------
 // User state
 // ---------------------------------------------------------------------------
 
 model UserSettings {
-  userId                String @id @default("local")
+  userId                String @id
   goal                  String @default("build muscle, reduce body fat")
   daysPerWeek           Int    @default(3)
   defaultSessionMinutes Int    @default(45)
   unit                  String @default("lb")
 
   updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EquipmentAvailability {
-  userId    String  @default("local")
+  userId    String
   equipment String
   available Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, equipment])
 }
@@ -121,24 +147,27 @@ model EquipmentAvailability {
 // Keeping them on separate fields is what stops "not today" from being
 // mistaken for "I hate this".
 model ExercisePreference {
-  userId     String    @default("local")
+  userId     String
   exerciseId String
   status     String    @default("neutral")
   skipUntil  DateTime?
   updatedAt  DateTime  @updatedAt
 
   exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, exerciseId])
   @@index([status])
 }
 
 model RecoveryReport {
-  userId     String   @default("local")
+  userId     String
   muscle     String
   rating     String
   reportedAt DateTime
   date       String // YYYY-MM-DD, local — one report per muscle per day
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, date, muscle])
 }
@@ -149,7 +178,7 @@ model RecoveryReport {
 
 model Workout {
   id            String   @id @default(cuid())
-  userId        String   @default("local")
+  userId        String
   date          DateTime @default(now())
   status        String   @default("planned")
   targetMinutes Int      @default(45)
@@ -158,6 +187,7 @@ model Workout {
   completedAt DateTime?
 
   exercises WorkoutExercise[]
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, date])
   @@index([status])

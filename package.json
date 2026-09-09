@@ -18,10 +18,11 @@
     "test": "npm run validate:seed && vitest run",
     "validate:seed": "npm run validate:seed --workspace @gym/server",
     "db:seed": "npm run db:seed --workspace @gym/server",
-    "db:reset": "npm run db:reset --workspace @gym/server",
     "db:studio": "npm run db:studio --workspace @gym/server",
     "postinstall": "npm run db:generate --workspace @gym/server",
-    "dev": "npm run dev:server & npm run dev:web"
+    "dev": "npm run dev:server & npm run dev:web",
+    "vercel-build": "npm run db:generate --workspace @gym/server && npm run db:migrate:deploy --workspace @gym/server && npm run build --workspace @gym/web",
+    "db:migrate:deploy": "npm run db:migrate:deploy --workspace @gym/server"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

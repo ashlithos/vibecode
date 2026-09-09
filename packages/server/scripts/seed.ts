@@ -1,12 +1,15 @@
-import { EQUIPMENT } from '@gym/shared';
 import { loadSeed } from '../src/data/loadSeed.js';
-import { prisma, USER_ID } from '../src/db.js';
+import { prisma } from '../src/db.js';
 
 /**
  * Loads the exercise catalog into the database.
  *
  * Catalog rows are upserted rather than wiped, so re-seeding after editing the
- * JSON keeps your workout history and preferences intact.
+ * JSON keeps workout history and preferences intact.
+ *
+ * Only shared reference data lives here. Per-user defaults (settings, equipment
+ * availability) are created on first sign-in — see routes/auth.ts — because
+ * there is no user to attach them to until someone actually signs in.
  */
 async function main() {
   const { exercises, issues, filesRead } = loadSeed();
@@ -73,21 +76,6 @@ async function main() {
         alternativeId,
         rank,
       })),
-    });
-  }
-
-  await prisma.userSettings.upsert({
-    where: { userId: USER_ID },
-    create: { userId: USER_ID },
-    update: {},
-  });
-
-  // Default to everything available — the user narrows it in Settings.
-  for (const equipment of EQUIPMENT) {
-    await prisma.equipmentAvailability.upsert({
-      where: { userId_equipment: { userId: USER_ID, equipment } },
-      create: { userId: USER_ID, equipment, available: true },
-      update: {},
     });
   }
 

@@ -9,6 +9,14 @@ import type {
   PreferenceStatus,
 } from '@gym/shared';
 
+/** Thrown on 401 so the AuthGate can distinguish "signed out" from a real error. */
+export class UnauthorizedError extends Error {
+  constructor(public readonly signInConfigured: boolean) {
+    super('Not signed in');
+    this.name = 'UnauthorizedError';
+  }
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   // Only declare a JSON content-type when there's actually a body — Fastify
   // rejects an empty body sent with content-type: application/json as a 400.
@@ -19,7 +27,11 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers });
 
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    const body = (await res.json().catch(() => null)) as
+      | { error?: string; signInConfigured?: boolean }
+      | null;
+
+    if (res.status === 401) throw new UnauthorizedError(body?.signInConfigured ?? true);
     throw new Error(body?.error ?? `Request failed (${res.status})`);
   }
 
@@ -128,7 +140,18 @@ export interface WorkoutSummaryRow {
 
 // --- calls -----------------------------------------------------------------
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+}
+
 export const api = {
+  me: () => request<{ user: AuthUser; signInConfigured: boolean }>('/api/auth/me'),
+
+  logout: () => request<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
+
   exercises: (params: Record<string, string> = {}) =>
     request<{ exercises: ExerciseCard[]; hiddenCount: number }>(
       `/api/exercises?${new URLSearchParams(params)}`,

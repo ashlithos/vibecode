@@ -2,11 +2,11 @@ import path from 'node:path';
 import { defineConfig } from 'prisma/config';
 
 /**
- * Prisma 7 moved the connection URL out of schema.prisma and into this file,
- * and no longer auto-loads .env — hence the explicit fallback.
+ * Prisma 7 keeps the connection URL here rather than in schema.prisma, and no
+ * longer auto-loads .env — hence the explicit read.
  *
- * The database is a single SQLite file under prisma/. Small enough for one
- * user, and backed up by copying it.
+ * Postgres (Neon) in every environment, including local dev, so there is no
+ * SQLite-vs-Postgres behavioural gap between what you test and what ships.
  */
 export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),
@@ -14,6 +14,6 @@ export default defineConfig({
     path: path.join('prisma', 'migrations'),
   },
   datasource: {
-    url: process.env.DATABASE_URL ?? 'file:./prisma/dev.db',
+    url: process.env.DATABASE_URL ?? '',
   },
 });

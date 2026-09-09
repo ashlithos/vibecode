@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PreferenceStatus } from '@gym/shared';
-import { prisma, USER_ID } from '../db.js';
+import { prisma } from '../db.js';
 import { getCatalog, getLastPerformedMap, getPreferences } from '../repository.js';
 import { endOfLocalToday } from '../time.js';
 
@@ -12,10 +12,11 @@ export async function exerciseRoutes(app: FastifyInstance) {
    */
   app.get('/api/exercises', async (req) => {
     const q = req.query as Record<string, string | undefined>;
+    const userId = req.user!.id;
     const [catalog, preferences, lastPerformed] = await Promise.all([
       getCatalog(),
-      getPreferences(),
-      getLastPerformedMap(),
+      getPreferences(userId),
+      getLastPerformedMap(userId),
     ]);
 
     const prefById = new Map(preferences.map((p) => [p.exerciseId, p]));
@@ -72,10 +73,11 @@ export async function exerciseRoutes(app: FastifyInstance) {
 
   app.get('/api/exercises/:id', async (req, reply) => {
     const { id } = req.params as { id: string };
+    const userId = req.user!.id;
     const [catalog, preferences, lastPerformed] = await Promise.all([
       getCatalog(),
-      getPreferences(),
-      getLastPerformedMap(),
+      getPreferences(userId),
+      getLastPerformedMap(userId),
     ]);
 
     const exercise = catalog.find((e) => e.id === id);
@@ -87,7 +89,9 @@ export async function exerciseRoutes(app: FastifyInstance) {
     // Recent sets for this exercise, so the detail page can answer
     // "what did I do last time" without a second request.
     const recentSets = await prisma.setLog.findMany({
-      where: { workoutExercise: { exerciseId: id } },
+      where: {
+        workoutExercise: { exerciseId: id, workout: { userId } },
+      },
       orderBy: { completedAt: 'desc' },
       take: 30,
       select: { load: true, reps: true, rir: true, completedAt: true, unit: true },
@@ -126,6 +130,7 @@ export async function exerciseRoutes(app: FastifyInstance) {
    */
   app.put('/api/exercises/:id/preference', async (req, reply) => {
     const { id } = req.params as { id: string };
+    const userId = req.user!.id;
     const body = (req.body ?? {}) as { status?: PreferenceStatus; skipToday?: boolean };
 
     const catalog = await getCatalog();
@@ -150,9 +155,9 @@ export async function exerciseRoutes(app: FastifyInstance) {
     }
 
     const row = await prisma.exercisePreference.upsert({
-      where: { userId_exerciseId: { userId: USER_ID, exerciseId: id } },
+      where: { userId_exerciseId: { userId, exerciseId: id } },
       create: {
-        userId: USER_ID,
+        userId,
         exerciseId: id,
         status: data.status ?? 'neutral',
         skipUntil: data.skipUntil ?? null,

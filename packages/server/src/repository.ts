@@ -7,7 +7,7 @@ import type {
   SetRecord,
   UserSettingsRecord,
 } from '@gym/shared';
-import { prisma, USER_ID } from './db.js';
+import { prisma } from './db.js';
 
 /**
  * The seam between Prisma and the engine.
@@ -17,7 +17,13 @@ import { prisma, USER_ID } from './db.js';
  * without a database.
  */
 
-/** Catalog rows are read on nearly every request and only change on re-seed. */
+/**
+ * Catalog rows are read on nearly every request and only change on re-seed.
+ *
+ * Deliberately NOT user-scoped: the exercise catalog is shared reference data,
+ * identical for everyone. User-specific state (preferences, history) is layered
+ * on top by the callers below.
+ */
 let catalogCache: ExerciseCatalogEntry[] | null = null;
 
 export function invalidateCatalogCache(): void {
@@ -73,8 +79,8 @@ function musclesWithRole(
     .map((m) => m.muscle as ExerciseCatalogEntry['primaryMuscles'][number]);
 }
 
-export async function getPreferences(): Promise<PreferenceRecord[]> {
-  const rows = await prisma.exercisePreference.findMany({ where: { userId: USER_ID } });
+export async function getPreferences(userId: string): Promise<PreferenceRecord[]> {
+  const rows = await prisma.exercisePreference.findMany({ where: { userId } });
   return rows.map((row) => ({
     exerciseId: row.exerciseId,
     status: row.status as PreferenceRecord['status'],
@@ -83,17 +89,17 @@ export async function getPreferences(): Promise<PreferenceRecord[]> {
   }));
 }
 
-export async function getAvailableEquipment(): Promise<Equipment[]> {
+export async function getAvailableEquipment(userId: string): Promise<Equipment[]> {
   const rows = await prisma.equipmentAvailability.findMany({
-    where: { userId: USER_ID, available: true },
+    where: { userId, available: true },
   });
   return rows.map((r) => r.equipment as Equipment);
 }
 
-export async function getSettings(): Promise<UserSettingsRecord> {
+export async function getSettings(userId: string): Promise<UserSettingsRecord> {
   const row = await prisma.userSettings.upsert({
-    where: { userId: USER_ID },
-    create: { userId: USER_ID },
+    where: { userId },
+    create: { userId },
     update: {},
   });
 
@@ -110,11 +116,17 @@ export async function getSettings(): Promise<UserSettingsRecord> {
  * fatigue decays to nothing well before then and progression only reads the
  * most recent session.
  */
-export async function getSetHistory(lookbackDays = 60): Promise<SetRecord[]> {
+export async function getSetHistory(userId: string, lookbackDays = 60): Promise<SetRecord[]> {
   const since = new Date(Date.now() - lookbackDays * 24 * 3600_000);
 
   const rows = await prisma.setLog.findMany({
-    where: { completedAt: { gte: since } },
+    // SetLog has no userId of its own — it reaches the owner through
+    // workoutExercise -> workout. Without this clause every account would
+    // share one training history, which is invisible with a single user.
+    where: {
+      completedAt: { gte: since },
+      workoutExercise: { workout: { userId } },
+    },
     include: { workoutExercise: { select: { exerciseId: true } } },
     orderBy: { completedAt: 'desc' },
   });
@@ -128,10 +140,13 @@ export async function getSetHistory(lookbackDays = 60): Promise<SetRecord[]> {
   }));
 }
 
-export async function getRecoveryReports(days = 2): Promise<RecoveryReportRecord[]> {
+export async function getRecoveryReports(
+  userId: string,
+  days = 2,
+): Promise<RecoveryReportRecord[]> {
   const since = new Date(Date.now() - days * 24 * 3600_000);
   const rows = await prisma.recoveryReport.findMany({
-    where: { userId: USER_ID, reportedAt: { gte: since } },
+    where: { userId, reportedAt: { gte: since } },
   });
 
   return rows.map((row) => ({
@@ -142,24 +157,26 @@ export async function getRecoveryReports(days = 2): Promise<RecoveryReportRecord
 }
 
 /** Everything the engine needs, fetched in one round trip. */
-export async function getEngineContext() {
+export async function getEngineContext(userId: string) {
   const [exercises, preferences, availableEquipment, history, reports, settings] =
     await Promise.all([
       getCatalog(),
-      getPreferences(),
-      getAvailableEquipment(),
-      getSetHistory(),
-      getRecoveryReports(),
-      getSettings(),
+      getPreferences(userId),
+      getAvailableEquipment(userId),
+      getSetHistory(userId),
+      getRecoveryReports(userId),
+      getSettings(userId),
     ]);
 
   return { exercises, preferences, availableEquipment, history, reports, settings };
 }
 
 /** Last time each exercise was performed, for library cards. */
-export async function getLastPerformedMap(): Promise<Map<string, string>> {
+export async function getLastPerformedMap(userId: string): Promise<Map<string, string>> {
   const rows = await prisma.setLog.groupBy({
     by: ['workoutExerciseId'],
+    // Same scoping requirement as getSetHistory — see the note there.
+    where: { workoutExercise: { workout: { userId } } },
     _max: { completedAt: true },
   });
 

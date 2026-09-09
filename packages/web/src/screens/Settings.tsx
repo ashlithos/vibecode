@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EQUIPMENT_LABELS, type Equipment } from '@gym/shared';
 import { api } from '../api';
+import { useAuth, useSignOut } from '../AuthGate';
 
 /**
  * Settings.
@@ -11,6 +12,8 @@ import { api } from '../api';
  */
 export function Settings() {
   const queryClient = useQueryClient();
+  const user = useAuth();
+  const signOut = useSignOut();
   const settings = useQuery({ queryKey: ['settings'], queryFn: api.settings });
 
   const invalidate = () => {
@@ -49,6 +52,31 @@ export function Settings() {
 
   return (
     <div className="screen stack loose">
+      <section className="stack tight">
+        <h2 className="section">Account</h2>
+        <div className="card">
+          <div className="account-row">
+            {user.image ? (
+              <img className="avatar" src={user.image} alt="" />
+            ) : (
+              <div className="avatar" aria-hidden="true" />
+            )}
+            <div className="grow">
+              {user.name && <strong style={{ fontSize: 14.5 }}>{user.name}</strong>}
+              <div className="tiny">{user.email}</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn ghost"
+            style={{ marginTop: 12 }}
+            onClick={signOut}
+          >
+            Sign out
+          </button>
+        </div>
+      </section>
+
       <section className="stack tight">
         <h2 className="section">Available equipment</h2>
         <p className="tiny">

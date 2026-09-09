@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { computeMuscleFatigue } from '../engine/recovery.js';
 import { suggestNextTarget } from '../engine/progression.js';
 import { recommendWorkout } from '../engine/selection.js';
-import { prisma, USER_ID } from '../db.js';
+import { prisma } from '../db.js';
 import { getCatalog, getEngineContext, getSetHistory } from '../repository.js';
 import { startOfLocalToday } from '../time.js';
 
@@ -10,7 +10,7 @@ export async function workoutRoutes(app: FastifyInstance) {
   /** Preview today's plan without committing it to the database. */
   app.get('/api/recommendation', async (req) => {
     const q = req.query as { minutes?: string };
-    const ctx = await getEngineContext();
+    const ctx = await getEngineContext(req.user!.id);
     const minutes = Number(q.minutes) || ctx.settings.defaultSessionMinutes;
 
     const fatigue = computeMuscleFatigue({
@@ -37,11 +37,12 @@ export async function workoutRoutes(app: FastifyInstance) {
    * This is what makes the zero-question flow work: by the time the Today
    * screen renders, the plan already exists.
    */
-  app.get('/api/workouts/today', async () => {
-    const existing = await findTodaysWorkout();
+  app.get('/api/workouts/today', async (req) => {
+    const userId = req.user!.id;
+    const existing = await findTodaysWorkout(userId);
     if (existing) return serializeWorkout(existing.id);
 
-    const ctx = await getEngineContext();
+    const ctx = await getEngineContext(userId);
     const fatigue = computeMuscleFatigue({
       sets: ctx.history,
       exercises: ctx.exercises,
@@ -59,7 +60,7 @@ export async function workoutRoutes(app: FastifyInstance) {
 
     const workout = await prisma.workout.create({
       data: {
-        userId: USER_ID,
+        userId,
         status: 'planned',
         targetMinutes: plan.targetMinutes,
         exercises: {
@@ -80,8 +81,9 @@ export async function workoutRoutes(app: FastifyInstance) {
   });
 
   /** Discard today's plan and build a fresh one. */
-  app.post('/api/workouts/today/regenerate', async (_req, reply) => {
-    const existing = await findTodaysWorkout();
+  app.post('/api/workouts/today/regenerate', async (req, reply) => {
+    const userId = req.user!.id;
+    const existing = await findTodaysWorkout(userId);
 
     if (existing && existing.status !== 'planned') {
       return reply.code(409).send({
@@ -91,7 +93,7 @@ export async function workoutRoutes(app: FastifyInstance) {
 
     if (existing) await prisma.workout.delete({ where: { id: existing.id } });
 
-    const ctx = await getEngineContext();
+    const ctx = await getEngineContext(userId);
     const fatigue = computeMuscleFatigue({
       sets: ctx.history,
       exercises: ctx.exercises,
@@ -110,7 +112,7 @@ export async function workoutRoutes(app: FastifyInstance) {
 
     const workout = await prisma.workout.create({
       data: {
-        userId: USER_ID,
+        userId,
         status: 'planned',
         targetMinutes: plan.targetMinutes,
         exercises: {
@@ -132,14 +134,14 @@ export async function workoutRoutes(app: FastifyInstance) {
 
   app.get('/api/workouts/:id', async (req, reply) => {
     const { id } = req.params as { id: string };
-    const workout = await prisma.workout.findUnique({ where: { id } });
+    const workout = await ownedWorkout(id, req.user!.id);
     if (!workout) return reply.code(404).send({ error: 'No such workout' });
     return serializeWorkout(id);
   });
 
   app.post('/api/workouts/:id/start', async (req, reply) => {
     const { id } = req.params as { id: string };
-    const workout = await prisma.workout.findUnique({ where: { id } });
+    const workout = await ownedWorkout(id, req.user!.id);
     if (!workout) return reply.code(404).send({ error: 'No such workout' });
 
     if (workout.status === 'planned') {
@@ -150,7 +152,7 @@ export async function workoutRoutes(app: FastifyInstance) {
 
   app.post('/api/workouts/:id/complete', async (req, reply) => {
     const { id } = req.params as { id: string };
-    const workout = await prisma.workout.findUnique({ where: { id } });
+    const workout = await ownedWorkout(id, req.user!.id);
     if (!workout) return reply.code(404).send({ error: 'No such workout' });
 
     await prisma.workout.update({
@@ -178,7 +180,7 @@ export async function workoutRoutes(app: FastifyInstance) {
       suggestedLoad?: number | null;
     };
 
-    const existing = await prisma.workoutExercise.findUnique({ where: { id: weId } });
+    const existing = await ownedSlot(weId, req.user!.id);
     if (!existing) return reply.code(404).send({ error: 'No such workout exercise' });
 
     const data: Record<string, unknown> = {};
@@ -188,7 +190,7 @@ export async function workoutRoutes(app: FastifyInstance) {
       const replacement = catalog.find((e) => e.id === body.swapToExerciseId);
       if (!replacement) return reply.code(400).send({ error: 'Unknown replacement exercise' });
 
-      const history = await getSetHistory();
+      const history = await getSetHistory(req.user!.id);
       const target = suggestNextTarget({ exercise: replacement, history });
 
       data.exerciseId = replacement.id;
@@ -217,7 +219,7 @@ export async function workoutRoutes(app: FastifyInstance) {
 
   app.delete('/api/workouts/:id/exercises/:weId', async (req, reply) => {
     const { id, weId } = req.params as { id: string; weId: string };
-    const existing = await prisma.workoutExercise.findUnique({ where: { id: weId } });
+    const existing = await ownedSlot(weId, req.user!.id);
     if (!existing) return reply.code(404).send({ error: 'No such workout exercise' });
 
     await prisma.workoutExercise.delete({ where: { id: weId } });
@@ -239,8 +241,8 @@ export async function workoutRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'reps is required and must be zero or more' });
     }
 
-    const we = await prisma.workoutExercise.findUnique({
-      where: { id: weId },
+    const we = await prisma.workoutExercise.findFirst({
+      where: { id: weId, workout: { userId: req.user!.id } },
       include: { sets: true },
     });
     if (!we) return reply.code(404).send({ error: 'No such workout exercise' });
@@ -275,7 +277,7 @@ export async function workoutRoutes(app: FastifyInstance) {
     const { id, setId } = req.params as { id: string; setId: string };
     const body = (req.body ?? {}) as { reps?: number; load?: number | null; rir?: number | null };
 
-    const existing = await prisma.setLog.findUnique({ where: { id: setId } });
+    const existing = await ownedSet(setId, req.user!.id);
     if (!existing) return reply.code(404).send({ error: 'No such set' });
 
     await prisma.setLog.update({
@@ -292,7 +294,7 @@ export async function workoutRoutes(app: FastifyInstance) {
 
   app.delete('/api/workouts/:id/sets/:setId', async (req, reply) => {
     const { id, setId } = req.params as { id: string; setId: string };
-    const existing = await prisma.setLog.findUnique({ where: { id: setId } });
+    const existing = await ownedSet(setId, req.user!.id);
     if (!existing) return reply.code(404).send({ error: 'No such set' });
 
     await prisma.setLog.delete({ where: { id: setId } });
@@ -309,7 +311,7 @@ export async function workoutRoutes(app: FastifyInstance) {
     const take = Math.min(Number(q.limit) || 10, 50);
 
     const rows = await prisma.workout.findMany({
-      where: { userId: USER_ID, status: 'completed' },
+      where: { userId: req.user!.id, status: 'completed' },
       orderBy: { date: 'desc' },
       take,
       include: {
@@ -334,10 +336,31 @@ export async function workoutRoutes(app: FastifyInstance) {
 
 // ---------------------------------------------------------------------------
 
-async function findTodaysWorkout() {
+/**
+ * Ownership helpers.
+ *
+ * Every :id in a URL is attacker-controlled, so each lookup filters by the
+ * caller rather than fetching by id and trusting it. A workout belonging to
+ * someone else returns 404, not 403 — no reason to confirm it exists.
+ */
+async function ownedWorkout(id: string, userId: string) {
+  return prisma.workout.findFirst({ where: { id, userId } });
+}
+
+async function ownedSlot(id: string, userId: string) {
+  return prisma.workoutExercise.findFirst({ where: { id, workout: { userId } } });
+}
+
+async function ownedSet(id: string, userId: string) {
+  return prisma.setLog.findFirst({
+    where: { id, workoutExercise: { workout: { userId } } },
+  });
+}
+
+async function findTodaysWorkout(userId: string) {
   return prisma.workout.findFirst({
     where: {
-      userId: USER_ID,
+      userId,
       date: { gte: startOfLocalToday() },
       status: { in: ['planned', 'in_progress'] },
     },

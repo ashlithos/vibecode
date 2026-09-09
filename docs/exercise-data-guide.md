@@ -97,6 +97,9 @@ npm run validate:seed   # structure, links, coverage
 npm run db:seed         # upserts; your history and preferences survive
 ```
 
+`db:seed` needs `DATABASE_URL` pointing at the database you want to update —
+your local one for development, the Neon URL to update production.
+
 Add it to the `alternatives` of two or three related exercises as well —
 otherwise the recommender can offer it but never offer it *as a swap*, which is
 where most discovery actually happens.

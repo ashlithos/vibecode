@@ -1,30 +1,35 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from './generated/prisma/client.js';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const packageRoot = path.resolve(here, '..');
-
 /**
- * Resolve `file:` URLs against the server package rather than the current
- * working directory, so the same database is used whether a script is run
- * from the repo root or from packages/server.
+ * Postgres, via the standard driver.
+ *
+ * Neon's own serverless driver exists mainly for edge runtimes; this app runs
+ * on Node, where a pooled Neon connection string over the normal Postgres
+ * protocol is equivalent and has two practical advantages: one code path, and
+ * a database you can actually run locally to test against.
+ *
+ * Use the POOLED Neon endpoint (its host contains "-pooler"). The direct
+ * endpoint opens a backend per connection and will exhaust under serverless
+ * fan-out.
+ *
+ * The pool is created once per module load — on Vercel that means once per cold
+ * start, then reused by every warm invocation.
  */
-function resolveDatabaseUrl(raw: string): string {
-  if (!raw.startsWith('file:')) return raw;
+const connectionString = process.env.DATABASE_URL;
 
-  const filePath = raw.slice('file:'.length);
-  if (path.isAbsolute(filePath)) return raw;
-
-  return `file:${path.resolve(packageRoot, filePath)}`;
+if (!connectionString) {
+  throw new Error(
+    'DATABASE_URL is not set. Copy .env.example to .env and point it at your Postgres database.',
+  );
 }
 
-const url = resolveDatabaseUrl(process.env.DATABASE_URL ?? 'file:./prisma/dev.db');
-
 export const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({ url }),
+  adapter: new PrismaPg({
+    connectionString,
+    // Serverless invocations are short and may be frozen between requests;
+    // a small pool that gives connections back quickly suits that shape.
+    max: 3,
+    idleTimeoutMillis: 10_000,
+  }),
 });
-
-/** Single-user MVP. Every user-scoped row hangs off this id. */
-export const USER_ID = 'local';

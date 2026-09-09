@@ -731,3 +731,62 @@ h2.section {
     animation: none !important;
   }
 }
+
+/* ---------- sign-in ---------- */
+
+.signin {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+}
+
+.signin-card {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.signin-mark {
+  font-size: 26px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.signin-card h1 {
+  font-size: 27px;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  margin: 0 0 8px;
+}
+
+/* The Google button is an <a>, so it needs the anchor reset .btn assumes. */
+.signin-card .btn {
+  text-decoration: none;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+
+.signin-card .btn:active {
+  background: var(--surface-2);
+  filter: none;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 99px;
+  flex: none;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  object-fit: cover;
+}

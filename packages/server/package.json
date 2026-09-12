@@ -1,0 +1,32 @@
+{
+  "name": "@gym/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "validate:seed": "tsx scripts/validate-seed.ts",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.1.2",
+    "@fastify/oauth2": "^8.3.0",
+    "@fastify/static": "^10.1.3",
+    "@gym/shared": "*",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.9.1",
+    "fastify": "^5.12.0",
+    "jose": "^6.2.12",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1",
+    "pino-pretty": "^13.1.3",
+    "prisma": "^7.9.1"
+  }
+}

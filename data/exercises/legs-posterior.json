@@ -1,0 +1,433 @@
+[
+  {
+    "id": "barbell-romanian-deadlift",
+    "name": "Barbell Romanian Deadlift",
+    "bodyRegion": "lower",
+    "equipment": "barbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["hamstrings", "glutes"],
+    "secondaryMuscles": ["back", "forearms"],
+    "movementPatterns": ["hip_hinge"],
+    "machineIdentification": "A barbell, ideally taken from a rack at hip height so you don't have to deadlift it off the floor first.",
+    "instructions": [
+      "Stand holding a barbell at your hips, feet hip width.",
+      "Soften your knees and keep them fixed there.",
+      "Push your hips back, letting the bar slide down your thighs.",
+      "Stop when you feel a strong hamstring stretch, bar around shin height.",
+      "Drive your hips forward to stand tall."
+    ],
+    "keyCues": [
+      "Keep the bar in contact with your legs the whole way.",
+      "Push your hips back rather than bending your knees.",
+      "Keep your back flat — chest proud."
+    ],
+    "commonMistakes": [
+      "Rounding the lower back at the bottom.",
+      "Turning it into a squat by bending the knees.",
+      "Letting the bar drift away from the legs."
+    ],
+    "alternatives": ["dumbbell-romanian-deadlift", "cable-pull-through", "back-extension"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-romanian-deadlift",
+    "name": "Dumbbell Romanian Deadlift",
+    "bodyRegion": "lower",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["hamstrings", "glutes"],
+    "secondaryMuscles": ["back", "forearms"],
+    "movementPatterns": ["hip_hinge"],
+    "machineIdentification": null,
+    "instructions": [
+      "Hold a dumbbell in each hand in front of your thighs.",
+      "Stand feet hip width with knees softly bent.",
+      "Push your hips back and lower the dumbbells down your legs.",
+      "Stop at a strong hamstring stretch, around mid-shin.",
+      "Squeeze your glutes to return to standing."
+    ],
+    "keyCues": [
+      "Keep the dumbbells close to your legs.",
+      "Hinge at the hips, not the waist.",
+      "Keep your neck in line with your spine."
+    ],
+    "commonMistakes": [
+      "Bending the knees more as you descend.",
+      "Rounding the upper back to reach lower.",
+      "Hyperextending the back at the top."
+    ],
+    "alternatives": ["barbell-romanian-deadlift", "cable-pull-through", "seated-leg-curl-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "cable-pull-through",
+    "name": "Cable Pull-Through",
+    "bodyRegion": "lower",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings", "back"],
+    "movementPatterns": ["hip_hinge", "hip_extension"],
+    "machineIdentification": "A cable pulley set at the lowest position with a rope attached. You stand facing away from the tower with the rope between your legs.",
+    "instructions": [
+      "Set a pulley at the bottom and attach a rope.",
+      "Face away from the tower and reach between your legs for the rope.",
+      "Step forward until the cable is taut, feet shoulder width.",
+      "Hinge at the hips, letting the rope travel back between your legs.",
+      "Snap your hips forward to stand tall and squeeze your glutes."
+    ],
+    "keyCues": [
+      "Drive the hips forward — the arms just hold the rope.",
+      "Keep your back flat throughout.",
+      "Finish with a hard glute squeeze, not a back arch."
+    ],
+    "commonMistakes": [
+      "Pulling the rope with the arms like a row.",
+      "Squatting down instead of hinging back.",
+      "Leaning back at the top and arching the lower back."
+    ],
+    "alternatives": ["barbell-hip-thrust", "dumbbell-romanian-deadlift", "glute-bridge"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "bodyRegion": "lower",
+    "equipment": "kettlebell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["glutes", "hamstrings"],
+    "secondaryMuscles": ["back", "core", "shoulders", "forearms"],
+    "movementPatterns": ["hip_hinge"],
+    "machineIdentification": null,
+    "instructions": [
+      "Stand with a kettlebell on the floor a foot in front of you.",
+      "Hinge at the hips and grip the handle with both hands.",
+      "Hike the bell back between your legs.",
+      "Snap your hips forward to swing it up to chest height.",
+      "Let it fall back between your legs and repeat."
+    ],
+    "keyCues": [
+      "The hips throw the bell — the arms are just rope.",
+      "Snap your glutes hard at the top.",
+      "Keep the bell above your knees on the backswing."
+    ],
+    "commonMistakes": [
+      "Lifting the bell with the shoulders like a front raise.",
+      "Squatting the bell up and down instead of hinging.",
+      "Letting the lower back round on the backswing."
+    ],
+    "alternatives": ["cable-pull-through", "barbell-romanian-deadlift", "barbell-hip-thrust"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "conventional-deadlift",
+    "name": "Conventional Deadlift",
+    "bodyRegion": "lower",
+    "equipment": "barbell",
+    "difficulty": "advanced",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 3,
+    "defaultRepsHigh": 6,
+    "primaryMuscles": ["hamstrings", "glutes", "back"],
+    "secondaryMuscles": ["quads", "forearms", "core"],
+    "movementPatterns": ["hip_hinge"],
+    "machineIdentification": "A loaded barbell on the floor. Standard plates put the bar at the right starting height; use blocks if you're using smaller plates.",
+    "instructions": [
+      "Stand with the bar over your mid-foot, feet hip width.",
+      "Hinge down and grip the bar just outside your legs.",
+      "Drop your hips until your shins touch the bar, chest up.",
+      "Push the floor away and stand, keeping the bar against your legs.",
+      "Lower it back down by pushing your hips back."
+    ],
+    "keyCues": [
+      "Take the slack out of the bar before you pull.",
+      "Keep the bar dragging up your shins and thighs.",
+      "Finish standing tall, not leaning back."
+    ],
+    "commonMistakes": [
+      "Yanking the bar off the floor with a rounded back.",
+      "Letting the hips rise before the bar moves.",
+      "Hyperextending the lower back at lockout."
+    ],
+    "alternatives": ["barbell-romanian-deadlift", "dumbbell-romanian-deadlift", "back-extension"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "back-extension",
+    "name": "Back Extension",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["glutes", "hamstrings"],
+    "secondaryMuscles": ["back"],
+    "movementPatterns": ["hip_extension"],
+    "machineIdentification": "An angled or horizontal frame with a pad for your hips and rollers to hook your ankles under. You hang forward from the hips and lift back up.",
+    "instructions": [
+      "Set the hip pad just below your hip bones.",
+      "Hook your ankles under the rollers.",
+      "Cross your arms over your chest.",
+      "Hinge down until your torso is near vertical.",
+      "Squeeze your glutes to lift back to a straight line."
+    ],
+    "keyCues": [
+      "Stop when your body is straight — don't arch past it.",
+      "Lead the lift with your glutes, not your lower back.",
+      "Round your upper back slightly to bias the glutes."
+    ],
+    "commonMistakes": [
+      "Swinging up and hyperextending at the top.",
+      "Setting the pad too high, which blocks the hinge.",
+      "Rushing the reps with momentum."
+    ],
+    "alternatives": ["glute-bridge", "cable-pull-through", "dumbbell-romanian-deadlift"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "seated-leg-curl-machine",
+    "name": "Seated Leg Curl Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": ["calves"],
+    "movementPatterns": ["knee_flexion", "isolation"],
+    "machineIdentification": "A seat with a padded roller that sits across the backs of your ankles and a thigh pad that clamps down over your legs.",
+    "instructions": [
+      "Set the back pad so your knees line up with the pivot.",
+      "Sit with your legs straight over the ankle roller.",
+      "Pull the thigh pad down snug across your legs.",
+      "Curl your heels down and back underneath the seat.",
+      "Return slowly to straight legs."
+    ],
+    "keyCues": [
+      "Keep your hips flat in the seat.",
+      "Squeeze for a beat at the bottom of the curl.",
+      "Take three seconds to return."
+    ],
+    "commonMistakes": [
+      "Lifting the hips to help the curl.",
+      "Letting the weight snap the legs back straight.",
+      "Setting the thigh pad loose so the legs shift."
+    ],
+    "alternatives": ["lying-leg-curl-machine", "stability-ball-hamstring-curl", "dumbbell-romanian-deadlift"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "lying-leg-curl-machine",
+    "name": "Lying Leg Curl Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": ["calves"],
+    "movementPatterns": ["knee_flexion", "isolation"],
+    "machineIdentification": "A bench you lie face-down on, with a padded roller at the far end that sits across the backs of your ankles.",
+    "instructions": [
+      "Lie face down with your knees just past the edge of the pad.",
+      "Hook your ankles under the roller.",
+      "Grip the handles under the bench.",
+      "Curl your heels toward your glutes.",
+      "Lower slowly until your legs are straight."
+    ],
+    "keyCues": [
+      "Keep your hips pressed into the bench.",
+      "Point your toes toward your shins.",
+      "Pause at the top of each curl."
+    ],
+    "commonMistakes": [
+      "Lifting the hips off the bench to swing the weight.",
+      "Only curling halfway.",
+      "Letting the stack drop back fast."
+    ],
+    "alternatives": ["seated-leg-curl-machine", "stability-ball-hamstring-curl", "barbell-romanian-deadlift"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "stability-ball-hamstring-curl",
+    "name": "Stability Ball Hamstring Curl",
+    "bodyRegion": "lower",
+    "equipment": "bodyweight",
+    "difficulty": "intermediate",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": ["glutes", "core"],
+    "movementPatterns": ["knee_flexion"],
+    "machineIdentification": "A large inflatable stability ball, usually stored in the stretching area.",
+    "instructions": [
+      "Lie on your back with your heels on top of the ball.",
+      "Lift your hips so your body forms a straight line.",
+      "Pull the ball toward your glutes by bending your knees.",
+      "Straighten your legs slowly to roll it back out."
+    ],
+    "keyCues": [
+      "Keep your hips high the entire set.",
+      "Move slowly — speed makes it easier, not harder.",
+      "Use one leg to make it considerably harder."
+    ],
+    "commonMistakes": [
+      "Letting the hips drop as the ball rolls out.",
+      "Rushing so momentum does the work.",
+      "Bridging with the glutes instead of curling with the hamstrings."
+    ],
+    "alternatives": ["seated-leg-curl-machine", "lying-leg-curl-machine", "back-extension"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "seated-calf-raise-machine",
+    "name": "Seated Calf Raise Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A seat with a pad that clamps down across your thighs and a small foot platform below. You press up onto your toes against the thigh pad.",
+    "instructions": [
+      "Sit and place the balls of your feet on the platform.",
+      "Lower the thigh pad snug across your knees.",
+      "Release the safety catch.",
+      "Press up onto your toes as high as you can.",
+      "Lower your heels below the platform for a full stretch."
+    ],
+    "keyCues": [
+      "Pause for a beat at the top of every rep.",
+      "Get a deep stretch at the bottom.",
+      "Slow reps beat heavy ones here."
+    ],
+    "commonMistakes": [
+      "Bouncing through a very short range.",
+      "Skipping the stretch at the bottom.",
+      "Going so heavy the range collapses to inches."
+    ],
+    "alternatives": ["standing-calf-raise-machine", "leg-press-calf-raise"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "standing-calf-raise-machine",
+    "name": "Standing Calf Raise Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A standing frame with shoulder pads above and a raised foot block below, so your heels can drop past the edge.",
+    "instructions": [
+      "Set the shoulder pads so you stand slightly crouched under them.",
+      "Place the balls of your feet on the block, heels hanging off.",
+      "Stand up to take the load onto your shoulders.",
+      "Press up onto your toes as high as possible.",
+      "Lower your heels below the block for a deep stretch."
+    ],
+    "keyCues": [
+      "Keep your knees straight but not locked.",
+      "Full range: all the way down, all the way up.",
+      "Hold the top position for a second."
+    ],
+    "commonMistakes": [
+      "Bending the knees to bounce the weight up.",
+      "Using a tiny range of motion.",
+      "Rushing so the calves never actually stretch."
+    ],
+    "alternatives": ["seated-calf-raise-machine", "leg-press-calf-raise"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "leg-press-calf-raise",
+    "name": "Leg Press Calf Raise",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 20,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "The leg press machine, but with your feet low on the platform so only the balls of your feet make contact.",
+    "instructions": [
+      "Sit in the leg press with feet low on the platform.",
+      "Press the sled out and leave the safeties engaged.",
+      "Straighten your legs but keep a soft knee bend.",
+      "Push the platform away using only your ankles.",
+      "Let your heels travel back toward you for a stretch."
+    ],
+    "keyCues": [
+      "Keep the safety catches on — this is not a full press.",
+      "Keep the knees still; only the ankles move.",
+      "Pause at full extension each rep."
+    ],
+    "commonMistakes": [
+      "Bending the knees and turning it into a leg press.",
+      "Letting the feet slip off the bottom of the platform.",
+      "Releasing the safeties, which is unnecessary and risky."
+    ],
+    "alternatives": ["seated-calf-raise-machine", "standing-calf-raise-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

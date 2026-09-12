@@ -1,0 +1,287 @@
+[
+  {
+    "id": "cable-bicep-curl",
+    "name": "Cable Bicep Curl",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": ["forearms"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A cable pulley set at the lowest position with a straight or EZ bar attached. You stand facing the tower.",
+    "instructions": [
+      "Set a pulley at the bottom and attach a straight bar.",
+      "Stand a step back, holding the bar with palms up.",
+      "Keep your elbows tucked at your sides.",
+      "Curl the bar up toward your shoulders.",
+      "Lower slowly until your arms are straight."
+    ],
+    "keyCues": [
+      "Pin your elbows to your ribs the whole set.",
+      "Keep tension at the bottom — don't fully relax.",
+      "Squeeze the biceps at the top."
+    ],
+    "commonMistakes": [
+      "Swinging the torso to start each rep.",
+      "Letting the elbows drift forward at the top.",
+      "Rushing the lowering half."
+    ],
+    "alternatives": ["dumbbell-bicep-curl", "preacher-curl-machine", "hammer-curl"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-bicep-curl",
+    "name": "Dumbbell Bicep Curl",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": ["forearms"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": null,
+    "instructions": [
+      "Stand with a dumbbell in each hand, palms facing forward.",
+      "Keep your elbows tucked at your sides.",
+      "Curl both dumbbells up toward your shoulders.",
+      "Lower slowly until your arms are fully straight."
+    ],
+    "keyCues": [
+      "Keep your upper arms still — only the forearms move.",
+      "Straighten fully at the bottom of every rep.",
+      "Take three seconds to lower."
+    ],
+    "commonMistakes": [
+      "Rocking backward to swing the weights up.",
+      "Stopping short of full extension.",
+      "Letting the elbows travel forward at the top."
+    ],
+    "alternatives": ["cable-bicep-curl", "hammer-curl", "preacher-curl-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "preacher-curl-machine",
+    "name": "Preacher Curl Machine",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": ["forearms"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A seat with a large angled arm pad in front and handles at the far end. Your upper arms rest flat on the pad so they can't move.",
+    "instructions": [
+      "Set the seat so your armpits sit near the top of the pad.",
+      "Rest your upper arms flat on the pad.",
+      "Take the handles with palms facing up.",
+      "Curl the handles up toward your shoulders.",
+      "Lower slowly until your arms are straight."
+    ],
+    "keyCues": [
+      "Keep both upper arms glued to the pad.",
+      "Control the bottom — that's where biceps tear.",
+      "Don't let the stack rest between reps."
+    ],
+    "commonMistakes": [
+      "Lifting the elbows off the pad to finish a rep.",
+      "Dropping fast into the stretched bottom position.",
+      "Setting the seat too low so the shoulders take over."
+    ],
+    "alternatives": ["dumbbell-bicep-curl", "cable-bicep-curl", "hammer-curl"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "hammer-curl",
+    "name": "Hammer Curl",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["biceps", "forearms"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": null,
+    "instructions": [
+      "Stand with a dumbbell in each hand, palms facing each other.",
+      "Keep your elbows tucked at your sides.",
+      "Curl the dumbbells up without rotating your wrists.",
+      "Lower slowly to full extension."
+    ],
+    "keyCues": [
+      "Hold the neutral grip throughout — thumbs stay up.",
+      "Keep your upper arms still.",
+      "Alternate arms if it helps you stay strict."
+    ],
+    "commonMistakes": [
+      "Rotating the wrists into a normal curl.",
+      "Using the shoulders to swing the weight.",
+      "Cutting off the bottom of the range."
+    ],
+    "alternatives": ["dumbbell-bicep-curl", "cable-bicep-curl", "preacher-curl-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "tricep-pushdown",
+    "name": "Tricep Pushdown",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A cable pulley set high with a straight bar or rope attached. You stand facing the tower, close to the frame.",
+    "instructions": [
+      "Set the pulley high and attach a bar or rope.",
+      "Stand close, gripping the attachment at chest height.",
+      "Tuck your elbows against your sides.",
+      "Push down until your arms are fully straight.",
+      "Let it rise back to chest height under control."
+    ],
+    "keyCues": [
+      "Keep your elbows pinned — they shouldn't drift.",
+      "Straighten fully and squeeze at the bottom.",
+      "Lean forward slightly and keep the torso still."
+    ],
+    "commonMistakes": [
+      "Using body weight to push the bar down.",
+      "Letting the elbows flare out and forward.",
+      "Stopping short of full lockout."
+    ],
+    "alternatives": ["overhead-cable-tricep-extension", "dumbbell-overhead-tricep-extension", "assisted-dip"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "overhead-cable-tricep-extension",
+    "name": "Overhead Cable Tricep Extension",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": ["core"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A cable pulley with a rope attached, set at head height or above. You face away from the tower with the rope behind your head.",
+    "instructions": [
+      "Attach a rope and set the pulley at about head height.",
+      "Take the rope and turn to face away from the tower.",
+      "Step forward into a split stance, rope behind your head.",
+      "Extend your arms straight forward and up.",
+      "Let your hands travel back behind your head under control."
+    ],
+    "keyCues": [
+      "Keep your elbows pointing forward and close together.",
+      "Get a full stretch behind the head each rep.",
+      "Brace your core so you don't arch your back."
+    ],
+    "commonMistakes": [
+      "Letting the elbows flare wide.",
+      "Arching the lower back to press the weight.",
+      "Standing too close and losing tension."
+    ],
+    "alternatives": ["dumbbell-overhead-tricep-extension", "tricep-pushdown", "assisted-dip"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-overhead-tricep-extension",
+    "name": "Dumbbell Overhead Tricep Extension",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": ["core"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": null,
+    "instructions": [
+      "Hold one dumbbell with both hands, cupping the top end.",
+      "Press it overhead until your arms are straight.",
+      "Lower it behind your head by bending only the elbows.",
+      "Extend back to straight arms."
+    ],
+    "keyCues": [
+      "Keep your elbows pointing at the ceiling.",
+      "Keep your ribs down so the back doesn't arch.",
+      "Lower until you feel a stretch, then press."
+    ],
+    "commonMistakes": [
+      "Letting the elbows flare out to the sides.",
+      "Arching the lower back under heavier dumbbells.",
+      "Moving the shoulders instead of just the elbows."
+    ],
+    "alternatives": ["overhead-cable-tricep-extension", "tricep-pushdown", "assisted-dip"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "assisted-dip",
+    "name": "Assisted Dip",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "assistance",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 6,
+    "defaultRepsHigh": 10,
+    "primaryMuscles": ["triceps", "chest"],
+    "secondaryMuscles": ["shoulders", "core"],
+    "movementPatterns": ["vertical_push"],
+    "machineIdentification": "Usually the same frame as the assisted pull-up machine — two parallel bars at hip height with the padded knee platform below. More weight means more help.",
+    "instructions": [
+      "Set the assistance weight and step onto the side rails.",
+      "Grip the parallel dip bars.",
+      "Kneel onto the padded platform.",
+      "Lower until your upper arms are roughly parallel to the floor.",
+      "Press back up to straight arms."
+    ],
+    "keyCues": [
+      "Keep your elbows tracking back, not flaring wide.",
+      "Lean forward slightly to involve the chest.",
+      "Stop lowering if you feel a pinch in the shoulder."
+    ],
+    "commonMistakes": [
+      "Dropping too deep and straining the shoulder.",
+      "Bouncing out of the bottom position.",
+      "Shrugging the shoulders up toward the ears."
+    ],
+    "alternatives": ["tricep-pushdown", "chest-press-machine", "dumbbell-overhead-tricep-extension"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

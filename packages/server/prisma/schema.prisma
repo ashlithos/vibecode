@@ -1,0 +1,239 @@
+// Gym Copilot data model.
+//
+// Two halves that behave very differently:
+//   - the catalog (Exercise + its join tables) is seeded from data/exercises/
+//     and is read-mostly
+//   - user state (preferences, workouts, sets) is written constantly
+//
+// Muscles and movement patterns are join tables rather than JSON columns
+// because recovery and variety scoring query them on every recommendation.
+//
+// Every user-scoped row carries a userId foreign key to User. Identity comes
+// from Google OAuth; see src/auth.ts.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Catalog
+// ---------------------------------------------------------------------------
+
+model Exercise {
+  id         String @id // kebab-case slug, e.g. "assisted-pull-up"
+  name       String
+  bodyRegion String
+  equipment  String
+  difficulty String
+
+  // "weight" | "assistance" | "bodyweight" | "time".
+  // Assistance inverts the direction of progression — see engine/progression.ts.
+  loadType      String
+  loadIncrement Float  @default(5)
+
+  defaultSets     Int @default(3)
+  defaultRepsLow  Int @default(8)
+  defaultRepsHigh Int @default(12)
+
+  machineIdentification String?
+  instructions          String // JSON string[]
+  keyCues               String // JSON string[]
+  commonMistakes        String // JSON string[]
+
+  mediaUrl  String?
+  mediaKind String?
+
+  muscles      ExerciseMuscle[]
+  patterns     ExercisePattern[]
+  alternatives ExerciseAlternative[] @relation("ExerciseToAlternative")
+  alternativeOf ExerciseAlternative[] @relation("AlternativeToExercise")
+
+  preferences      ExercisePreference[]
+  workoutExercises WorkoutExercise[]
+
+  @@index([bodyRegion])
+  @@index([equipment])
+}
+
+model ExerciseMuscle {
+  exerciseId String
+  muscle     String
+  role       String // "primary" | "secondary"
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@id([exerciseId, muscle])
+  @@index([muscle])
+}
+
+model ExercisePattern {
+  exerciseId String
+  pattern    String
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@id([exerciseId, pattern])
+  @@index([pattern])
+}
+
+model ExerciseAlternative {
+  exerciseId    String
+  alternativeId String
+  rank          Int    @default(0)
+
+  exercise    Exercise @relation("ExerciseToAlternative", fields: [exerciseId], references: [id], onDelete: Cascade)
+  alternative Exercise @relation("AlternativeToExercise", fields: [alternativeId], references: [id], onDelete: Cascade)
+
+  @@id([exerciseId, alternativeId])
+}
+
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+// Identity comes from Google; we store only what the UI shows. No password
+// column exists because there is no password to leak.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  lastSeenAt DateTime @updatedAt
+
+  settings      UserSettings?
+  equipment     EquipmentAvailability[]
+  preferences   ExercisePreference[]
+  recoveryReports RecoveryReport[]
+  workouts      Workout[]
+}
+
+// ---------------------------------------------------------------------------
+// User state
+// ---------------------------------------------------------------------------
+
+model UserSettings {
+  userId                String @id
+  goal                  String @default("build muscle, reduce body fat")
+  daysPerWeek           Int    @default(3)
+  defaultSessionMinutes Int    @default(45)
+  unit                  String @default("lb")
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EquipmentAvailability {
+  userId    String
+  equipment String
+  available Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, equipment])
+}
+
+// Absence of a row means neutral. Nothing is ever deleted, so the hidden-
+// exercise list is restorable by construction.
+//
+// "Skip today" is skipUntil = end of local today; "never" is status = never.
+// Keeping them on separate fields is what stops "not today" from being
+// mistaken for "I hate this".
+model ExercisePreference {
+  userId     String
+  exerciseId String
+  status     String    @default("neutral")
+  skipUntil  DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, exerciseId])
+  @@index([status])
+}
+
+model RecoveryReport {
+  userId     String
+  muscle     String
+  rating     String
+  reportedAt DateTime
+  date       String // YYYY-MM-DD, local — one report per muscle per day
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, date, muscle])
+}
+
+// ---------------------------------------------------------------------------
+// History
+// ---------------------------------------------------------------------------
+
+model Workout {
+  id            String   @id @default(cuid())
+  userId        String
+  date          DateTime @default(now())
+  status        String   @default("planned")
+  targetMinutes Int      @default(45)
+  notes         String?
+
+  completedAt DateTime?
+
+  exercises WorkoutExercise[]
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([status])
+}
+
+model WorkoutExercise {
+  id         String @id @default(cuid())
+  workoutId  String
+  exerciseId String
+  order      Int
+
+  targetSets      Int
+  targetRepsLow   Int
+  targetRepsHigh  Int
+  suggestedLoad   Float?
+  status          String  @default("pending")
+  rationale       String?
+
+  // Set when the user swapped this slot for an alternative, so we can learn
+  // from the rejection later without asking for explicit feedback.
+  swappedFromId String?
+
+  workout  Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  sets SetLog[]
+
+  @@index([workoutId, order])
+  @@index([exerciseId])
+}
+
+model SetLog {
+  id                String @id @default(cuid())
+  workoutExerciseId String
+  setIndex          Int
+
+  load Float?
+  unit String  @default("lb")
+  reps Int
+  rir  Int?
+
+  notes       String?
+  completedAt DateTime @default(now())
+
+  workoutExercise WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([workoutExerciseId, setIndex])
+  @@index([completedAt])
+}

@@ -1,0 +1,253 @@
+[
+  {
+    "id": "chest-press-machine",
+    "name": "Chest Press Machine",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps", "shoulders"],
+    "movementPatterns": ["horizontal_push"],
+    "machineIdentification": "A seat with a vertical back pad and two handles at chest height that push straight away from you. Often has a foot lever near the floor to bring the handles into reach.",
+    "instructions": [
+      "Set the seat so the handles line up with the middle of your chest.",
+      "Sit back with your shoulders against the pad.",
+      "Take both handles with a full grip.",
+      "Press forward until your arms are almost straight.",
+      "Let the handles come back until you feel a stretch across the chest."
+    ],
+    "keyCues": [
+      "Keep your shoulder blades pinned back and down.",
+      "Stop just short of locking the elbows.",
+      "Control the return — don't let the stack slam."
+    ],
+    "commonMistakes": [
+      "Setting the seat too high, which shifts the work to the shoulders.",
+      "Letting the shoulders roll forward at the end of each press.",
+      "Cutting the return short and never stretching the chest."
+    ],
+    "alternatives": ["dumbbell-bench-press", "barbell-bench-press", "push-up"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "incline-chest-press-machine",
+    "name": "Incline Chest Press Machine",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["shoulders", "triceps"],
+    "movementPatterns": ["horizontal_push"],
+    "machineIdentification": "Like the chest press, but the back pad is reclined and the handles travel up and away at an angle rather than straight forward.",
+    "instructions": [
+      "Set the seat so the handles sit just below your collarbone.",
+      "Sit back firmly against the angled pad.",
+      "Grip both handles.",
+      "Press up and away until your arms are nearly straight.",
+      "Lower under control to a comfortable stretch."
+    ],
+    "keyCues": [
+      "Keep your back flat on the pad — don't arch off it.",
+      "Press along the angle of the machine, not straight up.",
+      "Take two seconds on the way down."
+    ],
+    "commonMistakes": [
+      "Flaring the elbows out to 90 degrees from the body.",
+      "Bouncing at the bottom of each rep.",
+      "Going heavier than the shoulders can safely stabilize."
+    ],
+    "alternatives": ["chest-press-machine", "dumbbell-bench-press", "barbell-bench-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "bodyRegion": "upper",
+    "equipment": "dumbbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps", "shoulders", "core"],
+    "movementPatterns": ["horizontal_push"],
+    "machineIdentification": "A flat bench and a pair of dumbbells. No fixed machine — you control the path entirely.",
+    "instructions": [
+      "Sit on the end of a flat bench with a dumbbell on each thigh.",
+      "Lie back, using your knees to help kick the dumbbells into place.",
+      "Start with the dumbbells at chest width, arms extended.",
+      "Lower them until your upper arms are level with your torso.",
+      "Press back up without clanging them together."
+    ],
+    "keyCues": [
+      "Pull your shoulder blades together and keep them there.",
+      "Keep your wrists stacked directly over your elbows.",
+      "Plant both feet flat on the floor."
+    ],
+    "commonMistakes": [
+      "Dropping the elbows far below the bench and straining the shoulders.",
+      "Pressing the dumbbells together and losing chest tension.",
+      "Letting one arm drift ahead of the other."
+    ],
+    "alternatives": ["chest-press-machine", "barbell-bench-press", "push-up"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "barbell-bench-press",
+    "name": "Barbell Bench Press",
+    "bodyRegion": "upper",
+    "equipment": "barbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 5,
+    "defaultRepsHigh": 8,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps", "shoulders"],
+    "movementPatterns": ["horizontal_push"],
+    "machineIdentification": "A flat bench inside a rack with a barbell on the uprights above your chest. Look for safety bars set at chest height.",
+    "instructions": [
+      "Lie back so your eyes are under the bar.",
+      "Grip the bar slightly wider than shoulder width.",
+      "Unrack and bring the bar over your chest.",
+      "Lower to touch just below your nipples.",
+      "Press back up over your chest."
+    ],
+    "keyCues": [
+      "Keep your shoulder blades squeezed and your upper back tight.",
+      "Tuck the elbows to about 45 degrees, not straight out.",
+      "Set the safety bars before you start."
+    ],
+    "commonMistakes": [
+      "Bouncing the bar off the chest.",
+      "Flaring the elbows wide, which strains the shoulder joint.",
+      "Lifting the hips off the bench to grind out a rep."
+    ],
+    "alternatives": ["dumbbell-bench-press", "chest-press-machine", "push-up"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "pec-deck",
+    "name": "Pec Deck",
+    "bodyRegion": "upper",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["shoulders"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A seat with two tall arms either side that swing together in front of you. You either grip vertical handles or press your forearms into pads.",
+    "instructions": [
+      "Set the seat so the handles are at chest height.",
+      "Sit back with your shoulders against the pad.",
+      "Take both handles with a slight bend in the elbows.",
+      "Bring the handles together in front of your chest.",
+      "Open back up slowly until you feel a stretch."
+    ],
+    "keyCues": [
+      "Keep the elbow angle fixed — this is a hug, not a press.",
+      "Squeeze for a beat when the handles meet.",
+      "Keep your shoulders back against the pad."
+    ],
+    "commonMistakes": [
+      "Bending and straightening the elbows like a press.",
+      "Opening so far back that the shoulders take the strain.",
+      "Rushing through reps with no pause at the squeeze."
+    ],
+    "alternatives": ["cable-chest-fly", "chest-press-machine", "dumbbell-bench-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "cable-chest-fly",
+    "name": "Cable Chest Fly",
+    "bodyRegion": "upper",
+    "equipment": "cable",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["shoulders", "core"],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A twin cable tower with a pulley on each side. Set both pulleys at roughly shoulder height with single D-handles attached.",
+    "instructions": [
+      "Set both pulleys at shoulder height with D-handles.",
+      "Take one handle in each hand and step forward into a split stance.",
+      "Start with arms open and a slight bend in the elbows.",
+      "Bring your hands together in front of your chest.",
+      "Open back out slowly to a stretch."
+    ],
+    "keyCues": [
+      "Hold the elbow bend constant through the whole rep.",
+      "Lean slightly forward into the movement.",
+      "Cross your hands slightly at the finish for a bigger squeeze."
+    ],
+    "commonMistakes": [
+      "Turning it into a press by straightening the arms.",
+      "Standing too far back and losing tension at the finish.",
+      "Letting the cables drag the shoulders back at the stretch."
+    ],
+    "alternatives": ["pec-deck", "dumbbell-bench-press", "chest-press-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "push-up",
+    "name": "Push-up",
+    "bodyRegion": "upper",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 20,
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps", "shoulders", "core"],
+    "movementPatterns": ["horizontal_push"],
+    "machineIdentification": null,
+    "instructions": [
+      "Set your hands slightly wider than your shoulders.",
+      "Straighten your legs so your body forms one line.",
+      "Lower until your chest is a fist's height from the floor.",
+      "Press back up to straight arms."
+    ],
+    "keyCues": [
+      "Squeeze your glutes so your hips don't sag.",
+      "Keep your elbows at about 45 degrees to your body.",
+      "Raise your hands onto a bench to make it easier."
+    ],
+    "commonMistakes": [
+      "Letting the hips sag or pike up.",
+      "Flaring the elbows straight out to the sides.",
+      "Dipping the head instead of the chest."
+    ],
+    "alternatives": ["chest-press-machine", "dumbbell-bench-press", "incline-chest-press-machine"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

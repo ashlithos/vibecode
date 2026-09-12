@@ -1,0 +1,319 @@
+[
+  {
+    "id": "plank",
+    "name": "Plank",
+    "bodyRegion": "core",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "time",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 30,
+    "defaultRepsHigh": 60,
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["shoulders", "glutes"],
+    "movementPatterns": ["core_stabilization"],
+    "machineIdentification": null,
+    "instructions": [
+      "Set your forearms on the floor, elbows under your shoulders.",
+      "Extend your legs back and rise onto your toes.",
+      "Form one straight line from heels to head.",
+      "Hold, breathing steadily. Reps are counted in seconds."
+    ],
+    "keyCues": [
+      "Squeeze your glutes and tuck your ribs down.",
+      "Push the floor away to spread your shoulder blades.",
+      "Stop the set when the hips start to sag."
+    ],
+    "commonMistakes": [
+      "Letting the hips sag toward the floor.",
+      "Piking the hips up to make it easier.",
+      "Holding the breath through the set."
+    ],
+    "alternatives": ["side-plank", "dead-bug", "pallof-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "side-plank",
+    "name": "Side Plank",
+    "bodyRegion": "core",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "time",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 20,
+    "defaultRepsHigh": 45,
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["shoulders", "glutes"],
+    "movementPatterns": ["core_stabilization"],
+    "machineIdentification": null,
+    "instructions": [
+      "Lie on one side with your elbow under your shoulder.",
+      "Stack your feet and lift your hips off the floor.",
+      "Form a straight line from ankles to head.",
+      "Hold, then switch sides. Reps are counted in seconds."
+    ],
+    "keyCues": [
+      "Push your bottom hip up toward the ceiling.",
+      "Keep your top shoulder stacked over the bottom one.",
+      "Bend the bottom knee to make it easier."
+    ],
+    "commonMistakes": [
+      "Letting the hips drift toward the floor.",
+      "Rolling the chest forward out of alignment.",
+      "Placing the elbow too far ahead of the shoulder."
+    ],
+    "alternatives": ["plank", "pallof-press", "suitcase-carry"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dead-bug",
+    "name": "Dead Bug",
+    "bodyRegion": "core",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["core_stabilization"],
+    "machineIdentification": null,
+    "instructions": [
+      "Lie on your back with arms straight up and knees bent at 90 degrees.",
+      "Press your lower back flat into the floor.",
+      "Slowly lower one arm overhead and the opposite leg toward the floor.",
+      "Return to the start and repeat on the other side."
+    ],
+    "keyCues": [
+      "Keep your lower back flat against the floor throughout.",
+      "Move slowly — this is control, not speed.",
+      "Exhale as the limbs extend."
+    ],
+    "commonMistakes": [
+      "Letting the lower back arch off the floor.",
+      "Rushing the reps.",
+      "Extending so far the position breaks down."
+    ],
+    "alternatives": ["plank", "pallof-press", "hanging-knee-raise"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "pallof-press",
+    "name": "Pallof Press",
+    "bodyRegion": "core",
+    "equipment": "cable",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["shoulders"],
+    "movementPatterns": ["core_stabilization"],
+    "machineIdentification": "A cable pulley set at chest height with a D-handle. You stand side-on and resist the cable's pull to rotate you.",
+    "instructions": [
+      "Set a pulley at chest height with a D-handle.",
+      "Stand side-on and hold the handle with both hands at your chest.",
+      "Step away until the cable is taut, feet shoulder width.",
+      "Press your hands straight out in front of your chest.",
+      "Resist the rotation, then bring your hands back in."
+    ],
+    "keyCues": [
+      "Don't let the cable twist your torso.",
+      "Keep your hips and shoulders square to the front.",
+      "Brace hard before each press."
+    ],
+    "commonMistakes": [
+      "Letting the torso rotate toward the tower.",
+      "Standing too close so there's no resistance.",
+      "Pressing with the shoulders instead of bracing the core."
+    ],
+    "alternatives": ["plank", "side-plank", "suitcase-carry"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "cable-crunch",
+    "name": "Cable Crunch",
+    "bodyRegion": "core",
+    "equipment": "cable",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["isolation"],
+    "machineIdentification": "A high cable pulley with a rope attached. You kneel facing the tower with the rope beside your head.",
+    "instructions": [
+      "Attach a rope to a high pulley.",
+      "Kneel facing the tower and hold the rope at your temples.",
+      "Set your hips back so there's tension at the start.",
+      "Curl your ribs down toward your pelvis.",
+      "Return under control without letting the stack rest."
+    ],
+    "keyCues": [
+      "Round your spine — this is a crunch, not a hinge.",
+      "Keep your hips still throughout.",
+      "Exhale hard at the bottom of the crunch."
+    ],
+    "commonMistakes": [
+      "Hinging at the hips instead of flexing the spine.",
+      "Pulling with the arms rather than the abs.",
+      "Sitting back onto the heels as the set goes on."
+    ],
+    "alternatives": ["hanging-knee-raise", "dead-bug", "plank"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "hanging-knee-raise",
+    "name": "Hanging Knee Raise",
+    "bodyRegion": "core",
+    "equipment": "bodyweight",
+    "difficulty": "intermediate",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["forearms", "back"],
+    "movementPatterns": ["core_stabilization"],
+    "machineIdentification": "A pull-up bar, or a captain's chair — the upright frame with forearm pads and a back rest that lets you hang without gripping.",
+    "instructions": [
+      "Hang from a bar with arms straight, or settle into a captain's chair.",
+      "Let your legs hang straight down.",
+      "Raise your knees toward your chest, curling your pelvis up.",
+      "Lower slowly without swinging."
+    ],
+    "keyCues": [
+      "Curl your pelvis at the top — don't just lift the knees.",
+      "Keep the swing out of it by pausing at the bottom.",
+      "Bend the knees more to make it easier."
+    ],
+    "commonMistakes": [
+      "Swinging the body to generate momentum.",
+      "Only lifting the legs from the hips with no pelvic curl.",
+      "Dropping the legs fast between reps."
+    ],
+    "alternatives": ["cable-crunch", "dead-bug", "plank"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "farmers-carry",
+    "name": "Farmer's Carry",
+    "bodyRegion": "core",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 30,
+    "defaultRepsHigh": 60,
+    "primaryMuscles": ["core", "forearms"],
+    "secondaryMuscles": ["back", "shoulders", "glutes"],
+    "movementPatterns": ["carry"],
+    "machineIdentification": null,
+    "instructions": [
+      "Pick up a heavy dumbbell in each hand.",
+      "Stand tall with shoulders back and ribs down.",
+      "Walk in a straight line with controlled steps.",
+      "Reps are counted in seconds of walking."
+    ],
+    "keyCues": [
+      "Stand tall — don't let the weight round your shoulders.",
+      "Take short, deliberate steps.",
+      "Brace your core as if carrying something fragile."
+    ],
+    "commonMistakes": [
+      "Leaning forward under the load.",
+      "Rushing with long, uncontrolled strides.",
+      "Letting the shoulders slump toward the weights."
+    ],
+    "alternatives": ["suitcase-carry", "overhead-carry", "plank"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "suitcase-carry",
+    "name": "Suitcase Carry",
+    "bodyRegion": "core",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 20,
+    "defaultRepsHigh": 45,
+    "primaryMuscles": ["core", "forearms"],
+    "secondaryMuscles": ["shoulders", "glutes"],
+    "movementPatterns": ["carry"],
+    "machineIdentification": null,
+    "instructions": [
+      "Pick up a single heavy dumbbell in one hand.",
+      "Stand tall with both shoulders level.",
+      "Walk in a straight line, resisting the pull to one side.",
+      "Switch hands and repeat. Reps are counted in seconds."
+    ],
+    "keyCues": [
+      "Keep both shoulders level — don't lean away.",
+      "Brace the side opposite the weight.",
+      "Walk slowly and deliberately."
+    ],
+    "commonMistakes": [
+      "Leaning away from the weight to counterbalance.",
+      "Letting the loaded shoulder drop.",
+      "Going too light to challenge the core."
+    ],
+    "alternatives": ["farmers-carry", "pallof-press", "side-plank"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "overhead-carry",
+    "name": "Overhead Carry",
+    "bodyRegion": "core",
+    "equipment": "dumbbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 20,
+    "defaultRepsHigh": 40,
+    "primaryMuscles": ["core", "shoulders"],
+    "secondaryMuscles": ["forearms", "triceps"],
+    "movementPatterns": ["carry"],
+    "machineIdentification": null,
+    "instructions": [
+      "Press a moderate dumbbell overhead in one hand.",
+      "Lock your elbow and keep the weight stacked over your shoulder.",
+      "Walk in a straight line, staying tall.",
+      "Switch arms and repeat. Reps are counted in seconds."
+    ],
+    "keyCues": [
+      "Keep the arm locked and the weight directly overhead.",
+      "Tuck your ribs down so the back doesn't arch.",
+      "Start much lighter than you expect."
+    ],
+    "commonMistakes": [
+      "Arching the lower back to hold the weight up.",
+      "Letting the arm drift forward or out to the side.",
+      "Going too heavy and losing the overhead position."
+    ],
+    "alternatives": ["farmers-carry", "suitcase-carry", "pallof-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

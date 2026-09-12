@@ -1,0 +1,1362 @@
+<title>Gym Copilot Wireframes</title>
+<style>
+  :root {
+    --paper: #EDEFF2;
+    --surface: #FFFFFF;
+    --surface-2: #F7F8FA;
+    --ink: #15181D;
+    --ink-2: #5A6270;
+    --ink-3: #8A929E;
+    --line: #D3D8DF;
+    --line-strong: #B6BDC7;
+    --wf: #DDE2E8;
+    --wf-2: #EAEDF1;
+    --plate-blue: #1F5C8B;
+    --plate-red: #B23A32;
+    --plate-amber: #966D1C;
+    --plate-green: #2E6B4F;
+    --accent-soft: #E3ECF4;
+    --shadow: 0 1px 2px rgba(21, 24, 29, .06), 0 8px 24px -12px rgba(21, 24, 29, .18);
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #111418;
+      --surface: #191D23;
+      --surface-2: #15181D;
+      --ink: #E8EBEF;
+      --ink-2: #9BA4B0;
+      --ink-3: #6E7784;
+      --line: #2C323A;
+      --line-strong: #3C444E;
+      --wf: #2A3038;
+      --wf-2: #22272E;
+      --plate-blue: #6BA6D6;
+      --plate-red: #E08078;
+      --plate-amber: #D6AC5A;
+      --plate-green: #6FB894;
+      --accent-soft: #1C2A36;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #111418;
+    --surface: #191D23;
+    --surface-2: #15181D;
+    --ink: #E8EBEF;
+    --ink-2: #9BA4B0;
+    --ink-3: #6E7784;
+    --line: #2C323A;
+    --line-strong: #3C444E;
+    --wf: #2A3038;
+    --wf-2: #22272E;
+    --plate-blue: #6BA6D6;
+    --plate-red: #E08078;
+    --plate-amber: #D6AC5A;
+    --plate-green: #6FB894;
+    --accent-soft: #1C2A36;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding: 72px 0 40px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 20px;
+  }
+
+  h1 {
+    font-size: clamp(34px, 6vw, 56px);
+    line-height: 1.02;
+    letter-spacing: -.03em;
+    font-weight: 760;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 18px;
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0 0 28px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    letter-spacing: .02em;
+  }
+
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+  .swatch {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    background: var(--ink-3);
+    flex: none;
+  }
+
+  /* ---------- decision sections ---------- */
+
+  .decision {
+    padding-top: 64px;
+    --track: var(--plate-blue);
+  }
+
+  .decision.d2 { --track: var(--plate-red); }
+  .decision.d3 { --track: var(--plate-amber); }
+  .decision.d4 { --track: var(--plate-green); }
+  .decision.d5 { --track: var(--plate-blue); }
+  .decision.d6 { --track: var(--plate-red); }
+
+  .d-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+
+  .d-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    color: var(--track);
+    border: 1.5px solid var(--track);
+    border-radius: 3px;
+    padding: 2px 7px;
+    flex: none;
+  }
+
+  h2 {
+    font-size: clamp(23px, 3vw, 30px);
+    letter-spacing: -.02em;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .d-sub {
+    color: var(--ink-2);
+    max-width: 68ch;
+    margin: 0 0 32px;
+    font-size: 15.5px;
+  }
+
+  .d-sub strong { color: var(--ink); font-weight: 620; }
+
+  .variants {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px 22px;
+    align-items: start;
+  }
+
+  .variants.three { grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); }
+
+  /* ---------- variant card ---------- */
+
+  .variant { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+  .v-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+  .v-key {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--track);
+    letter-spacing: .06em;
+  }
+
+  .v-name { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+
+  .pick {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: var(--track);
+    color: var(--surface);
+    padding: 2.5px 6px;
+    border-radius: 3px;
+  }
+
+  :root[data-theme="dark"] .pick,
+  .pick { color: var(--paper); }
+
+  .v-note { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin: 0; }
+  .v-note b { color: var(--ink); font-weight: 620; }
+
+  .v-cost {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink-3);
+    margin: 0;
+    padding-left: 13px;
+    border-left: 2px solid var(--line);
+  }
+
+  .v-cost i { font-style: normal; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; display: block; color: var(--ink-3); margin-bottom: 1px; }
+
+  /* ---------- wireframe device ---------- */
+
+  .wf {
+    background: var(--surface);
+    border: 1.5px solid var(--line-strong);
+    border-radius: 16px;
+    padding: 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    min-height: 396px;
+  }
+
+  .wf.selected { border-color: var(--track); }
+
+  .wf-status {
+    display: flex;
+    justify-content: space-between;
+    color: var(--ink-3);
+    font-size: 8.5px;
+    letter-spacing: .04em;
+    padding: 0 3px 1px;
+  }
+
+  .wf-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 3px 7px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .wf-title { font-weight: 700; font-size: 12px; letter-spacing: -.01em; }
+  .wf-ico { color: var(--ink-3); font-size: 11px; }
+
+  .wf-body { display: flex; flex-direction: column; gap: 7px; flex: 1; padding: 0 3px; min-height: 0; }
+  .wf-body.pad { padding: 4px 5px; }
+  .wf-body.center { justify-content: center; }
+
+  .wf-lbl {
+    font-size: 8.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .wf-box {
+    background: var(--wf);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-3);
+    font-size: 9px;
+    letter-spacing: .06em;
+    text-align: center;
+    padding: 6px;
+  }
+
+  .wf-media { height: 62px; }
+  .wf-media.tall { height: 96px; }
+  .wf-media.short { height: 40px; }
+
+  .wf-card {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 7px 8px;
+    background: var(--surface-2);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .wf-card.accent { border-color: var(--track); border-width: 1.5px; background: var(--accent-soft); }
+
+  .wf-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .wf-row.tight { gap: 5px; }
+
+  .wf-name { font-weight: 650; font-size: 11px; }
+  .wf-meta { color: var(--ink-3); font-size: 9px; }
+
+  .wf-thumb {
+    width: 34px; height: 34px;
+    background: var(--wf);
+    border-radius: 5px;
+    flex: none;
+  }
+
+  .wf-thumb.sm { width: 26px; height: 26px; }
+
+  .wf-btn {
+    background: var(--ink);
+    color: var(--surface);
+    border-radius: 7px;
+    padding: 9px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .02em;
+  }
+
+  :root[data-theme="dark"] .wf-btn { color: var(--paper); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wf-btn { color: var(--paper); } }
+
+  .wf-btn.ghost {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+
+  .wf-btn.sm { padding: 6px; font-size: 10px; }
+
+  .wf-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .wf-chip {
+    border: 1px solid var(--line-strong);
+    border-radius: 99px;
+    padding: 2.5px 7px;
+    font-size: 9px;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  .wf-chip.on { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  :root[data-theme="dark"] .wf-chip.on { color: var(--paper); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wf-chip.on { color: var(--paper); } }
+
+  .wf-chip.pri { background: var(--track); border-color: var(--track); color: var(--surface); }
+  :root[data-theme="dark"] .wf-chip.pri { color: var(--paper); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wf-chip.pri { color: var(--paper); } }
+
+  .wf-tabs {
+    display: flex;
+    border-top: 1px solid var(--line);
+    padding-top: 7px;
+    margin-top: auto;
+  }
+
+  .wf-tab {
+    flex: 1;
+    text-align: center;
+    font-size: 8.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .wf-tab.on { color: var(--ink); font-weight: 700; }
+  .wf-tab .dot { width: 15px; height: 15px; border-radius: 4px; background: var(--wf); }
+  .wf-tab.on .dot { background: var(--ink); }
+
+  .wf-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .wf-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+
+  .wf-hero {
+    font-size: 26px;
+    font-weight: 750;
+    letter-spacing: -.03em;
+    line-height: 1;
+  }
+
+  .wf-hero.big { font-size: 40px; }
+
+  .wf-sub { color: var(--ink-2); font-size: 10px; }
+
+  .wf-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    padding: 6px 9px;
+  }
+
+  .wf-stepper .pm { color: var(--ink-3); font-size: 14px; font-weight: 700; }
+  .wf-stepper .val { font-size: 17px; font-weight: 750; letter-spacing: -.02em; }
+
+  .wf-setrow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 7px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+
+  .wf-setrow.done { color: var(--ink-3); border-style: dashed; }
+  .wf-setrow.now { border-color: var(--track); border-width: 1.5px; background: var(--accent-soft); }
+  .wf-setrow .n { font-size: 9px; color: var(--ink-3); width: 26px; flex: none; }
+  .wf-setrow .v { font-weight: 650; font-size: 10.5px; }
+
+  .wf-rule { height: 1px; background: var(--line); margin: 1px 0; }
+
+  .wf-recov { display: flex; gap: 4px; }
+
+  .wf-recov > div {
+    flex: 1;
+    border-radius: 4px;
+    padding: 5px 3px;
+    text-align: center;
+    font-size: 7.5px;
+    letter-spacing: .04em;
+    background: var(--wf);
+    color: var(--ink-2);
+    line-height: 1.25;
+  }
+
+  .wf-recov .fresh { background: color-mix(in srgb, var(--plate-green) 20%, var(--surface)); color: var(--plate-green); font-weight: 700; }
+  .wf-recov .mid { background: color-mix(in srgb, var(--plate-amber) 22%, var(--surface)); color: var(--plate-amber); font-weight: 700; }
+  .wf-recov .hot { background: color-mix(in srgb, var(--plate-red) 18%, var(--surface)); color: var(--plate-red); font-weight: 700; }
+
+  .wf-body-map {
+    height: 118px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-3);
+    font-size: 9px;
+    text-align: center;
+    padding: 8px;
+    line-height: 1.4;
+  }
+
+  .wf-scrollcue {
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 13px;
+    letter-spacing: .3em;
+    line-height: 1;
+  }
+
+  .wf-swipe {
+    display: flex;
+    gap: 5px;
+    align-items: stretch;
+  }
+
+  .wf-swipe .peek {
+    width: 16px;
+    background: var(--wf-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    flex: none;
+  }
+
+  .wf-swipe .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+
+  .wf-dots { display: flex; gap: 4px; justify-content: center; }
+  .wf-dots i { width: 5px; height: 5px; border-radius: 99px; background: var(--wf); display: block; }
+  .wf-dots i.on { background: var(--ink); width: 14px; }
+
+  .wf-acc {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+  }
+
+  .wf-acc.open { border-color: var(--line-strong); background: var(--surface-2); font-weight: 650; }
+
+  .wf-seg {
+    display: flex;
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .wf-seg > div {
+    flex: 1;
+    text-align: center;
+    padding: 5px 3px;
+    font-size: 9.5px;
+    color: var(--ink-2);
+    border-right: 1px solid var(--line);
+  }
+
+  .wf-seg > div:last-child { border-right: 0; }
+  .wf-seg > div.on { background: var(--ink); color: var(--surface); font-weight: 700; }
+  :root[data-theme="dark"] .wf-seg > div.on { color: var(--paper); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wf-seg > div.on { color: var(--paper); } }
+
+  /* ---------- flow diagrams ---------- */
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 16px 14px;
+    font-family: var(--mono);
+    box-shadow: var(--shadow);
+  }
+
+  .flow-node {
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 11px;
+    line-height: 1.35;
+    background: var(--surface-2);
+  }
+
+  .flow-node.ask { border-style: dashed; border-color: var(--track); color: var(--track); background: var(--accent-soft); }
+  .flow-node.act { background: var(--ink); color: var(--surface); border-color: var(--ink); font-weight: 650; }
+  :root[data-theme="dark"] .flow-node.act { color: var(--paper); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .flow-node.act { color: var(--paper); } }
+
+  .flow-node .tap { display: block; font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; opacity: .62; margin-bottom: 2px; }
+
+  .flow-arrow {
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-3);
+    font-size: 11px;
+  }
+
+  .taps {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .taps b { color: var(--ink); font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+
+  /* ---------- summary ---------- */
+
+  .summary {
+    margin-top: 80px;
+    border-top: 2px solid var(--ink);
+    padding-top: 32px;
+  }
+
+  .table-scroll { overflow-x: auto; margin-top: 20px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    min-width: 560px;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    padding: 0 14px 9px 0;
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px 12px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    color: var(--ink-2);
+  }
+
+  td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  td b { color: var(--ink); font-weight: 620; }
+
+  td code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--plate-blue);
+    background: var(--accent-soft);
+    padding: 1.5px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .closing {
+    margin-top: 40px;
+    padding: 22px 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--plate-blue);
+    border-radius: 4px;
+  }
+
+  .closing p { margin: 0 0 12px; color: var(--ink-2); font-size: 15px; max-width: 68ch; }
+  .closing p:last-child { margin-bottom: 0; }
+  .closing strong { color: var(--ink); font-weight: 640; }
+
+  h3.closing-h {
+    font-size: 17px;
+    margin: 0 0 12px;
+    letter-spacing: -.01em;
+    font-weight: 680;
+  }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px 64px; }
+    .masthead { padding-top: 48px; }
+    .decision { padding-top: 48px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Gym Copilot · pre-build layout study</p>
+    <h1>Six decisions, before any of it gets wired up</h1>
+    <p class="lede">
+      Lo-fi variants for every screen and flow where the layout choice is still open. Nothing here is
+      styled to look finished on purpose — the point is to compare <em>structure</em> while it's still
+      free to change. Pick one per decision and the build follows.
+    </p>
+    <div class="legend">
+      <span><i class="swatch" style="background: var(--plate-blue)"></i> Recommended variant is outlined and tagged</span>
+      <span><i class="swatch" style="background: var(--wf)"></i> Grey block = image or media placeholder</span>
+      <span><i class="swatch" style="background: var(--line-strong)"></i> Dashed = optional / skippable step</span>
+    </div>
+  </header>
+
+  <!-- ============ DECISION 1 ============ -->
+  <section class="decision d1">
+    <div class="d-head">
+      <span class="d-num">01</span>
+      <h2>Navigation model</h2>
+    </div>
+    <p class="d-sub">
+      How the four surfaces relate. This one cascades into everything else — it decides how much screen
+      is permanently spent on chrome, and whether <strong>Today</strong> is a destination or <em>the</em> app.
+    </p>
+
+    <div class="variants">
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">1A</span><span class="v-name">Three-tab bar</span><span class="pick">Pick</span></div>
+        <div class="wf selected">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Today</span><span class="wf-ico">⚙</span></div>
+          <div class="wf-body">
+            <div class="wf-lbl">Wed · full body · 45 min</div>
+            <div class="wf-card accent">
+              <div class="wf-row"><span class="wf-name">Assisted Pull-up</span><span class="wf-meta">3×8–10</span></div>
+              <span class="wf-meta">Back · 50 lb assist</span>
+            </div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">Leg Press</span><span class="wf-meta">3×10</span></div></div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">Chest Press</span><span class="wf-meta">3×10</span></div></div>
+            <div class="wf-btn">Start workout</div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab on"><i class="dot"></i>Today</div>
+            <div class="wf-tab"><i class="dot"></i>Library</div>
+            <div class="wf-tab"><i class="dot"></i>History</div>
+          </div>
+        </div>
+        <p class="v-note">Conventional and legible. Every surface is one tap from every other, and History gets a real home instead of hiding inside Today.</p>
+        <p class="v-cost"><i>Cost</i>Permanent 56px of chrome, and History is a screen you'll open maybe twice a month.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">1B</span><span class="v-name">Today-first, no tabs</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Wednesday</span><span class="wf-ico">☰</span></div>
+          <div class="wf-body center">
+            <div class="wf-lbl">Up next</div>
+            <div class="wf-hero">Assisted<br>Pull-up</div>
+            <div class="wf-sub">Back · 3 sets of 8–10 · 50 lb assist</div>
+            <div class="wf-box wf-media"></div>
+            <div class="wf-btn">Start workout</div>
+            <div class="wf-btn ghost">See full plan (6)</div>
+          </div>
+        </div>
+        <p class="v-note">Zero chrome. The app is one screen that answers the question, with everything else behind the ☰. Maximum focus.</p>
+        <p class="v-cost"><i>Cost</i>Library browsing — a genuine goal of yours, not just a utility — becomes a second-class citizen behind a menu.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">1C</span><span class="v-name">Two tabs: Train / Browse</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Train</span><span class="wf-ico">⚙</span></div>
+          <div class="wf-body">
+            <div class="wf-lbl">Wed · full body · 45 min</div>
+            <div class="wf-card accent">
+              <div class="wf-row"><span class="wf-name">Assisted Pull-up</span><span class="wf-meta">3×8–10</span></div>
+              <span class="wf-meta">Back · 50 lb assist</span>
+            </div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">Leg Press</span><span class="wf-meta">3×10</span></div></div>
+            <div class="wf-btn">Start workout</div>
+            <div class="wf-rule"></div>
+            <div class="wf-lbl">Recent</div>
+            <div class="wf-row"><span class="wf-meta">Mon · 6 exercises · 42 min</span><span class="wf-meta">›</span></div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab on"><i class="dot"></i>Train</div>
+            <div class="wf-tab"><i class="dot"></i>Browse</div>
+          </div>
+        </div>
+        <p class="v-note">History folds into Train as a "Recent" strip. Two tabs is the smallest bar that still keeps the Library one tap away.</p>
+        <p class="v-cost"><i>Cost</i>Deep history (per-exercise progress over months) needs a drill-down that has no obvious front door.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">1D</span><span class="v-name">Hub home</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Gym Copilot</span><span class="wf-ico">⚙</span></div>
+          <div class="wf-body">
+            <div class="wf-card accent">
+              <span class="wf-lbl">Today</span>
+              <span class="wf-name">Full body · 6 exercises</span>
+              <div class="wf-btn sm">Start</div>
+            </div>
+            <div class="wf-grid2">
+              <div class="wf-card" style="min-height:66px"><span class="wf-name">Library</span><span class="wf-meta">62 exercises</span></div>
+              <div class="wf-card" style="min-height:66px"><span class="wf-name">History</span><span class="wf-meta">14 sessions</span></div>
+              <div class="wf-card" style="min-height:66px"><span class="wf-name">Recovery</span><span class="wf-meta">3 fresh</span></div>
+              <div class="wf-card" style="min-height:66px"><span class="wf-name">Favorites</span><span class="wf-meta">9 saved</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="v-note">Everything is a card on one launcher. Easy to extend later — new features are just new tiles.</p>
+        <p class="v-cost"><i>Cost</i>Adds a tap to <em>every</em> journey and buries today's plan behind a summary. Directly against "show me what to do next."</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DECISION 2 ============ -->
+  <section class="decision d2">
+    <div class="d-head">
+      <span class="d-num">02</span>
+      <h2>The Today screen</h2>
+    </div>
+    <p class="d-sub">
+      What greets you when you walk in the door. The real question underneath: <strong>does the app ask you
+      anything before it commits to a plan</strong>, or does it just have one ready?
+    </p>
+
+    <div class="variants">
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">2A</span><span class="v-name">Plan-forward</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Today</span><span class="wf-ico">⟳</span></div>
+          <div class="wf-body">
+            <div class="wf-lbl">Full body · 6 exercises · ~45 min</div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">1 · Assisted Pull-up</span><span class="wf-meta">3×8–10</span></div></div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">2 · Leg Press</span><span class="wf-meta">3×10</span></div></div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">3 · Chest Press</span><span class="wf-meta">3×10</span></div></div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">4 · Hip Thrust</span><span class="wf-meta">3×12</span></div></div>
+            <div class="wf-scrollcue">···</div>
+            <div class="wf-btn">Start workout</div>
+          </div>
+        </div>
+        <p class="v-note">The whole session, visible and reorderable before you begin. Good for people who like to see the shape of the thing first.</p>
+        <p class="v-cost"><i>Cost</i>Presents six decisions at the exact moment you wanted zero.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">2B</span><span class="v-name">Single next action</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Wednesday</span><span class="wf-ico">⚙</span></div>
+          <div class="wf-body center">
+            <div class="wf-lbl">First up</div>
+            <div class="wf-hero">Assisted<br>Pull-up</div>
+            <div class="wf-sub">3 sets · 8–10 reps · 50 lb assist</div>
+            <div class="wf-box wf-media tall">machine photo</div>
+            <div class="wf-btn">Start</div>
+            <div class="wf-sub" style="text-align:center">then 5 more · ~45 min</div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab on"><i class="dot"></i>Today</div>
+            <div class="wf-tab"><i class="dot"></i>Library</div>
+            <div class="wf-tab"><i class="dot"></i>History</div>
+          </div>
+        </div>
+        <p class="v-note">The purest reading of "don't make me plan." One exercise, one button, the machine photo right there so you know where to walk.</p>
+        <p class="v-cost"><i>Cost</i>No sense of the session's shape. Some days you genuinely want to know if it's a short one.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">2C</span><span class="v-name">Recovery-first</span><span class="pick">Pick</span></div>
+        <div class="wf selected">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Today</span><span class="wf-ico">⟳</span></div>
+          <div class="wf-body">
+            <div class="wf-lbl">Recovery</div>
+            <div class="wf-recov">
+              <div class="fresh">BACK<br>fresh</div>
+              <div class="fresh">CHEST<br>fresh</div>
+              <div class="mid">QUADS<br>2d</div>
+              <div class="hot">GLUTES<br>1d</div>
+            </div>
+            <div class="wf-rule"></div>
+            <div class="wf-lbl">Built around what's fresh</div>
+            <div class="wf-card accent">
+              <div class="wf-row"><span class="wf-name">Assisted Pull-up</span><span class="wf-meta">3×8–10</span></div>
+              <span class="wf-meta">Back · fresh 5 days</span>
+            </div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">Chest Press</span><span class="wf-meta">3×10</span></div></div>
+            <div class="wf-card"><div class="wf-row"><span class="wf-name">Seated Row</span><span class="wf-meta">3×12</span></div></div>
+            <div class="wf-btn">Start · 6 exercises</div>
+          </div>
+        </div>
+        <p class="v-note">Shows <b>why</b> before <b>what</b>. The recovery strip is the one piece of state that makes the recommendation feel reasoned rather than random — and it's the answer to "am I about to train something sore again."</p>
+        <p class="v-cost"><i>Cost</i>Costs vertical space, and the strip is meaningless on day one with no history.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">2D</span><span class="v-name">Time-first</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Today</span><span class="wf-ico">⚙</span></div>
+          <div class="wf-body center">
+            <div class="wf-hero" style="font-size:20px">How long<br>have you got?</div>
+            <div class="wf-grid2" style="margin-top:4px">
+              <div class="wf-btn ghost">15 min</div>
+              <div class="wf-btn ghost">30 min</div>
+              <div class="wf-btn">45 min</div>
+              <div class="wf-btn ghost">60 min</div>
+            </div>
+            <div class="wf-sub" style="text-align:center;margin-top:6px">Plan builds after you pick</div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab on"><i class="dot"></i>Today</div>
+            <div class="wf-tab"><i class="dot"></i>Library</div>
+            <div class="wf-tab"><i class="dot"></i>History</div>
+          </div>
+        </div>
+        <p class="v-note">Time is the one input that genuinely changes the plan and only you know it. Asking makes the session length honest.</p>
+        <p class="v-cost"><i>Cost</i>Puts a question between you and the answer, every single visit. Better as a control <em>on</em> the plan than a gate before it.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DECISION 3 ============ -->
+  <section class="decision d3">
+    <div class="d-head">
+      <span class="d-num">03</span>
+      <h2>The workout screen</h2>
+    </div>
+    <p class="d-sub">
+      The one that matters most — it's operated one-handed, standing at a machine, possibly out of breath.
+      The differences below are really about <strong>how much of the session is on screen at once</strong>,
+      and that trades focus against the ability to skip ahead or fix a typo three sets back.
+    </p>
+
+    <div class="variants">
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">3A</span><span class="v-name">One set, full screen</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">2 of 6</span><span class="wf-ico">⋯</span></div>
+          <div class="wf-body center">
+            <div class="wf-lbl">Set 2 of 3</div>
+            <div class="wf-hero">Leg Press</div>
+            <div class="wf-sub">Target 10 reps · 180 lb</div>
+            <div class="wf-lbl" style="margin-top:6px">Weight</div>
+            <div class="wf-stepper"><span class="pm">−</span><span class="val">180 lb</span><span class="pm">+</span></div>
+            <div class="wf-lbl">Reps</div>
+            <div class="wf-stepper"><span class="pm">−</span><span class="val">10</span><span class="pm">+</span></div>
+            <div class="wf-btn" style="margin-top:4px">Complete set</div>
+          </div>
+        </div>
+        <p class="v-note">Nothing on screen that isn't the current set. Biggest tap targets of any option, which matters more than it sounds when your hands are chalky.</p>
+        <p class="v-cost"><i>Cost</i>You can't see what you lifted on set 1 without leaving, and correcting an earlier set means backing out.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">3B</span><span class="v-name">Exercise card, sets as rows</span><span class="pick">Pick</span></div>
+        <div class="wf selected">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">2 of 6</span><span class="wf-ico">⋯</span></div>
+          <div class="wf-body">
+            <div class="wf-hero" style="font-size:19px">Leg Press</div>
+            <div class="wf-sub">Quads · Glutes — target 3×10 @ 180</div>
+            <div class="wf-setrow done"><span class="n">SET 1</span><span class="v">180 lb × 10</span><span style="margin-left:auto">✓</span></div>
+            <div class="wf-setrow now">
+              <span class="n">SET 2</span>
+              <span class="v">180 lb</span>
+              <span class="wf-meta">×</span>
+              <span class="v">10</span>
+            </div>
+            <div class="wf-setrow"><span class="n">SET 3</span><span class="v wf-meta">180 lb × 10</span></div>
+            <div class="wf-btn">Complete set 2</div>
+            <div class="wf-rule"></div>
+            <div class="wf-lbl">Next</div>
+            <div class="wf-row"><span class="wf-meta">3 · Chest Press · 3×10</span><span class="wf-meta">›</span></div>
+          </div>
+        </div>
+        <p class="v-note">Still one obvious action — the highlighted row plus one button — but set 1 stays visible, so <b>"what did I just lift"</b> never costs a navigation. Tapping any row edits it.</p>
+        <p class="v-cost"><i>Cost</i>Denser than 3A. Needs care to keep the active row unmistakably the active row.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">3C</span><span class="v-name">Split: reference / logger</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">2 of 6</span><span class="wf-ico">⋯</span></div>
+          <div class="wf-body">
+            <div class="wf-box wf-media">machine photo</div>
+            <div class="wf-name">Leg Press</div>
+            <div class="wf-chips">
+              <span class="wf-chip pri">Quads</span>
+              <span class="wf-chip">Glutes</span>
+            </div>
+            <div class="wf-meta">· Push through mid-foot<br>· Don't lock the knees</div>
+            <div class="wf-rule"></div>
+            <div class="wf-lbl">Set 2 of 3</div>
+            <div class="wf-grid2">
+              <div class="wf-stepper"><span class="pm">−</span><span class="val" style="font-size:13px">180</span><span class="pm">+</span></div>
+              <div class="wf-stepper"><span class="pm">−</span><span class="val" style="font-size:13px">10</span><span class="pm">+</span></div>
+            </div>
+            <div class="wf-btn">Complete set</div>
+          </div>
+        </div>
+        <p class="v-note">Keeps the photo and cues on screen while you log. Strongest option for exercises you don't know yet — which, per the brief, is a lot of them.</p>
+        <p class="v-cost"><i>Cost</i>Half the screen is reference you stop needing by week three, and it shrinks the controls.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">3D</span><span class="v-name">Swipeable exercise carousel</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Workout</span><span class="wf-ico">⋯</span></div>
+          <div class="wf-body">
+            <div class="wf-swipe">
+              <div class="peek"></div>
+              <div class="main">
+                <div class="wf-name">Leg Press</div>
+                <div class="wf-meta">Quads · Glutes</div>
+                <div class="wf-box wf-media short"></div>
+                <div class="wf-chips">
+                  <span class="wf-chip on">1 ✓</span>
+                  <span class="wf-chip pri">2</span>
+                  <span class="wf-chip">3</span>
+                </div>
+                <div class="wf-grid2">
+                  <div class="wf-stepper"><span class="pm">−</span><span class="val" style="font-size:13px">180</span><span class="pm">+</span></div>
+                  <div class="wf-stepper"><span class="pm">−</span><span class="val" style="font-size:13px">10</span><span class="pm">+</span></div>
+                </div>
+                <div class="wf-btn sm">Log set 2</div>
+              </div>
+              <div class="peek"></div>
+            </div>
+            <div class="wf-dots"><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+            <div class="wf-sub" style="text-align:center">swipe to move between exercises</div>
+          </div>
+        </div>
+        <p class="v-note">Jumping around is effortless — useful when a machine is occupied and you want to do #4 now and come back.</p>
+        <p class="v-cost"><i>Cost</i>Swipe is invisible and easy to trigger by accident with sweaty hands. Also the fiddliest to build well.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DECISION 4 ============ -->
+  <section class="decision d4">
+    <div class="d-head">
+      <span class="d-num">04</span>
+      <h2>Library browsing</h2>
+    </div>
+    <p class="d-sub">
+      The discovery surface. You said you want to <strong>learn the machines</strong>, not just execute a plan —
+      so this needs to reward wandering, not only lookup.
+    </p>
+
+    <div class="variants three">
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">4A</span><span class="v-name">Filter chips + grid</span><span class="pick">Pick</span></div>
+        <div class="wf selected">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Library</span><span class="wf-ico">⌕</span></div>
+          <div class="wf-body">
+            <div class="wf-chips">
+              <span class="wf-chip on">Back</span>
+              <span class="wf-chip">Chest</span>
+              <span class="wf-chip">Glutes</span>
+              <span class="wf-chip">Quads</span>
+              <span class="wf-chip">Machine</span>
+              <span class="wf-chip">Cable</span>
+            </div>
+            <div class="wf-meta">11 exercises</div>
+            <div class="wf-card">
+              <div class="wf-row"><div class="wf-thumb"></div><div style="flex:1"><div class="wf-name">Assisted Pull-up</div><div class="wf-meta">Back · machine · ❤</div></div></div>
+            </div>
+            <div class="wf-card">
+              <div class="wf-row"><div class="wf-thumb"></div><div style="flex:1"><div class="wf-name">Lat Pulldown</div><div class="wf-meta">Back · cable</div></div></div>
+            </div>
+            <div class="wf-card">
+              <div class="wf-row"><div class="wf-thumb"></div><div style="flex:1"><div class="wf-name">Seated Cable Row</div><div class="wf-meta">Back · cable</div></div></div>
+            </div>
+            <div class="wf-rule"></div>
+            <div class="wf-row"><span class="wf-meta">Hidden (3)</span><span class="wf-meta">›</span></div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab"><i class="dot"></i>Today</div>
+            <div class="wf-tab on"><i class="dot"></i>Library</div>
+            <div class="wf-tab"><i class="dot"></i>History</div>
+          </div>
+        </div>
+        <p class="v-note">Boring in the right way. Combines filters freely, scales to 60 or 600 exercises, and the <b>Hidden (3)</b> row keeps un-hiding discoverable instead of buried in settings.</p>
+        <p class="v-cost"><i>Cost</i>Chips assume you know the vocabulary — the exact gap this product exists to close.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">4B</span><span class="v-name">Body-map picker</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Library</span><span class="wf-ico">⌕</span></div>
+          <div class="wf-body">
+            <div class="wf-lbl">Tap a muscle</div>
+            <div class="wf-body-map">front / back body diagram<br>with tappable muscle regions</div>
+            <div class="wf-seg"><div class="on">Front</div><div>Back</div></div>
+            <div class="wf-rule"></div>
+            <div class="wf-lbl">Back · 11 exercises</div>
+            <div class="wf-row tight"><div class="wf-thumb sm"></div><span class="wf-name">Assisted Pull-up</span></div>
+            <div class="wf-row tight"><div class="wf-thumb sm"></div><span class="wf-name">Lat Pulldown</span></div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab"><i class="dot"></i>Today</div>
+            <div class="wf-tab on"><i class="dot"></i>Library</div>
+            <div class="wf-tab"><i class="dot"></i>History</div>
+          </div>
+        </div>
+        <p class="v-note">Answers "what trains <em>this</em>" by pointing rather than naming — genuinely on-philosophy for visual-over-terminology, and it doubles as the recovery view.</p>
+        <p class="v-cost"><i>Cost</i>Needs a real anatomical asset with hit regions. That's the single most expensive thing on this page to build.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">4C</span><span class="v-name">Grouped by movement</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">Library</span><span class="wf-ico">⌕</span></div>
+          <div class="wf-body">
+            <div class="wf-acc open"><span>Vertical pull</span><span>4 ▾</span></div>
+            <div class="wf-row tight"><div class="wf-thumb sm"></div><div style="flex:1"><div class="wf-name">Assisted Pull-up</div><div class="wf-meta">machine</div></div></div>
+            <div class="wf-row tight"><div class="wf-thumb sm"></div><div style="flex:1"><div class="wf-name">Lat Pulldown</div><div class="wf-meta">cable</div></div></div>
+            <div class="wf-acc"><span>Horizontal pull</span><span>5 ›</span></div>
+            <div class="wf-acc"><span>Horizontal push</span><span>4 ›</span></div>
+            <div class="wf-acc"><span>Hip hinge</span><span>6 ›</span></div>
+            <div class="wf-acc"><span>Knee extension</span><span>3 ›</span></div>
+          </div>
+          <div class="wf-tabs">
+            <div class="wf-tab"><i class="dot"></i>Today</div>
+            <div class="wf-tab on"><i class="dot"></i>Library</div>
+            <div class="wf-tab"><i class="dot"></i>History</div>
+          </div>
+        </div>
+        <p class="v-note">Teaches the mental model the recommender actually uses. Browse this a few times and you start thinking in patterns, which makes swaps obvious.</p>
+        <p class="v-cost"><i>Cost</i>"Horizontal pull" is jargon at exactly the moment you're trying to avoid jargon.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DECISION 5 ============ -->
+  <section class="decision d5">
+    <div class="d-head">
+      <span class="d-num">05</span>
+      <h2>Exercise detail</h2>
+    </div>
+    <p class="d-sub">
+      This page serves two very different moments: <strong>standing at an unfamiliar machine right now</strong>,
+      and browsing on the couch. The layouts below optimize for one or the other.
+    </p>
+
+    <div class="variants three">
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">5A</span><span class="v-name">Single scroll</span><span class="pick">Pick</span></div>
+        <div class="wf selected">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">‹ Assisted Pull-up</span><span class="wf-ico">❤</span></div>
+          <div class="wf-body">
+            <div class="wf-box wf-media">demo loop</div>
+            <div class="wf-chips">
+              <span class="wf-chip pri">Back</span>
+              <span class="wf-chip">Biceps</span>
+              <span class="wf-chip">Forearms</span>
+            </div>
+            <div class="wf-lbl">Find this machine</div>
+            <div class="wf-row tight"><div class="wf-thumb"></div><span class="wf-meta">Tall frame, padded knee platform, stack behind</span></div>
+            <div class="wf-lbl">Setup</div>
+            <div class="wf-meta">1 · Set the assistance weight<br>2 · Kneel on the pad<br>3 · Grip the handles</div>
+            <div class="wf-lbl">Cues</div>
+            <div class="wf-meta">· Drive elbows down<br>· Control the descent</div>
+            <div class="wf-scrollcue">···</div>
+          </div>
+        </div>
+        <p class="v-note">Everything in one thumb-scroll, ordered by what you need first: what it looks like, what it trains, where to find it, how to do it. <b>Nothing hidden behind a tab you forgot exists.</b></p>
+        <p class="v-cost"><i>Cost</i>Gets long. History and alternatives sit far below the fold.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">5B</span><span class="v-name">Tabbed sections</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-nav"><span class="wf-title">‹ Assisted Pull-up</span><span class="wf-ico">❤</span></div>
+          <div class="wf-body">
+            <div class="wf-box wf-media">demo loop</div>
+            <div class="wf-seg"><div class="on">How</div><div>Muscles</div><div>History</div></div>
+            <div class="wf-lbl">Find this machine</div>
+            <div class="wf-row tight"><div class="wf-thumb"></div><span class="wf-meta">Tall frame, padded knee platform</span></div>
+            <div class="wf-lbl">Setup</div>
+            <div class="wf-meta">1 · Set the assistance weight<br>2 · Kneel on the pad<br>3 · Grip the handles<br>4 · Brace and pull</div>
+            <div class="wf-lbl">Cues</div>
+            <div class="wf-meta">· Drive elbows down</div>
+          </div>
+        </div>
+        <p class="v-note">Each moment gets a short page. History becomes a first-class view instead of a footer, which helps when you're checking last week's number mid-session.</p>
+        <p class="v-cost"><i>Cost</i>Three taps to see everything, and tab state is one more thing to get wrong on back-navigation.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">5C</span><span class="v-name">Pinned media, scrolling body</span></div>
+        <div class="wf">
+          <div class="wf-status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="wf-box wf-media tall" style="border-radius:11px 11px 5px 5px">demo loop — stays pinned</div>
+          <div class="wf-body">
+            <div class="wf-row"><span class="wf-name">Assisted Pull-up</span><span class="wf-ico">❤</span></div>
+            <div class="wf-chips">
+              <span class="wf-chip pri">Back</span>
+              <span class="wf-chip">Biceps</span>
+            </div>
+            <div class="wf-lbl">Setup</div>
+            <div class="wf-meta">1 · Set the assistance weight<br>2 · Kneel on the pad<br>3 · Grip the handles<br>4 · Brace your core</div>
+            <div class="wf-lbl">Cues</div>
+            <div class="wf-meta">· Drive elbows down<br>· Control the descent</div>
+            <div class="wf-scrollcue">···</div>
+          </div>
+        </div>
+        <p class="v-note">The demo stays visible while you read the steps — you can watch and follow along at the same time, which is the whole point of having a demo.</p>
+        <p class="v-cost"><i>Cost</i>Permanently eats a third of the screen, and there's no media at launch to pin.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DECISION 6 ============ -->
+  <section class="decision d6">
+    <div class="d-head">
+      <span class="d-num">06</span>
+      <h2>Starting a session</h2>
+    </div>
+    <p class="d-sub">
+      The flow from opening the app to logging your first set, counted in taps. Dashed nodes are questions the
+      app asks <em>you</em> — the currency being spent here is <strong>decisions before the first rep</strong>.
+    </p>
+
+    <div class="variants">
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">6A</span><span class="v-name">Zero-question</span></div>
+        <div class="flow">
+          <div class="flow-node"><span class="tap">Open</span>Plan is already there</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 1</span>Start workout</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 2</span>Complete set 1</div>
+        </div>
+        <p class="taps"><b>2</b> taps to first logged set</p>
+        <p class="v-note">The plan is generated on open from history alone. Fastest possible path.</p>
+        <p class="v-cost"><i>Cost</i>No way to say "I've only got 20 minutes" without editing the plan afterward.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">6B</span><span class="v-name">Default plan, time adjustable</span><span class="pick">Pick</span></div>
+        <div class="flow">
+          <div class="flow-node"><span class="tap">Open</span>Plan at your default 45 min</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node ask"><span class="tap">Optional</span>Tap "45 min" to change → replans</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 1</span>Start workout</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 2</span>Complete set 1</div>
+        </div>
+        <p class="taps"><b>2</b> taps normally · <b>4</b> when time is short</p>
+        <p class="v-note">Time becomes a <b>control on the plan</b>, not a gate before it. Costs nothing on a normal day and is right there on a rushed one — the best of 6A and 6C without the toll.</p>
+        <p class="v-cost"><i>Cost</i>The time control has to be visible enough to find, quiet enough to ignore.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">6C</span><span class="v-name">Check-in first</span></div>
+        <div class="flow">
+          <div class="flow-node"><span class="tap">Open</span>—</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node ask"><span class="tap">Tap 1</span>How long have you got?</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node ask"><span class="tap">Tap 2</span>Anything sore?</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 3</span>Start workout</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 4</span>Complete set 1</div>
+        </div>
+        <p class="taps"><b>4</b> taps to first logged set</p>
+        <p class="v-note">Best-informed recommendation of the three — soreness input meaningfully sharpens the pick.</p>
+        <p class="v-cost"><i>Cost</i>Two questions every visit becomes a toll booth. You'll start tapping through it without reading, and then the data is worse than none.</p>
+      </div>
+
+      <div class="variant">
+        <div class="v-head"><span class="v-key">6D</span><span class="v-name">Build your own</span></div>
+        <div class="flow">
+          <div class="flow-node"><span class="tap">Open</span>—</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 1</span>New empty workout</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node ask"><span class="tap">Taps 2–7</span>Pick each exercise from Library</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node act"><span class="tap">Tap 8</span>Complete set 1</div>
+        </div>
+        <p class="taps"><b>8+</b> taps to first logged set</p>
+        <p class="v-note">Full control. Necessary as an <em>escape hatch</em> — some days you know exactly what you want.</p>
+        <p class="v-cost"><i>Cost</i>As the primary flow it's the exact problem you're building this to escape. Keep it, bury it.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ SUMMARY ============ -->
+  <section class="summary">
+    <h2>What I'd build, and why</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Decision</th>
+            <th>Pick</th>
+            <th>Reasoning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01 · Navigation</td>
+            <td><code>1A</code> Three tabs</td>
+            <td>Library is a stated goal, not a utility — it earns a permanent slot. History gets a home instead of leaking into Today.</td>
+          </tr>
+          <tr>
+            <td>02 · Today</td>
+            <td><code>2C</code> Recovery-first</td>
+            <td>The recovery strip is what makes a recommendation feel <b>reasoned</b>. Without it the app is a black box telling you to do things.</td>
+          </tr>
+          <tr>
+            <td>03 · Workout</td>
+            <td><code>3B</code> Sets as rows</td>
+            <td>Keeps one obvious action while leaving previous sets visible. <b>3C's cues are worth stealing</b> — put them in a collapsible strip for exercises you haven't done before.</td>
+          </tr>
+          <tr>
+            <td>04 · Library</td>
+            <td><code>4A</code> Chips + grid</td>
+            <td>Scales and ships now. <b>4B is the better product</b> — plan for it once there's real media, and reuse the same diagram for recovery.</td>
+          </tr>
+          <tr>
+            <td>05 · Detail</td>
+            <td><code>5A</code> Single scroll</td>
+            <td>Nothing hidden. Revisit 5C only once real demo media exists — pinning a grey placeholder is worse than not pinning.</td>
+          </tr>
+          <tr>
+            <td>06 · Session start</td>
+            <td><code>6B</code> Adjustable default</td>
+            <td>Two taps on a normal day, four when you're rushed, zero questions ever mandatory. Soreness stays optional and lives on the recovery strip.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="closing">
+      <h3 class="closing-h">The thread running through these picks</h3>
+      <p>
+        Every recommendation above resolves the same tension the same way: <strong>the app always has an
+        answer ready, and never makes you produce one first.</strong> Questions become controls you may
+        optionally reach for — the time selector, the soreness tap, the swap — rather than gates you pass
+        through.
+      </p>
+      <p>
+        Three of these picks are deliberately the cheaper option with a better version noted behind it
+        (<strong>4B's body map</strong>, <strong>5C's pinned media</strong>, <strong>3C's inline cues</strong>).
+        All three are blocked on the same thing: real photography and demo loops. They're worth revisiting
+        the week that media lands, and none of them require rework to get there.
+      </p>
+      <p>
+        None of this changes the data model in the approved plan — these are all rendering decisions over
+        the same graph. So Phase 1 can start regardless of which way you go on any of the six.
+      </p>
+    </div>
+  </section>
+
+</div>

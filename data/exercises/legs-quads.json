@@ -1,0 +1,360 @@
+[
+  {
+    "id": "leg-press",
+    "name": "Leg Press",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 20,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "calves"],
+    "movementPatterns": ["squat", "knee_extension"],
+    "machineIdentification": "A reclined seat facing a large angled foot platform loaded with plates or a stack. Look for the safety handles beside the seat that lock and unlock the sled.",
+    "instructions": [
+      "Sit with your back and hips flat against the pad.",
+      "Place your feet shoulder width on the middle of the platform.",
+      "Press the sled up and release the safety handles.",
+      "Lower until your knees reach about 90 degrees.",
+      "Press back up without locking your knees."
+    ],
+    "keyCues": [
+      "Keep your lower back flat against the seat.",
+      "Push through your whole foot, not just the toes.",
+      "Stop before your hips curl off the pad."
+    ],
+    "commonMistakes": [
+      "Going so deep the lower back rounds off the pad.",
+      "Slamming the knees into full lockout.",
+      "Letting the knees cave inward under load."
+    ],
+    "alternatives": ["hack-squat-machine", "smith-machine-squat", "goblet-squat"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "hack-squat-machine",
+    "name": "Hack Squat Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 20,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["quads"],
+    "secondaryMuscles": ["glutes", "hamstrings"],
+    "movementPatterns": ["squat", "knee_extension"],
+    "machineIdentification": "An angled sled you stand inside, with shoulder pads above and a foot platform below. You face away from the machine, back against the pad.",
+    "instructions": [
+      "Step in with your shoulders under the pads and back flat.",
+      "Set your feet shoulder width in the middle of the platform.",
+      "Straighten your legs and release the safety handles.",
+      "Lower until your thighs are about parallel.",
+      "Drive back up without locking out hard."
+    ],
+    "keyCues": [
+      "Keep your whole back pressed into the pad.",
+      "Track your knees out over your toes.",
+      "Control the descent — take two seconds."
+    ],
+    "commonMistakes": [
+      "Letting the heels lift off the platform.",
+      "Bouncing out of the bottom position.",
+      "Placing the feet too low, which strains the knees."
+    ],
+    "alternatives": ["leg-press", "smith-machine-squat", "barbell-back-squat"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "goblet-squat",
+    "name": "Goblet Squat",
+    "bodyRegion": "lower",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["core", "hamstrings"],
+    "movementPatterns": ["squat"],
+    "machineIdentification": null,
+    "instructions": [
+      "Hold one dumbbell vertically against your chest, cupping the top end.",
+      "Stand with feet slightly wider than your shoulders.",
+      "Squat down between your knees, keeping your chest tall.",
+      "Descend until your thighs are at least parallel.",
+      "Drive back up through your heels."
+    ],
+    "keyCues": [
+      "Keep your elbows inside your knees at the bottom.",
+      "Keep the dumbbell tight to your chest.",
+      "Push your knees out as you descend."
+    ],
+    "commonMistakes": [
+      "Letting the chest collapse forward.",
+      "Rising onto the toes at the bottom.",
+      "Cutting the depth short by a long way."
+    ],
+    "alternatives": ["bodyweight-squat", "leg-press", "smith-machine-squat"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "bodyRegion": "lower",
+    "equipment": "barbell",
+    "difficulty": "advanced",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 5,
+    "defaultRepsHigh": 8,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "core", "back"],
+    "movementPatterns": ["squat"],
+    "machineIdentification": "A power rack with the barbell set at upper-chest height and safety bars either side, set at roughly hip height.",
+    "instructions": [
+      "Set the bar just below shoulder height and the safeties at hip height.",
+      "Step under and rest the bar across your upper back, not your neck.",
+      "Unrack and take two steps back, feet shoulder width.",
+      "Squat down until your thighs are at least parallel.",
+      "Drive back up, keeping your chest lifted."
+    ],
+    "keyCues": [
+      "Brace your core as if bracing for a punch.",
+      "Push your knees out in line with your toes.",
+      "Keep the bar over the middle of your feet."
+    ],
+    "commonMistakes": [
+      "Letting the hips shoot up first out of the bottom.",
+      "Knees collapsing inward under heavier loads.",
+      "Skipping the safety bars entirely."
+    ],
+    "alternatives": ["smith-machine-squat", "hack-squat-machine", "goblet-squat"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "smith-machine-squat",
+    "name": "Smith Machine Squat",
+    "bodyRegion": "lower",
+    "equipment": "smith_machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "movementPatterns": ["squat"],
+    "machineIdentification": "A barbell locked inside vertical rails. Twist the bar to lock or release it at any height — useful because you can bail safely.",
+    "instructions": [
+      "Set the bar at upper-back height and load it.",
+      "Step under so the bar rests across your upper back.",
+      "Walk your feet slightly forward of the bar.",
+      "Unlock and squat until your thighs are parallel.",
+      "Drive up and re-lock the bar at the top of the last rep."
+    ],
+    "keyCues": [
+      "Set your feet a little forward — the rails fix the bar path.",
+      "Keep your weight in your mid-foot and heels.",
+      "Re-lock the bar before stepping out."
+    ],
+    "commonMistakes": [
+      "Standing with feet directly under the bar, which strains the knees.",
+      "Locking the knees hard at the top of each rep.",
+      "Forgetting the bar is locked and trying to squat anyway."
+    ],
+    "alternatives": ["barbell-back-squat", "hack-squat-machine", "leg-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "bodyweight-squat",
+    "name": "Bodyweight Squat",
+    "bodyRegion": "lower",
+    "equipment": "bodyweight",
+    "difficulty": "beginner",
+    "loadType": "bodyweight",
+    "loadIncrement": 0,
+    "defaultSets": 3,
+    "defaultRepsLow": 12,
+    "defaultRepsHigh": 25,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["core", "hamstrings"],
+    "movementPatterns": ["squat"],
+    "machineIdentification": null,
+    "instructions": [
+      "Stand with feet shoulder width, toes turned out slightly.",
+      "Reach your arms forward for balance.",
+      "Squat down until your thighs are at least parallel.",
+      "Stand back up, squeezing your glutes at the top."
+    ],
+    "keyCues": [
+      "Sit back and down, not straight down.",
+      "Keep your heels flat on the floor.",
+      "Take three seconds to descend to make it harder."
+    ],
+    "commonMistakes": [
+      "Rounding the lower back at the bottom.",
+      "Letting the knees cave in.",
+      "Rushing reps and losing depth as you tire."
+    ],
+    "alternatives": ["goblet-squat", "leg-press", "walking-lunge"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "leg-extension-machine",
+    "name": "Leg Extension Machine",
+    "bodyRegion": "lower",
+    "equipment": "machine",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 10,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 15,
+    "primaryMuscles": ["quads"],
+    "secondaryMuscles": [],
+    "movementPatterns": ["knee_extension", "isolation"],
+    "machineIdentification": "A seat with a padded roller that sits across the front of your ankles, and a weight stack behind. You straighten your legs against the roller.",
+    "instructions": [
+      "Set the back pad so your knees line up with the machine's pivot.",
+      "Set the ankle roller to rest just above your feet.",
+      "Sit back and hook your shins behind the roller.",
+      "Straighten your legs fully.",
+      "Lower under control without letting the stack touch down."
+    ],
+    "keyCues": [
+      "Pause for a beat at the top with quads squeezed.",
+      "Keep your hips planted in the seat.",
+      "Lower slowly — three seconds."
+    ],
+    "commonMistakes": [
+      "Swinging the weight up with a hip thrust.",
+      "Letting the stack slam at the bottom of each rep.",
+      "Setting the pivot wrong so the knees take the strain."
+    ],
+    "alternatives": ["leg-press", "hack-squat-machine", "bulgarian-split-squat"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "bulgarian-split-squat",
+    "name": "Bulgarian Split Squat",
+    "bodyRegion": "lower",
+    "equipment": "dumbbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "movementPatterns": ["squat", "knee_extension"],
+    "machineIdentification": "Any flat bench plus dumbbells. Your rear foot rests on the bench behind you.",
+    "instructions": [
+      "Stand about two feet in front of a bench, dumbbells at your sides.",
+      "Place the top of one foot on the bench behind you.",
+      "Lower straight down until your front thigh is parallel.",
+      "Drive up through your front heel.",
+      "Finish all reps, then switch legs."
+    ],
+    "keyCues": [
+      "Keep most of your weight on the front leg.",
+      "Move straight up and down, not forward and back.",
+      "Lean the torso slightly forward to bias the glutes."
+    ],
+    "commonMistakes": [
+      "Standing too close to the bench, cramping the front knee.",
+      "Pushing off the rear foot to help.",
+      "Losing balance and cutting the range short."
+    ],
+    "alternatives": ["walking-lunge", "dumbbell-step-up", "leg-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "walking-lunge",
+    "name": "Walking Lunge",
+    "bodyRegion": "lower",
+    "equipment": "dumbbell",
+    "difficulty": "intermediate",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 10,
+    "defaultRepsHigh": 16,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "core", "calves"],
+    "movementPatterns": ["squat", "knee_extension"],
+    "machineIdentification": null,
+    "instructions": [
+      "Hold a dumbbell in each hand, arms at your sides.",
+      "Step forward into a lunge until both knees are at 90 degrees.",
+      "Drive through the front heel to stand.",
+      "Step through directly into the next lunge with the other leg."
+    ],
+    "keyCues": [
+      "Take a long enough step that the front shin stays vertical.",
+      "Keep your torso upright.",
+      "Lower the back knee to just above the floor."
+    ],
+    "commonMistakes": [
+      "Short steps that push the front knee way past the toes.",
+      "Letting the rear knee bang into the floor.",
+      "Leaning forward over the front leg."
+    ],
+    "alternatives": ["bulgarian-split-squat", "dumbbell-step-up", "goblet-squat"],
+    "mediaUrl": null,
+    "mediaKind": null
+  },
+  {
+    "id": "dumbbell-step-up",
+    "name": "Dumbbell Step-up",
+    "bodyRegion": "lower",
+    "equipment": "dumbbell",
+    "difficulty": "beginner",
+    "loadType": "weight",
+    "loadIncrement": 5,
+    "defaultSets": 3,
+    "defaultRepsLow": 8,
+    "defaultRepsHigh": 12,
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "calves", "core"],
+    "movementPatterns": ["squat", "knee_extension"],
+    "machineIdentification": "A flat bench or a plyo box roughly knee height, plus dumbbells.",
+    "instructions": [
+      "Stand facing a knee-height bench with a dumbbell in each hand.",
+      "Place one whole foot on the bench.",
+      "Drive through that heel to stand up on the bench.",
+      "Step back down under control.",
+      "Finish all reps on one leg, then switch."
+    ],
+    "keyCues": [
+      "Push through the top foot, don't hop off the bottom one.",
+      "Keep the working foot flat on the bench.",
+      "Lower slowly instead of dropping down."
+    ],
+    "commonMistakes": [
+      "Pushing off the trailing leg to get up.",
+      "Using a box so high the hip has to hike.",
+      "Letting the front knee cave inward."
+    ],
+    "alternatives": ["bulgarian-split-squat", "walking-lunge", "leg-press"],
+    "mediaUrl": null,
+    "mediaKind": null
+  }
+]

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mobile Web Pattern Library</title>
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/components.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="icon-btn" aria-label="Menu">☰</button>
+      <div class="topbar__title">My Trips</div>
+      <div class="avatar">YL</div>
+    </header>
+
+    <div class="segmented" role="tablist" aria-label="Trip state">
+      <button class="segmented__option" role="tab" aria-selected="true" data-tab="current">Current</button>
+      <button class="segmented__option" role="tab" aria-selected="false" data-tab="past">Past</button>
+    </div>
+
+    <div class="list-header">
+      <span class="list-header__title">Trips (3)</span>
+      <button class="list-header__action" id="collapseToggle">↙↗ Collapse view</button>
+    </div>
+
+    <main class="trip-list" id="tripList">
+      <article class="trip-card">
+        <div class="trip-card__hero" style="background-color:#2b3a55;">
+          <span class="trip-card__urgency">1<br />hour</span>
+        </div>
+        <div class="trip-card__body">
+          <p class="trip-card__meta">AB123 · Thu, Sep 17</p>
+          <div class="trip-card__route-row">
+            <h3 class="trip-card__route">City A to City B</h3>
+            <span class="trip-card__chevron">›</span>
+          </div>
+          <p class="trip-card__detail">Departs 8:10 am · PASSENGER ONE</p>
+          <hr class="trip-card__divider" />
+          <div class="trip-card__actions">
+            <button class="pill-btn pill-btn--primary">▤ Boarding pass</button>
+            <button class="pill-btn pill-btn--secondary">💺 Change seats</button>
+            <button class="pill-btn pill-btn--secondary">🧳 Check bags</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="trip-card">
+        <div class="trip-card__hero" style="background-color:#3a2b55;">
+          <span class="trip-card__urgency">6<br />hours</span>
+        </div>
+        <div class="trip-card__body">
+          <p class="trip-card__meta">CD456 · Wed, Sep 23</p>
+          <div class="trip-card__route-row">
+            <h3 class="trip-card__route">City B to City C</h3>
+            <span class="trip-card__chevron">›</span>
+          </div>
+          <p class="trip-card__detail">Departs 7:05 pm · PASSENGER ONE</p>
+          <hr class="trip-card__divider" />
+          <div class="trip-card__actions">
+            <button class="pill-btn pill-btn--primary">▤ Boarding pass</button>
+            <button class="pill-btn pill-btn--secondary">💺 Change seats</button>
+            <button class="pill-btn pill-btn--secondary">🧳 Check bags</button>
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <button class="fab">▤ Boarding pass</button>
+
+    <nav class="tabbar">
+      <button class="tabbar__item" aria-current="false">
+        <span class="tabbar__icon">⌂</span>Home
+      </button>
+      <button class="tabbar__item" aria-current="false">
+        <span class="tabbar__icon">✈</span>Book flight
+      </button>
+      <button class="tabbar__item" aria-current="false">
+        <span class="tabbar__icon">🧳</span>Travel
+      </button>
+      <button class="tabbar__item" aria-current="page">
+        <span class="tabbar__icon">▤</span>My trips
+      </button>
+      <button class="tabbar__item" aria-current="false">
+        <span class="tabbar__icon">◷</span>Flight status
+      </button>
+    </nav>
+  </div>
+
+  <script src="scripts/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+/*
+  Design tokens for the mobile-web pattern library.
+  Swap these values for your own brand — everything downstream
+  (components.css) references only these variables.
+*/
+:root {
+  /* Brand (placeholder — replace with your own) */
+  --color-primary: #2440d6;
+  --color-primary-active: #1a2fa3;
+  --color-on-primary: #ffffff;
+
+  /* Surfaces */
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-scrim: rgba(15, 17, 26, 0.55);
+
+  /* Text */
+  --color-text: #14161c;
+  --color-text-muted: #5b5f6b;
+  --color-text-on-scrim: #ffffff;
+  --color-border: #e4e5ea;
+
+  /* Status / urgency */
+  --color-urgency-bg: #14161c;
+  --color-urgency-text: #ffffff;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* Shadow */
+  --shadow-card: 0 1px 2px rgba(15, 17, 26, 0.06), 0 8px 24px rgba(15, 17, 26, 0.08);
+  --shadow-float: 0 6px 20px rgba(36, 64, 214, 0.35);
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+
+  /* App shell */
+  --topbar-height: 56px;
+  --tabbar-height: 64px;
+  --content-max-width: 480px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0e0f14;
+    --color-surface: #1a1c24;
+    --color-surface-raised: #22242e;
+    --color-text: #f2f3f5;
+    --color-text-muted: #9a9dab;
+    --color-border: #2c2f3a;
+  }
+}

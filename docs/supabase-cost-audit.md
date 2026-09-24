@@ -39,7 +39,7 @@ implies all three are Micro. Double-check on the org Usage page → Compute Hour
 |---|---|---|---|
 | Personal Projects | **KEEP** (the hub) | — | Most active; already hosts several apps with table prefixes (`penciled_`, `cravv_`). Covered by the $10 credit. |
 | tendi | **PAUSE** (or DELETE) | $10/mo | 0 users, 2 rows, no traffic since June. Pausing is free and reversible. |
-| Slowcart | **MERGE** into Personal Projects as `slowcart_*` tables + bucket | $10/mo | Active but tiny (14 MB). Same pattern as penciled/cravv. Needs table + 625-photo + 1 auth-user migration and an env-var swap in the app. |
+| Slowcart | **MERGE** into Personal Projects (same table names, no clashes) | $10/mo | Active but tiny (14 MB). Needs table + 625-photo + 1 auth-user migration and an env-var swap in the app. |
 | yaqihelloworld-sketch's Project | **DELETE** (optional) | $0 | Already paused, costs nothing. Delete only to declutter. |
 
 Result: **$45 → $35** after pausing tendi, **→ $25** after merging Slowcart.

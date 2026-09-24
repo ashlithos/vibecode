@@ -16,8 +16,8 @@ Tables:
 - Slowcart: `item_photos` (611), `items` (388), `ai_usage_daily` (14), `wishlist_items` (0), `shared_lists` (0)
 - tendi: `triages` (2)
 
-**lineup:** nothing named lineup exists in any project (tables, columns, buckets). It either doesn't use Supabase, or it's
-the `goals`/`cards` tables in Personal Projects. Needs confirmation.
+**lineup:** confirmed from `ashlithos/lineup/supabase/schema.sql`. It's the `penciled_bookings` table in Personal Projects,
+the most active table on the account (last write Sep 20).
 
 ## The math (confirmed)
 
@@ -47,6 +47,32 @@ Result: **$45 → $35** after pausing tendi, **→ $25** after merging Slowcart.
 Bigger lever (optional): move to a Free org → **$0**, but Free projects auto-pause after ~1 week idle and have no
 backups. Only worth it if these stay side projects.
 
+## Decisions (2026-09-24)
+
+| Project | Decision | Done? |
+|---|---|---|
+| Personal Projects | KEEP | — |
+| tendi | PAUSE | **Blocked.** Supabase won't pause a project in a paid org. To pause it, first transfer it to a Free org (then it costs $0 and auto-pauses when idle). The other option is to delete it. |
+| Slowcart | MERGE | Planned, not started. See below. |
+| yaqihelloworld-sketch's Project | Leave paused | — |
+
+## Slowcart → Personal Projects merge plan
+
+What was checked:
+- No table-name clashes: Slowcart's `items`, `item_photos`, `ai_usage_daily`, `wishlist_items` and `shared_lists` don't exist in Personal Projects.
+- The Slowcart app code (`ashlithos/slowcart`) reads from Supabase in 15 files. Its URL and keys come from env vars (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), so **no code changes are needed**.
+- The only scheduled job is a Vercel cron (`/api/cron/refresh-prices`, daily 09:00 UTC). It moves automatically with the app.
+- The Slowcart login uses the same email as an existing Personal Projects user but has a different user id. During the copy, rows will be re-pointed to the Personal Projects id.
+
+Steps:
+1. Apply Slowcart's 10 migrations (`supabase/migrations/0001…0010`) to Personal Projects.
+2. Copy table rows, re-pointing the user id.
+3. Copy the 625 files in the `item-photos` bucket. This needs both projects' service-role keys, run as a one-off script.
+4. Swap the 3 env vars in Slowcart's Vercel project, then redeploy.
+5. Use the app for a few days, then delete the Slowcart project. This is the step that saves $10/mo.
+
+Note: Personal Projects is in us-west-2 and Slowcart is in us-east-2, so Slowcart may be a few tens of ms slower after the move.
+
 ## Status
 
-Nothing has been changed. Each action waits for an explicit yes per project.
+No infrastructure has been changed yet. The tendi pause was attempted and refused by Supabase.

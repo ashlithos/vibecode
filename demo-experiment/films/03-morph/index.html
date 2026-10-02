@@ -1,0 +1,201 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>03 Morph — Data UX</title>
+<style>html,body{margin:0;background:#0f1b3d;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 03 · Shape morph. One data point → splits into a scatter cloud → the dots snap into a bar chart → the bars rotate and
+// slide into table rows → each row folds through a capsule into a letter of "Data UX". Every A→B passes through a simple
+// intermediate (circle / capsule), with 10–15 % squash & stretch along the motion and a colour-block wipe per morph.
+import { FILM, RESOLVE, clamp, lerp, inv, E, bez, hash, hr, loadFont, contours, area, bbox, resample, alignStart, tracePoly, TAU } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM, motionBlur: { samples: 3, shutter: 0.5 } };
+const C = document.getElementById('c'), X = C.getContext('2d');
+const PAL = { navy: '#0f1b3d', ink: '#0a1230', cream: '#f4efe6', coral: '#ff5c3a', teal: '#18b7a0', sky: '#a9c4ff' };
+const font = await loadFont('/dux/fonts/Outfit-Bold.ttf');
+const CUE = await (await fetch('cues.json')).json();
+const ease = bez(0.7, 0, 0.3, 1);
+const NP = 160;
+
+// ---------------------------------------------------------------- geometry
+// rounded rectangle as a closed polygon of NP points, starting at the top-centre, clockwise
+function rrect(cx, cy, w, h, r, rot = 0, n = NP) {
+  r = Math.min(r, w / 2, h / 2);
+  const pts = [];
+  // parametrise by arc length around the rounded rectangle
+  const sw = w - 2 * r, sh = h - 2 * r, arc = (Math.PI / 2) * r, L = 2 * sw + 2 * sh + 4 * arc;
+  for (let i = 0; i < n; i++) {
+    let d = (i / n) * L, x, y;
+    const segs = [
+      [sw / 2, (d) => [d, -h / 2]],
+      [arc, (d) => { const a = -Math.PI / 2 + d / Math.max(r, 1e-6); return [sw / 2 + r * Math.cos(a), -sh / 2 + r * Math.sin(a)]; }],
+      [sh, (d) => [w / 2, -sh / 2 + d]],
+      [arc, (d) => { const a = d / Math.max(r, 1e-6); return [sw / 2 + r * Math.cos(a), sh / 2 + r * Math.sin(a)]; }],
+      [sw, (d) => [sw / 2 - d, h / 2]],
+      [arc, (d) => { const a = Math.PI / 2 + d / Math.max(r, 1e-6); return [-sw / 2 + r * Math.cos(a), sh / 2 + r * Math.sin(a)]; }],
+      [sh, (d) => [-w / 2, sh / 2 - d]],
+      [arc, (d) => { const a = Math.PI + d / Math.max(r, 1e-6); return [-sw / 2 + r * Math.cos(a), -sh / 2 + r * Math.sin(a)]; }],
+      [sw / 2, (d) => [-sw / 2 + d, -h / 2]],
+    ];
+    for (const [len, f] of segs) { if (d <= len || len === segs[segs.length - 1][0] && f === segs[segs.length - 1][1]) { [x, y] = f(Math.min(d, len)); break; } d -= len; }
+    const c = Math.cos(rot), s = Math.sin(rot);
+    pts.push([cx + x * c - y * s, cy + x * s + y * c]);
+  }
+  return pts;
+}
+// param morph between two rounded-rect states through a capsule, with squash & stretch along the travel
+function rrMorph(A, B, u, sq = 0.13) {
+  const e = ease(clamp(u));
+  const mid = Math.sin(Math.PI * e);
+  const cx = lerp(A.cx, B.cx, e), cy = lerp(A.cy, B.cy, e) - (B.arc || 0) * mid;
+  let w = lerp(A.w, B.w, e), h = lerp(A.h, B.h, e);
+  const rot = lerp(A.rot || 0, B.rot || 0, e);
+  // squash & stretch: speed ∝ derivative of the ease; stretch along the direction of travel
+  const sp = (ease(clamp(u + 0.01)) - ease(clamp(u - 0.01))) / 0.02;
+  const k = 1 + sq * clamp(sp / 2.2);
+  const dx = B.cx - A.cx, dy = B.cy - A.cy;
+  const horiz = Math.abs(dx) * Math.abs(Math.cos(rot)) + Math.abs(dy) * Math.abs(Math.sin(rot)) > Math.abs(dy) * Math.abs(Math.cos(rot)) + Math.abs(dx) * Math.abs(Math.sin(rot));
+  if (horiz) { w *= k; h /= k; } else { h *= k; w /= k; }
+  const rCap = Math.min(w, h) / 2;
+  const r = lerp(lerp(A.r, B.r, e), rCap, mid);               // the capsule intermediate
+  return rrect(cx, cy, w, h, r, rot);
+}
+const centroid = (p) => { let x = 0, y = 0; for (const q of p) { x += q[0]; y += q[1]; } return [x / p.length, y / p.length]; };
+const orient = (p, ref) => (Math.sign(area(p)) === Math.sign(area(ref)) ? p : [...p].reverse());
+
+// ---------------------------------------------------------------- layouts
+const NB = 6;
+const BAR_H = [0.42, 0.6, 0.5, 0.74, 0.64, 0.94].map((f) => f * 430), BAR_W = 92, BASE = 790;
+const barX = (i) => 960 + (i - 2.5) * 136;
+const ROW = (i) => ({ cx: 960, cy: 300 + i * 92, w: 980, h: 72, r: 10, rot: 0 });
+// scatter cloud: 24 dots (4 per bar), seeded, tighter toward the centre
+const DOTS = [];
+for (let g = 0; g < NB; g++) for (let k = 0; k < 4; k++) {
+  const j = g * 4 + k, a = hr(0, TAU, j, 1), rr = Math.sqrt(hr(0.08, 1, j, 2));
+  const x = 960 + Math.cos(a) * 700 * rr + (g - 2.5) * 40, y = 520 + Math.sin(a) * 340 * rr;
+  DOTS.push({ g, k, x, y, d: 34 + 18 * hash(j, 3), t: CUE.scatter[0] + 0.08 * hash(j, 4) });
+}
+// glyphs: Outfit Bold "Data UX"
+const SIZE = 300, glyphs = font.stringToGlyphs('Data UX');
+let adv = 0; const placed = [];
+for (let i = 0; i < glyphs.length; i++) {
+  const g = glyphs[i];
+  if (g.unicode !== 32) placed.push({ g, x: adv });
+  adv += g.advanceWidth * SIZE / font.unitsPerEm;
+  if (i < glyphs.length - 1) adv += font.getKerningValue(g, glyphs[i + 1]) * SIZE / font.unitsPerEm;
+}
+const BL = 650, TX0 = 960 - adv / 2;
+const LET = placed.map(({ g, x }, i) => {
+  const cs = contours(g.getPath(TX0 + x, BL, SIZE), 3); cs.sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)));
+  const outer = resample(cs[0], NP), bb = bbox(outer), sgn = Math.sign(area(cs[0]));
+  // other contours: holes (opposite winding) or extra overlapping outers (same winding); all drawn non-zero, each
+  // normalised so outers wind +1 and holes −1
+  const norm = (p, wantPos) => ((area(p) > 0) === wantPos ? p : [...p].reverse());
+  const others = cs.slice(1).map((h) => ({ h: norm(resample(h, 90), Math.sign(area(h)) === sgn), c: centroid(h) }));
+  return { outer, holes: others, bb, col: i >= 4 ? PAL.coral : PAL.cream, norm };
+});
+
+// ---------------------------------------------------------------- per-element state at time t → {pts, holes, col}
+function element(g, t) {
+  const L = LET[g], tl = CUE.letters[g];
+  const H = BAR_H[g], bx = barX(g);
+  // stage 4: row → capsule → letter
+  if (t >= tl[0]) {
+    const capT = tl[0] + (tl[1] - tl[0]) * 0.45;
+    const cap = { cx: L.bb.cx, cy: L.bb.cy, w: L.bb.w * 0.62, h: L.bb.h * 0.92, r: 1e3, rot: 0 };
+    if (t < capT) return { pts: rrMorph(ROW(g), { ...cap, arc: 40 }, inv(tl[0], capT, t), 0.12), col: lerp3(PAL.cream, L.col, inv(tl[0], capT, t)) };
+    const u = ease(inv(capT, tl[1], t));
+    const a = rrect(cap.cx, cap.cy, cap.w, cap.h, 1e3); let b = orient(L.outer, a); b = alignStart(a, b);
+    // squash on the landing (3 frames): settle from 0.9 → 1.04 → 1 vertically about the baseline
+    const land = t - tl[1];
+    const sq = land < 0 ? 1 : land < 0.1 ? lerp(0.9, 1.04, E.out2(land / 0.1)) : land < 0.25 ? lerp(1.04, 1, E.io2((land - 0.1) / 0.15)) : 1;
+    const S = (p) => [L.bb.cx + (p[0] - L.bb.cx) * (2 - sq), BL + (p[1] - BL) * sq];
+    const pts = a.map((p, i) => S([lerp(p[0], b[i][0], u), lerp(p[1], b[i][1], u)]));
+    const hs = smooth(0.35, 1, u);
+    const holes = hs > 0.01 ? L.holes.map(({ h, c }) => h.map(([x, y]) => S([lerp(c[0], x, hs), lerp(c[1], y, hs)]))) : [];
+    return { pts: L.norm(pts, true), holes, col: L.col, nz: true };
+  }
+  // stage 3: bar → (capsule) → table row: rotate a quarter turn and slide
+  const tr = CUE.rows[g];
+  const bar = { cx: bx, cy: BASE - H / 2, w: BAR_W, h: H, r: 6, rot: 0 };
+  if (t >= tr[0]) {
+    const row = ROW(g);
+    const u = inv(tr[0], tr[1], t);
+    return { pts: rrMorph(bar, { cx: row.cx, cy: row.cy, w: row.h, h: row.w, r: row.r, rot: -Math.PI / 2, arc: 0 }, u, 0.12), col: lerp3(barCol(g), PAL.cream, u) };
+  }
+  return null;  // earlier stages are drawn as dots / bar segments
+}
+const barCol = (g) => (g === 5 ? PAL.coral : PAL.navy);
+function smooth(a, b, x) { const k = inv(a, b, x); return k * k * (3 - 2 * k); }
+function lerp3(a, b, u) { const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16); const c = [16, 8, 0].map((s) => Math.round(lerp((pa >> s) & 255, (pb >> s) & 255, clamp(u)))); return `rgb(${c.join(',')})`; }
+
+// ---------------------------------------------------------------- colour-block wipes (one per morph)
+const WIPES = CUE.wipes;   // [t0, t1, colour, angle]
+function background(t) {
+  let base = PAL.navy;
+  X.fillStyle = base; X.fillRect(0, 0, 1920, 1080);
+  for (const [t0, t1, col, ang] of WIPES) {
+    const u = ease(inv(t0, t1, t)); if (u <= 0) continue;
+    X.save(); X.translate(960, 540); X.rotate(ang);
+    const span = 2400; X.fillStyle = PAL[col];
+    X.fillRect(-span / 2, -span / 2, span * u, span);
+    X.restore();
+  }
+}
+
+function fill(pts, holes, col, nz = false) {
+  X.fillStyle = col; X.beginPath(); tracePoly(X, pts); for (const h of holes || []) tracePoly(X, h); X.fill(nz ? 'nonzero' : 'evenodd');
+}
+
+// ---------------------------------------------------------------- frame
+window.renderAt = (t) => {
+  X.setTransform(1, 0, 0, 1, 0, 0);
+  background(t);
+
+  // 0 · the single data point: breathes, anticipates (squash), splits
+  const sp = CUE.split;
+  if (t < sp) {
+    const pulse = 1 + 0.05 * Math.sin(t * 9);
+    const an = E.in2(inv(sp - 0.25, sp, t));          // anticipation squash before the split
+    const w = 120 * pulse * (1 + 0.18 * an), h = 120 * pulse * (1 - 0.15 * an);
+    fill(rrect(960, 520, w, h, 1e3), null, PAL.coral);
+  }
+  // 1 · scatter: each dot leaves the centre, stretched along its flight
+  // 2 · snap: dots fly into their bar column and become stacked rounded segments; then the gaps close into one bar
+  for (const D of DOTS) {
+    const H = BAR_H[D.g], segH = H / 4, bx = barX(D.g);
+    if (t >= CUE.rows[D.g][0]) continue;
+    const st = CUE.snap[D.g];
+    const merge = smooth(CUE.merge[0], CUE.merge[1], t);
+    const gap = 8 * (1 - merge);
+    const seg = { cx: bx, cy: BASE - segH * (D.k + 0.5), w: BAR_W, h: segH - gap, r: lerp(10, 2, merge), rot: 0 };
+    let pts, col;
+    if (t < sp) continue;
+    if (t < st[0] + 0.03 * D.k) {
+      const u = inv(sp + 0.02 * D.k, D.t + 0.38, t);
+      pts = rrMorph({ cx: 960, cy: 520, w: 40, h: 40, r: 20 }, { cx: D.x, cy: D.y, w: D.d, h: D.d, r: D.d / 2 }, u, 0.15);
+      col = D.g === 5 ? PAL.coral : D.g % 2 ? PAL.navy : PAL.teal;
+      // the cloud drifts gently while it waits (no dead frames)
+      const dr = 6 * Math.sin(t * 2 + D.k + D.g);
+      pts = pts.map(([x, y]) => [x + dr * 0.6, y + dr]);
+    } else {
+      const u = inv(st[0] + 0.03 * D.k, st[1] + 0.03 * D.k, t);
+      pts = rrMorph({ cx: D.x, cy: D.y, w: D.d, h: D.d, r: D.d / 2 }, { ...seg, arc: 60 }, u, 0.15);
+      if (u >= 1) pts = rrect(seg.cx, seg.cy, seg.w, seg.h + (merge > 0 ? gap * 0 : 0), seg.r);
+      col = lerp3(D.g === 5 ? PAL.coral : D.g % 2 ? PAL.navy : PAL.teal, barCol(D.g), u);
+    }
+    fill(pts, null, col);
+  }
+  // 3/4 · rows and letters
+  for (let g = 0; g < NB; g++) {
+    const S = element(g, t); if (!S) continue;
+    fill(S.pts, S.holes, S.col, S.nz);
+  }
+  // table rules: thin column dividers appear while the rows hold, then retract before the fold
+  const ru = Math.min(smooth(CUE.rows[5][1] - 0.05, CUE.rows[5][1] + 0.15, t), 1 - smooth(CUE.letters[0][0] - 0.05, CUE.letters[0][0] + 0.12, t));
+  if (ru > 0) {
+    X.fillStyle = PAL.navy;
+    for (const x of [960 - 490 + 245, 960, 960 + 245]) X.fillRect(x - 2, 300 - 36, 4, (5 * 92 + 72) * ru);
+  }
+};
+window.__ready = true;
+</script></body></html>

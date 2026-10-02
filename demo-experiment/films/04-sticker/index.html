@@ -1,0 +1,227 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>04 Sticker Explainer — Data UX</title>
+<style>html,body{margin:0;background:#e9eef2;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 04 · Bold-outline sticker explainer (PaperClip look). Data-tool stickers slap onto a calm blue-grey board, one per
+// beat, while one continuous camera move strings them together: a spreadsheet cell, a pie chart, a magnifying glass,
+// a "SELECT *" query bubble, then a big check label in the middle — which peels back to reveal the "Data UX" sticker.
+import { FILM, RESOLVE, clamp, lerp, inv, K, E, bez, hash, hr, canvas, cssFont, loadImage, grain, TAU } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM, motionBlur: { samples: 6, shutter: 0.6 } };
+const C = document.getElementById('c'), X = C.getContext('2d');
+const PAL = { board: '#e9eef2', slate: '#2f3b4c', slate2: '#55657a', blue: '#9db4c8', pale: '#d5dee7', acc: '#ff5a36', white: '#ffffff', back: '#dfe5ea' };
+await Promise.all([cssFont('Poppins', '/dux/fonts/Poppins-Black.ttf', '900'), cssFont('JBM', '/dux/fonts/JetBrainsMono-Bold.ttf', '700')]);
+const grainImg = await loadImage('/dux/shared/tex/grain.png');
+const CUE = await (await fetch('cues.json')).json();
+const RS = 2;          // sticker art resolution (the camera zooms in to ~1.7×)
+const OUT = 11;        // white outline (board px)
+
+// ---------------------------------------------------------------- sticker factory: art → white die-cut outline
+function sticker(w, h, draw) {
+  const pad = OUT + 6;
+  const art = canvas((w + pad * 2) * RS, (h + pad * 2) * RS), a = art.getContext('2d');
+  a.scale(RS, RS); a.translate(pad, pad); draw(a); a.setTransform(1, 0, 0, 1, 0, 0);
+  const out = canvas(art.width, art.height), o = out.getContext('2d');
+  // die-cut: the art's silhouette dilated by OUT px (stamped around a circle), filled white
+  const sil = canvas(art.width, art.height), s = sil.getContext('2d');
+  s.drawImage(art, 0, 0); s.globalCompositeOperation = 'source-in'; s.fillStyle = PAL.white; s.fillRect(0, 0, sil.width, sil.height);
+  for (let k = 0; k < 32; k++) { const ang = (k / 32) * TAU; o.drawImage(sil, Math.cos(ang) * OUT * RS, Math.sin(ang) * OUT * RS); }
+  for (let k = 0; k < 16; k++) { const ang = (k / 16) * TAU; o.drawImage(sil, Math.cos(ang) * OUT * 0.5 * RS, Math.sin(ang) * OUT * 0.5 * RS); }
+  o.drawImage(art, 0, 0);
+  // silhouette of the whole die-cut (for shadows and the peel's back side)
+  const cut = canvas(out.width, out.height), c = cut.getContext('2d');
+  c.drawImage(out, 0, 0); c.globalCompositeOperation = 'source-in'; c.fillStyle = '#000'; c.fillRect(0, 0, cut.width, cut.height);
+  // pre-blurred shadows (contact / lifted), so no per-frame filters
+  const blurred = (r) => { const b = canvas(cut.width + 80 * RS, cut.height + 80 * RS), x = b.getContext('2d'); x.filter = `blur(${r * RS}px)`; x.drawImage(cut, 40 * RS, 40 * RS); return b; };
+  return { img: out, cut, sh0: blurred(4), sh1: blurred(20), sh2: blurred(10), w, h, pad };
+}
+const rr = (a, x, y, w, h, r) => { a.beginPath(); a.roundRect(x, y, w, h, r); };
+
+// 1 · spreadsheet cell: a little sheet, one selected cell with the accent border
+const S_SHEET = sticker(330, 236, (a) => {
+  rr(a, 0, 0, 330, 236, 18); a.fillStyle = PAL.white; a.fill();
+  a.fillStyle = PAL.pale; a.fillRect(0, 0, 330, 44); a.fillRect(0, 0, 54, 236);
+  rr(a, 0, 0, 330, 236, 18); a.lineWidth = 4; a.strokeStyle = PAL.slate; a.stroke();
+  a.strokeStyle = PAL.blue; a.lineWidth = 2.5;
+  for (const x of [54, 146, 238]) { a.beginPath(); a.moveTo(x, 0); a.lineTo(x, 236); a.stroke(); }
+  for (const y of [44, 108, 172]) { a.beginPath(); a.moveTo(0, y); a.lineTo(330, y); a.stroke(); }
+  // cell contents: value bars (no text), the selected cell in accent
+  a.fillStyle = PAL.slate2; [[64, 66, 60], [156, 66, 40], [64, 130, 44], [248, 66, 52], [64, 194, 70], [248, 194, 36], [156, 194, 56]].forEach(([x, y, w]) => { rr(a, x, y, w, 10, 5); a.fill(); });
+  rr(a, 146, 108, 92, 64, 4); a.fillStyle = '#fff1ec'; a.fill(); a.lineWidth = 6; a.strokeStyle = PAL.acc; a.stroke();
+  a.fillStyle = PAL.acc; rr(a, 158, 133, 50, 12, 6); a.fill(); a.fillRect(231, 165, 13, 13);
+});
+// 2 · pie chart: exact 50 / 30 / 20 slices
+const S_PIE = sticker(270, 270, (a) => {
+  const cx = 135, cy = 135, r = 130; let a0 = -Math.PI / 2;
+  [[0.5, PAL.slate], [0.3, PAL.acc], [0.2, PAL.blue]].forEach(([f, col], i) => {
+    const a1 = a0 + f * TAU, off = i === 1 ? 10 : 0, mid = (a0 + a1) / 2;
+    a.beginPath(); a.moveTo(cx + Math.cos(mid) * off, cy + Math.sin(mid) * off); a.arc(cx + Math.cos(mid) * off, cy + Math.sin(mid) * off, r - (i === 1 ? 0 : 6), a0, a1); a.closePath(); a.fillStyle = col; a.fill();
+    a0 = a1;
+  });
+  a.beginPath(); a.arc(cx, cy, 46, 0, TAU); a.fillStyle = PAL.white; a.fill();
+});
+// 3 · magnifying glass
+const S_MAG = sticker(270, 270, (a) => {
+  a.save(); a.translate(112, 112);
+  a.save(); a.rotate(Math.PI / 4); rr(a, 78, -20, 120, 40, 20); a.fillStyle = PAL.slate; a.fill(); rr(a, 78, -20, 26, 40, 6); a.fillStyle = PAL.slate2; a.fill(); a.restore();
+  a.beginPath(); a.arc(0, 0, 100, 0, TAU); a.fillStyle = PAL.slate; a.fill();
+  a.beginPath(); a.arc(0, 0, 76, 0, TAU); a.fillStyle = '#cfe0ee'; a.fill();
+  // what the lens sees: a magnified up-trend line with one dot
+  a.save(); a.beginPath(); a.arc(0, 0, 76, 0, TAU); a.clip();
+  a.strokeStyle = PAL.slate; a.lineWidth = 9; a.lineCap = 'round'; a.lineJoin = 'round';
+  a.beginPath(); a.moveTo(-80, 40); a.lineTo(-30, 10); a.lineTo(4, 30); a.lineTo(60, -36); a.stroke();
+  a.beginPath(); a.arc(4, 30, 13, 0, TAU); a.fillStyle = PAL.acc; a.fill();
+  a.restore();
+  a.beginPath(); a.arc(-26, -30, 22, Math.PI * 1.05, Math.PI * 1.55); a.strokeStyle = 'rgba(255,255,255,.85)'; a.lineWidth = 10; a.lineCap = 'round'; a.stroke();
+  a.restore();
+});
+// 4 · query bubble "SELECT *"
+const S_SQL = sticker(390, 178, (a) => {
+  rr(a, 0, 0, 390, 138, 30); a.fillStyle = PAL.slate; a.fill();
+  a.beginPath(); a.moveTo(60, 130); a.lineTo(56, 178); a.lineTo(112, 130); a.closePath(); a.fill();
+  a.fillStyle = PAL.white; a.font = '700 56px JBM'; a.textBaseline = 'middle'; a.fillText('SELECT', 34, 70);
+  a.fillStyle = PAL.acc; a.fillText('*', 300, 72);
+  a.fillStyle = 'rgba(255,255,255,.5)'; a.fillRect(352, 46, 6, 48);   // text caret
+});
+// 5 · the check label (same die-cut as the Data UX label, so it can hide it)
+const LW = 880, LH = 330;
+const S_CHECK = sticker(LW, LH, (a) => {
+  rr(a, 0, 0, LW, LH, 46); a.fillStyle = PAL.acc; a.fill();
+  a.strokeStyle = PAL.white; a.lineWidth = 46; a.lineCap = 'round'; a.lineJoin = 'round';
+  a.beginPath(); a.moveTo(LW / 2 - 92, LH / 2 + 4); a.lineTo(LW / 2 - 22, LH / 2 + 72); a.lineTo(LW / 2 + 110, LH / 2 - 76); a.stroke();
+});
+// 6 · the Data UX sticker
+const S_DUX = sticker(LW, LH, (a) => {
+  rr(a, 0, 0, LW, LH, 46); a.fillStyle = PAL.slate; a.fill();
+  a.font = '900 172px Poppins'; a.textBaseline = 'alphabetic'; a.textAlign = 'left';
+  const w1 = a.measureText('Data ').width, w2 = a.measureText('UX').width, x0 = (LW - (w1 + w2)) / 2, y = LH / 2 + 62;
+  a.fillStyle = PAL.white; a.fillText('Data', x0, y);
+  a.fillStyle = PAL.acc; a.fillText('UX', x0 + w1, y);
+});
+
+// ---------------------------------------------------------------- layout (final frame = board coords at zoom 1)
+const ST = [
+  { s: S_SHEET, x: 430, y: 250, rot: -0.07, t: CUE.slaps[0] },
+  { s: S_PIE, x: 1505, y: 245, rot: 0.1, t: CUE.slaps[1] },
+  { s: S_MAG, x: 445, y: 838, rot: 0.08, t: CUE.slaps[2] },
+  { s: S_SQL, x: 1478, y: 852, rot: -0.05, t: CUE.slaps[3] },
+];
+const LABEL = { x: 960, y: 548, rot: -0.025 };
+
+// slap: falls from above the board (bigger, higher shadow), squashes on contact, settles
+function slap(t, t0) {
+  const first = t0 === CUE.slaps[0], dur = first ? 0.5 : 0.22;   // the opener is already falling on frame 1 (the hook)
+  const u = inv(t0 - dur, t0, t);
+  if (t < t0 - dur) return null;
+  const fall = first ? E.in2(u) : E.in3(u);
+  let sc = lerp(first ? 1.9 : 1.35, 1, fall), lift = lerp(1, 0, fall);
+  const d = t - t0;
+  if (d >= 0) { sc = d < 0.05 ? lerp(0.95, 1.025, d / 0.05) : d < 0.2 ? lerp(1.025, 1, E.io2((d - 0.05) / 0.15)) : 1; lift = 0; }
+  return { sc, lift, a: clamp(u * 3), spin: (1 - fall) * 0.25 };
+}
+function drawSticker(S, x, y, rot, st) {
+  const { img, cut, w, h, pad } = S;
+  const W = img.width / RS, H = img.height / RS;
+  // shadow: tight contact shadow + soft lift shadow
+  X.save(); X.translate(x, y); X.rotate(rot + st.spin); X.scale(st.sc, st.sc);
+  const ox = 4 + 26 * st.lift, oy = 8 + 40 * st.lift, SW = S.sh0.width / RS, SHh = S.sh0.height / RS;
+  X.globalAlpha = 0.18 * st.a * (1 - st.lift); X.drawImage(S.sh0, -SW / 2 + ox, -SHh / 2 + oy, SW, SHh);
+  X.globalAlpha = 0.18 * st.a * st.lift; X.drawImage(S.sh1, -SW / 2 + ox, -SHh / 2 + oy, SW, SHh);
+  X.globalAlpha = st.a;
+  X.drawImage(img, -W / 2, -H / 2, W, H);
+  X.restore();
+}
+
+// camera: one continuous move — long eases between sticker spots, then the pull-out to the composed board
+const ioL = bez(0.45, 0, 0.2, 1);
+function camera(t) {
+  const k = CUE.camera;
+  const x = K(t, k.map(([tt, xx, , , e]) => [tt, xx, ioL])), y = K(t, k.map(([tt, , yy, , e]) => [tt, yy, ioL])), z = K(t, k.map(([tt, , , zz]) => [tt, zz, ioL]));
+  const drift = 1 + 0.012 * E.io2(inv(RESOLVE, 7, t));      // the hold: a barely-there push
+  return { x, y, z: z * drift };
+}
+
+// ---------------------------------------------------------------- the peel (fold line sweeps from the bottom-right corner)
+function peel(t) {
+  const s = inv(CUE.peel[0], CUE.peel[1], t);
+  return E.io2(s);
+}
+function drawLabelPeel(t) {
+  const S = S_CHECK, W = S.img.width / RS, H = S.img.height / RS;
+  const p = peel(t);
+  const fly = inv(CUE.peel[1], RESOLVE, t);
+  // local frame of the label
+  X.save(); X.translate(LABEL.x, LABEL.y); X.rotate(LABEL.rot);
+  // the Data UX sticker underneath (already stuck), with a gloss sweep on the resolve
+  drawSticker(S_DUX, 0, 0, 0, { sc: 1, lift: 0, a: t >= CUE.peel[0] - 0.02 ? 1 : 0, spin: 0 });
+  const gl = inv(RESOLVE - 0.05, RESOLVE + 0.45, t);
+  if (gl > 0 && gl < 1) {
+    X.save(); X.beginPath(); X.roundRect(-LW / 2, -LH / 2, LW, LH, 46); X.clip();
+    const gx = lerp(-LW, LW, E.io2(gl)); const g = X.createLinearGradient(gx - 140, 0, gx + 140, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,0.32)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    X.fillStyle = g; X.transform(1, 0, -0.35, 1, 0, 0); X.fillRect(-LW * 1.5, -LH / 2, LW * 3, LH); X.restore();
+  }
+  if (fly >= 1) { X.restore(); return; }
+  // fold geometry: direction u from the BR corner toward TL; P moves along it
+  const u = [-Math.cos(0.6), -Math.sin(0.6)];
+  const BR = [W / 2, H / 2];
+  const span = W * Math.cos(0.6) + H * Math.sin(0.6);
+  const P = [BR[0] + u[0] * span * 1.02 * p, BR[1] + u[1] * span * 1.02 * p];
+  const half = (keep) => {                        // clip to one side of the fold line (big polygon)
+    const nx = -u[1], ny = u[0], L = 4000, sgn = keep ? 1 : -1;
+    X.beginPath();
+    X.moveTo(P[0] + nx * L, P[1] + ny * L); X.lineTo(P[0] - nx * L, P[1] - ny * L);
+    X.lineTo(P[0] - nx * L + sgn * u[0] * L, P[1] - ny * L + sgn * u[1] * L); X.lineTo(P[0] + nx * L + sgn * u[0] * L, P[1] + ny * L + sgn * u[1] * L);
+    X.closePath(); X.clip();
+  };
+  const st = slap(t, CUE.slaps[4]); if (!st) { X.restore(); return; }
+  if (fly <= 0) {
+    // stuck part
+    X.save(); if (p > 0) half(true); drawSticker(S, 0, 0, 0, st); X.restore();
+    // shadow of the flap + the flap (back side), mirrored across the fold
+    if (p > 0) {
+      X.save();
+      const d = P[0] * u[0] + P[1] * u[1];
+      X.transform(1 - 2 * u[0] * u[0], -2 * u[0] * u[1], -2 * u[0] * u[1], 1 - 2 * u[1] * u[1], 2 * d * u[0], 2 * d * u[1]);
+      half(false);
+      { const SW = S.sh2.width / RS, SHh = S.sh2.height / RS; X.globalAlpha = 0.22; X.drawImage(S.sh2, -SW / 2 - 16, -SHh / 2 + 22, SW, SHh); X.globalAlpha = 1; }
+      X.drawImage(S.cut, -W / 2, -H / 2, W, H);
+      X.globalCompositeOperation = 'source-atop';
+      const g = X.createLinearGradient(P[0], P[1], P[0] - u[0] * 260, P[1] - u[1] * 260);
+      g.addColorStop(0, '#c4ccd4'); g.addColorStop(0.35, '#eef2f5'); g.addColorStop(1, '#dde3e8');
+      X.fillStyle = g; X.fillRect(-W, -H, W * 2, H * 2);
+      X.restore();
+    }
+  } else {
+    // fully peeled: the flipped sticker is tossed off toward the top-left
+    const e = E.in2(fly);
+    X.save(); X.translate(-W * 0.9 - 900 * e, -H * 0.6 - 520 * e); X.rotate(-0.5 - 0.8 * e); X.scale(-1, 1);
+    X.globalAlpha = 1 - e * 0.3;
+    X.drawImage(S.cut, -W / 2, -H / 2, W, H); X.globalCompositeOperation = 'source-atop'; X.fillStyle = PAL.back; X.fillRect(-W, -H, W * 2, H * 2);
+    X.restore();
+  }
+  X.restore();
+}
+
+// board dot grid as a 4× tile pattern (crisp at any camera zoom)
+const DOTS = (() => { const c = canvas(192, 192), a = c.getContext('2d'); a.fillStyle = 'rgba(47,59,76,0.13)'; for (const [x, y] of [[0, 0], [192, 0], [0, 192], [192, 192]]) { a.beginPath(); a.arc(x, y, 8.8, 0, TAU); a.fill(); }
+  const p = X.createPattern(c, 'repeat'); p.setTransform(new DOMMatrix().scale(0.25)); return p; })();
+
+// ---------------------------------------------------------------- frame
+window.renderAt = (t) => {
+  const cam = camera(t);
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; X.filter = 'none';
+  X.fillStyle = PAL.board; X.fillRect(0, 0, 1920, 1080);
+  X.setTransform(cam.z, 0, 0, cam.z, 960 - cam.x * cam.z, 540 - cam.y * cam.z);
+  // board: fine dot grid
+  X.fillStyle = DOTS; X.fillRect(-600, -400, 3120, 1880);
+  for (const s of ST) { const st = slap(t, s.t); if (st) drawSticker(s.s, s.x, s.y, s.rot, st); }
+  drawLabelPeel(t);
+  X.setTransform(1, 0, 0, 1, 0, 0);
+  const v = X.createRadialGradient(960, 540, 600, 960, 540, 1200); v.addColorStop(0, 'rgba(30,40,55,0)'); v.addColorStop(1, 'rgba(30,40,55,0.12)');
+  X.fillStyle = v; X.fillRect(0, 0, 1920, 1080);
+  grain(X, grainImg, t, 0.035, 30, 'soft-light');
+};
+window.__ready = true;
+</script></body></html>

@@ -1,0 +1,217 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>02 Line Art — Data UX</title>
+<style>html,body{margin:0;background:#0b1320;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 02 · Line art. ONE continuous champagne-gold line: a rising line chart (a tiny loop marks every data point) → loops
+// into a table grid (rows snaked, then columns) → circles a single data point, which fills with gold (line-to-fill) →
+// sweeps under the frame and writes "Data UX" in the same unbroken stroke, then rests. A virtual camera follows the
+// pen tip and dollies out to the composed poster at the resolve.
+import { FILM, RESOLVE, clamp, lerp, inv, K, E, bez, hash, noise1, canvas, loadImage, cumLen, along, grain } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM };
+const C = document.getElementById('c'), X = C.getContext('2d');
+const PAL = { bg: '#0b1320', bg2: '#101b2e', gold: '#e9d7a5', hot: '#fff3d6' };
+const grainImg = await loadImage('/dux/shared/tex/grain.png');
+const CUE = await (await fetch('cues.json')).json();
+const ioC = bez(0.65, 0, 0.35, 1);
+
+// ---------------------------------------------------------------- path construction (world = final frame px)
+function catmull(pts, seg = 14) {                // centripetal-ish Catmull-Rom through the points
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const n = Math.max(2, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / 6));
+    for (let k = 0; k < n; k++) {
+      const t = k / n, t2 = t * t, t3 = t2 * t;
+      out.push([0, 1].map((j) => 0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3)));
+    }
+  }
+  out.push(pts[pts.length - 1]);
+  return out;
+}
+const lineTo = (a, b) => { const n = Math.max(2, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 6)); const o = []; for (let k = 1; k <= n; k++) o.push([lerp(a[0], b[0], k / n), lerp(a[1], b[1], k / n)]); return o; };
+const SECTIONS = [];   // {name, pts, t0, t1}
+let PATH = [];
+function add(name, pts) { SECTIONS.push({ name, i0: PATH.length, pts }); PATH = PATH.concat(pts); }
+
+// 1 · rising line chart, a small marker loop at each data point
+const DATA = [[190, 470], [262, 432], [334, 452], [406, 384], [478, 402], [550, 322], [622, 338], [694, 252], [766, 270], [830, 178]];
+{
+  const pts = [];
+  DATA.forEach((d, i) => {
+    if (i > 0) pts.push(...lineTo(pts[pts.length - 1], [d[0], d[1] + 11]));
+    const r = 11, n = 28;                         // marker loop: enter from below, full turn, leave
+    for (let k = 0; k <= n; k++) { const a = Math.PI / 2 - (k / n) * Math.PI * 2; pts.push([d[0] + Math.cos(a) * r, d[1] + Math.sin(a) * r]); }
+  });
+  add('chart', [[150, 520], ...lineTo([150, 520], [190, 481]), ...pts]);
+}
+// 2 · loop over into the table grid
+const G = { x0: 1010, x1: 1720, ys: [176, 274, 372, 470], xs: [1010, 1246.7, 1483.3, 1720] };
+add('loop', catmull([[830, 189], [862, 150], [900, 92], [952, 96], [968, 140], [940, 172], [980, 182], [G.x0, G.ys[0]]]));
+{
+  const pts = []; let cur = [G.x0, G.ys[0]];
+  const go = (p) => { pts.push(...lineTo(cur, p)); cur = p; };
+  G.ys.forEach((y, i) => { const L = i % 2 === 0; if (i > 0) go([cur[0], y]); go([L ? G.x1 : G.x0, y]); });   // rows, snaked
+  G.xs.forEach((x, i) => { go([x, cur[1]]); go([x, i % 2 === 0 ? G.ys[0] : G.ys[3]]); });                    // columns, snaked
+  add('grid', pts);
+}
+// 3 · circle a single data point (bottom-right cell), 1.4 turns
+const DOT = [1601.7, 424];
+{
+  const pts = catmull([[G.x1, G.ys[3]], [1690, 452], [1650, 446]]);
+  const r0 = 34, n = 90;
+  for (let k = 0; k <= n; k++) { const u = k / n, a = Math.PI * 0.05 - u * Math.PI * 2.4, r = r0 + 6 * u; pts.push([DOT[0] + Math.cos(a) * r, DOT[1] + Math.sin(a) * r * 0.92]); }
+  add('circle', pts);
+}
+// 5 · "Data UX" — monoline script in ONE stroke. Joins run along the baseline and up-strokes RETRACE the letter's own
+//     stem (straight 'L' runs), so every letter stays clean. Units: cap 120, x-height 64, baseline 0.
+const SCRIPT_SPEC = [
+  ['C', [[-2, -40], [0, -120]]],                                                     // D stem up
+  ['C', [[44, -118], [82, -96], [94, -60], [84, -22], [50, -2], [10, 0]]],           // D bowl, back to the baseline
+  ['C', [[60, 2], [110, 2], [150, -2]]],                                             // baseline join → a
+  ['L', [[152, -62]]],                                                               // up the a stem
+  ['C', [[128, -68], [104, -52], [100, -18], [118, 0], [140, -6], [152, -30]]],      // a bowl
+  ['L', [[154, -4]]], ['C', [[166, 2], [184, 2], [200, -2]]],                        // stem down, join → t
+  ['L', [[200, -64], [180, -64], [224, -64], [200, -64], [199, -116], [200, -64], [202, -6]]], // t: stem, cross-bar, retrace
+  ['C', [[214, 2], [250, 2], [282, -2]]],                                            // join → a
+  ['L', [[284, -62]]],
+  ['C', [[260, -68], [236, -52], [232, -18], [250, 0], [272, -6], [284, -30]]],
+  ['L', [[286, -4]]], ['C', [[300, 2], [336, 4], [370, 0]]],                         // join → U (word space)
+  ['L', [[372, -120], [372, -40]]],                                                  // up the U's left arm, retrace
+  ['C', [[380, -10], [404, 0], [428, -10], [440, -40]]],                             // U bowl
+  ['L', [[442, -120], [442, -2]]],                                                   // right arm up, retrace
+  ['C', [[458, 2], [474, 2], [488, 0]]],                                             // join → X
+  ['L', [[564, -120], [526, -60], [488, -120], [564, 0]]],                           // X: ╱ up, back to the cross, ╲ through
+  ['C', [[590, 6], [628, 8], [664, 4]]],                                             // tail; the pen rests here
+];
+const S = 2.08, TX = 960 - 330 * S, TY = 846;       // script scale, origin (baseline-left of the D)
+const T = (x, y) => [TX + x * S, TY + y * S];
+function script(spec, start) {
+  let pts = [start], cur = start;
+  for (const [kind, ps] of spec) {
+    const P = ps.map(([x, y]) => T(x, y));
+    if (kind === 'L') { for (const p of P) { pts.push(...lineTo(cur, p)); cur = p; } }
+    else { const c = catmull([cur, ...P]); pts.push(...c.slice(1)); cur = P[P.length - 1]; }
+  }
+  return pts;
+}
+// 4 · sweep down and right-to-left under the title, curling up into the D
+const SWEEP = () => catmull([[DOT[0] - 18, DOT[1] + 44], [1690, 640], [1640, 900], [1400, 940], [900, 940], [460, 930], [TX - 70, 905], [TX - 40, TY + 30], T(-6, 10)]);
+add('sweep', SWEEP());
+add('title', script(SCRIPT_SPEC, T(-6, 10)));
+const REST = PATH[PATH.length - 1];
+
+// ---------------------------------------------------------------- time ↔ arc length (slower into corners)
+const CUM = cumLen(PATH);
+const W = new Float64Array(PATH.length);           // per-point time weight: 1 + curvature
+for (let i = 1; i < PATH.length - 1; i++) {
+  const a = PATH[i - 1], b = PATH[i], c = PATH[i + 1];
+  const t1 = Math.atan2(b[1] - a[1], b[0] - a[0]), t2 = Math.atan2(c[1] - b[1], c[0] - b[0]);
+  let d = Math.abs(t2 - t1); if (d > Math.PI) d = 2 * Math.PI - d;
+  W[i] = d;
+}
+const TW = new Float64Array(PATH.length); { // weighted cumulative "time units"
+  for (let i = 1; i < PATH.length; i++) { const seg = CUM[i] - CUM[i - 1]; const k = Math.max(W[i], W[i - 1]); TW[i] = TW[i - 1] + seg * (1 + 9 * Math.min(1, k * 4)); }
+}
+SECTIONS.forEach((s, k) => { s.i1 = (SECTIONS[k + 1]?.i0 ?? PATH.length) - 1; Object.assign(s, CUE.sections[s.name]); });
+// tip index (fractional) at time t
+function tipAt(t) {
+  if (t <= SECTIONS[0].t0) return 0;
+  for (const s of SECTIONS) {
+    if (t <= s.t1) {
+      if (t < s.t0) return s.i0;
+      const u = ioC(inv(s.t0, s.t1, t));      // each section eases in/out (cubic-bezier .65,0,.35,1)
+      const target = lerp(TW[s.i0], TW[s.i1], u);
+      let lo = s.i0, hi = s.i1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (TW[m] < target) lo = m; else hi = m; }
+      return lo + (target - TW[lo]) / Math.max(1e-9, TW[hi] - TW[lo]);
+    }
+  }
+  return PATH.length - 1;
+}
+const ptAt = (fi) => { const i = Math.floor(fi), k = fi - i, a = PATH[i], b = PATH[Math.min(PATH.length - 1, i + 1)]; return [lerp(a[0], b[0], k), lerp(a[1], b[1], k)]; };
+const TITLE0 = SECTIONS.find((s) => s.name === 'title').i0;
+
+// ---------------------------------------------------------------- camera: follow the tip, then dolly out to the poster
+function camera(t) {
+  let cx = 0, cy = 0, n = 0;                       // smoothed follow: mean tip position over the last 0.3 s
+  for (let k = 0; k < 10; k++) { const p = ptAt(tipAt(Math.max(0, t - k * 0.033))); cx += p[0]; cy += p[1]; n++; }
+  cx /= n; cy /= n;
+  const zoom = K(t, CUE.zoom.map(([a, b, e]) => [a, b, e]));
+  const out = ioC(inv(CUE.dolly[0], CUE.dolly[1], t));
+  const push = 1 + 0.018 * E.io2(inv(RESOLVE, 7, t));      // the hold: a barely-there push-in
+  return { cx: lerp(cx, 960, out), cy: lerp(cy, 540, out), z: lerp(zoom, 1, out) * push };
+}
+
+// ---------------------------------------------------------------- frame
+const LW = 3;
+window.renderAt = (t) => {
+  const fi = tipAt(t), tip = ptAt(fi), cam = camera(t);
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over';
+  const bg = X.createRadialGradient(960, 520, 100, 960, 540, 1250); bg.addColorStop(0, PAL.bg2); bg.addColorStop(1, PAL.bg);
+  X.fillStyle = bg; X.fillRect(0, 0, 1920, 1080);
+  X.setTransform(cam.z, 0, 0, cam.z, 960 - cam.cx * cam.z, 540 - cam.cy * cam.z);
+
+  // the drawn line: older segments (outside the title) dim to 35 %
+  const tipLen = CUM[Math.floor(fi)];
+  const dimDone = smooth01(inv(CUE.dolly[0], RESOLVE, t));
+  X.lineCap = 'round'; X.lineJoin = 'round'; X.strokeStyle = PAL.gold; X.lineWidth = LW / cam.z * Math.sqrt(cam.z);
+  const iEnd = Math.floor(fi);
+  const CH = 24;
+  for (let i = 0; i < iEnd; i += CH) {
+    const j = Math.min(iEnd, i + CH);
+    const age = tipLen - CUM[j];
+    let a = i >= TITLE0 ? 1 : lerp(1, 0.35, smooth01(inv(250, 1100, age)));
+    if (i < TITLE0) a = Math.min(a, lerp(1, 0.35, dimDone));
+    X.globalAlpha = a; X.beginPath(); X.moveTo(PATH[i][0], PATH[i][1]);
+    for (let k = i + 1; k <= j; k++) X.lineTo(PATH[k][0], PATH[k][1]);
+    if (j === iEnd) X.lineTo(tip[0], tip[1]);
+    X.stroke();
+  }
+  X.globalAlpha = 1;
+
+  // LINE-TO-FILL: the circled data point fills with gold from its anchor, a soft bloom, then stays lit
+  const fu = inv(CUE.fill, CUE.fill + 0.3, t);
+  if (fu > 0) {
+    const r = 16 * E.outBack(fu, 1.4);
+    const bl = Math.max(0, 1 - inv(CUE.fill, CUE.fill + 0.8, t));
+    const g = X.createRadialGradient(DOT[0], DOT[1], 0, DOT[0], DOT[1], 120);
+    g.addColorStop(0, `rgba(255,236,190,${0.55 * bl + 0.12})`); g.addColorStop(1, 'rgba(255,236,190,0)');
+    X.fillStyle = g; X.beginPath(); X.arc(DOT[0], DOT[1], 120, 0, Math.PI * 2); X.fill();
+    X.fillStyle = PAL.gold; X.beginPath(); X.arc(DOT[0], DOT[1], r, 0, Math.PI * 2); X.fill();
+  }
+
+  // the resolve: a warm bloom travels along the finished title (the hero accent), then settles to a faint halo
+  const bu = inv(RESOLVE - 0.04, RESOLVE + 0.7, t);
+  if (bu > 0) {
+    const halo = bu < 1 ? Math.sin(Math.PI * Math.min(1, bu * 1.6)) * 0.75 + 0.25 * bu : 0.22;
+    X.save(); X.globalCompositeOperation = 'lighter'; X.strokeStyle = `rgba(255,226,160,${0.22 * halo})`; X.lineCap = 'round'; X.lineJoin = 'round';
+    for (const w of [16, 7]) { X.lineWidth = w / cam.z; X.beginPath(); X.moveTo(PATH[TITLE0][0], PATH[TITLE0][1]); for (let k = TITLE0 + 1; k < PATH.length; k += 2) X.lineTo(PATH[k][0], PATH[k][1]); X.stroke(); }
+    X.restore();
+  }
+
+  // the glowing pen tip: leads the draw, rests (breathing) at the tail end
+  const resting = t > RESOLVE;
+  const br = resting ? 0.75 + 0.25 * Math.sin((t - RESOLVE) * 2.4) : 1;
+  const tp = resting ? REST : tip;
+  const g = X.createRadialGradient(tp[0], tp[1], 0, tp[0], tp[1], 46 / Math.sqrt(cam.z));
+  g.addColorStop(0, `rgba(255,243,214,${0.95 * br})`); g.addColorStop(0.18, `rgba(233,215,165,${0.45 * br})`); g.addColorStop(1, 'rgba(233,215,165,0)');
+  X.fillStyle = g; X.beginPath(); X.arc(tp[0], tp[1], 46 / Math.sqrt(cam.z), 0, Math.PI * 2); X.fill();
+  X.fillStyle = PAL.hot; X.beginPath(); X.arc(tp[0], tp[1], 3.2 / Math.sqrt(cam.z), 0, Math.PI * 2); X.fill();
+
+  // finishing: vignette + fine grain
+  X.setTransform(1, 0, 0, 1, 0, 0);
+  const v = X.createRadialGradient(960, 540, 520, 960, 540, 1150); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.45)');
+  X.fillStyle = v; X.fillRect(0, 0, 1920, 1080);
+  grain(X, grainImg, t, 0.05, 30, 'soft-light');
+};
+function smooth01(k) { return k * k * (3 - 2 * k); }
+
+// tip speed per frame (px/s in screen space) for the pen-whisper in audio.py (tools/dump.mjs)
+window.dumpCues = () => {
+  const sp = [];
+  for (let f = 0; f <= 210; f++) { const t = f / 30; const a = ptAt(tipAt(t)), b = ptAt(tipAt(t + 1 / 30)); const z = camera(t).z; sp.push(+(Math.hypot(b[0] - a[0], b[1] - a[1]) * 30 * z).toFixed(1)); }
+  return { tip_speed: sp };
+};
+window.__ready = true;
+</script></body></html>

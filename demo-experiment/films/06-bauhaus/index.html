@@ -1,0 +1,155 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>06 Bauhaus — Data UX</title>
+<style>html,body{margin:0;background:#f1e9da;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 06 · Geometric / Bauhaus. A strict 120 px modular grid at 120 BPM. Circles land as a scatter plot, squares stack into
+// bars, a triangle slides up a 45° shaft into a trend arrow — every move an integer number of modules, every landing on a
+// grid line, eased power2.inOut, no overshoot. On the drop each of the 21 shapes makes a quarter turn about its own
+// centre and re-forms as a part of geometric "DATA UX" type (one source shape → one letter part, nothing appears or vanishes).
+import { FILM, RESOLVE, clamp, lerp, inv, E, hash, canvas, loadImage, resample, alignStart, area, tracePoly, TAU } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM };
+const C = document.getElementById('c'), X = C.getContext('2d');
+const PAL = { paper: '#f1e9da', red: '#e03c31', yel: '#f2b705', blue: '#1e4fa3', black: '#111111' };
+const paper = await loadImage('/dux/shared/tex/paper.jpg');
+const CUE = await (await fetch('cues.json')).json();
+const M = 120, NP = 96;
+const io = E.io2;
+
+// ---------------------------------------------------------------- primitive polygons (module units → px), NP points each
+const P = (x, y) => [x * M, y * M];
+const circle = (cx, cy, r) => Array.from({ length: NP }, (_, i) => { const a = -Math.PI / 2 + (i / NP) * TAU; return P(cx + Math.cos(a) * r, cy + Math.sin(a) * r); });
+const poly = (pts) => resample(pts.map(([x, y]) => P(x, y)), NP);
+const rect = (x, y, w, h) => poly([[x, y], [x + w, y], [x + w, y + h], [x, y + h]]);
+const semi = (cx, cy, r, dir) => { // half disc; dir 'r' (bulge right) | 'd' (bulge down)
+  const a0 = dir === 'r' ? -Math.PI / 2 : 0, pts = [];
+  for (let i = 0; i <= 48; i++) { const a = a0 + (i / 48) * Math.PI; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+  return poly(pts);
+};
+const orientCW = (p) => (area(p) > 0 ? p : [...p].reverse());
+const centroid = (p) => { let x = 0, y = 0; for (const q of p) { x += q[0]; y += q[1]; } return [x / p.length, y / p.length]; };
+
+// ---------------------------------------------------------------- the data poster (sources)
+// scatter: circles at grid intersections, rising left → right
+const SC = {
+  c4: { c: [2, 6], r: 0.2, col: 'blue' }, c2: { c: [3, 5], r: 0.25, col: 'black' }, c5: { c: [4, 5], r: 0.25, col: 'black' },
+  c7: { c: [4, 6], r: 0.18, col: 'red' }, c8: { c: [6, 4], r: 0.18, col: 'black' },
+  c1: { c: [5, 4], r: 0.5, col: 'red' }, c6: { c: [6, 3], r: 0.3, col: 'blue' }, c3: { c: [7, 2], r: 0.4, col: 'yel' },
+};
+// bars: 1-module squares stacked on the baseline (row 7); columns 9..12 with heights 2,2,3,4
+const BARS = [{ col: 9, h: 2, colr: 'blue' }, { col: 10, h: 2, colr: 'blue' }, { col: 11, h: 3, colr: 'black' }, { col: 12, h: 4, colr: 'red' }];
+// ---------------------------------------------------------------- the type (targets): letters in 2×3-module boxes on rows 3–5
+const LX = { D: 1, A1: 3, T: 5, A2: 7, U: 11, X: 13 }, LY = 3;
+const L = (k, x, y) => [LX[k] + x, LY + y];
+const T_ = {
+  D_stem0: rect(...L('D', 0, 0), 0.75, 1), D_stem1: rect(...L('D', 0, 1), 0.75, 1), D_stem2: rect(...L('D', 0, 2), 0.75, 1),
+  D_bowl: semi(...L('D', 0.75, 1.5), 1.25, 'r'), D_cnt: semi(...L('D', 0.75, 1.5), 0.5, 'r'),
+  A1_tri: poly([L('A1', 1, 0), L('A1', 2, 3), L('A1', 0, 3)]), A1_notch: poly([L('A1', 1, 2.35), L('A1', 1.22, 3), L('A1', 0.78, 3)]), A1_cnt: poly([L('A1', 1, 1.0), L('A1', 1.28, 1.85), L('A1', 0.72, 1.85)]),
+  T_bar0: rect(...L('T', 0, 0), 1, 0.75), T_bar1: rect(...L('T', 1, 0), 1, 0.75),
+  T_stem0: rect(...L('T', 0.625, 0.75), 0.75, 1.125), T_stem1: rect(...L('T', 0.625, 1.875), 0.75, 1.125),
+  A2_tri: poly([L('A2', 1, 0), L('A2', 2, 3), L('A2', 0, 3)]), A2_notch: poly([L('A2', 1, 2.35), L('A2', 1.22, 3), L('A2', 0.78, 3)]), A2_cnt: poly([L('A2', 1, 1.0), L('A2', 1.28, 1.85), L('A2', 0.72, 1.85)]),
+  U_l0: rect(...L('U', 0, 0), 0.75, 1), U_l1: rect(...L('U', 0, 1), 0.75, 1), U_r0: rect(...L('U', 1.25, 0), 0.75, 1), U_r1: rect(...L('U', 1.25, 1), 0.75, 1),
+  U_bowl: semi(...L('U', 1, 2), 1, 'd'), U_cnt: poly([L('U', 0.75, 0), L('U', 1.25, 0), L('U', 1.25, 2), ...Array.from({ length: 13 }, (_, i) => { const a = (i / 12) * Math.PI; return L('U', 1 + Math.cos(a) * 0.25, 2 + Math.sin(a) * 0.25); }), L('U', 0.75, 2)]),
+  X_b1: poly([L('X', 0, 0), L('X', 0.62, 0), L('X', 2, 3), L('X', 1.38, 3)]), X_b2: poly([L('X', 1.38, 0), L('X', 2, 0), L('X', 0.62, 3), L('X', 0, 3)]),
+};
+// ---------------------------------------------------------------- source → target mapping, colours, timing group
+const G = CUE.groups;     // [start, land] per letter
+const PARTS = [];
+function part(id, src, tgt, c0, c1, grp, spin, layer = 0) { PARTS.push({ id, src: orientCW(src), tgt: orientCW(T_[tgt]), c0, c1, g: G[grp], spin, layer, tgtName: tgt }); }
+// scatter circles
+part('c1', circle(...SC.c1.c, SC.c1.r), 'D_bowl', 'red', 'red', 'D', 1);
+part('c2', circle(...SC.c2.c, SC.c2.r), 'D_cnt', 'black', 'paper', 'D', -1, 2);
+part('c5', circle(...SC.c5.c, SC.c5.r), 'A1_notch', 'black', 'paper', 'A1', 1, 2);
+part('c3', circle(...SC.c3.c, SC.c3.r), 'U_bowl', 'yel', 'yel', 'U', -1);
+part('c4', circle(...SC.c4.c, SC.c4.r), 'U_cnt', 'blue', 'paper', 'U', 1, 2);
+part('c6', circle(...SC.c6.c, SC.c6.r), 'A2_notch', 'blue', 'paper', 'A2', -1, 2);
+part('c7', circle(...SC.c7.c, SC.c7.r), 'A1_cnt', 'red', 'paper', 'A1', -1, 2);
+part('c8', circle(...SC.c8.c, SC.c8.r), 'A2_cnt', 'black', 'paper', 'A2', 1, 2);
+// bar squares (bottom-up). Each square = one segment of its target part
+const SQ = {};
+BARS.forEach((b, i) => { for (let k = 0; k < b.h; k++) SQ[`b${i}_${k}`] = { poly: rect(b.col, 7 - 1 - k, 1, 1), col: b.colr, t: CUE.stack[k] + 0.0625 * (i - 3) }; });
+part('b0_0', SQ.b0_0.poly, 'U_r1', 'blue', 'black', 'U', 1); part('b0_1', SQ.b0_1.poly, 'U_r0', 'blue', 'black', 'U', 1);
+part('b1_0', SQ.b1_0.poly, 'U_l1', 'blue', 'black', 'U', -1); part('b1_1', SQ.b1_1.poly, 'U_l0', 'blue', 'black', 'U', -1);
+part('b2_0', SQ.b2_0.poly, 'D_stem2', 'black', 'black', 'D', -1); part('b2_1', SQ.b2_1.poly, 'D_stem1', 'black', 'black', 'D', -1); part('b2_2', SQ.b2_2.poly, 'D_stem0', 'black', 'black', 'D', -1);
+part('b3_0', SQ.b3_0.poly, 'T_stem1', 'red', 'black', 'T', 1); part('b3_1', SQ.b3_1.poly, 'T_stem0', 'red', 'black', 'T', 1);
+part('b3_2', SQ.b3_2.poly, 'T_bar1', 'red', 'blue', 'T', -1); part('b3_3', SQ.b3_3.poly, 'T_bar0', 'red', 'blue', 'T', -1);
+// arrow: 45° shaft (black) + head triangle (yellow)
+const AR = { a: [9, 6], b: [13, 2] };
+const shaftPoly = (u) => { const ex = lerp(AR.a[0], AR.b[0], u), ey = lerp(AR.a[1], AR.b[1], u), w = 0.09; const nx = w, ny = w; return poly([[AR.a[0] - nx, AR.a[1] - ny], [ex - nx, ey - ny], [ex + nx, ey + ny], [AR.a[0] + nx, AR.a[1] + ny]]); };
+const headPoly = (cx, cy, ang) => poly([0, 1, 2].map((k) => { const a = ang + (k / 3) * TAU; return [cx + Math.cos(a) * 0.55, cy + Math.sin(a) * 0.55]; }));
+part('head', headPoly(AR.b[0], AR.b[1], -Math.PI / 4), 'A1_tri', 'yel', 'yel', 'A1', 1);
+part('shaft', shaftPoly(1), 'A2_tri', 'black', 'red', 'A2', -1);
+// axes → the two strokes of the X
+const XAX = rect(1, 7 - 0.04, 14, 0.08), YAX = rect(1 - 0.04, 1, 0.08, 6);
+part('xaxis', XAX, 'X_b1', 'black', 'blue', 'X', 0);
+part('yaxis', YAX, 'X_b2', 'black', 'red', 'X', 0, 1);
+for (const p of PARTS) { p.src = resample(p.src, NP); p.tgt = alignStart(p.src, resample(p.tgt, NP)); p.cs = centroid(p.src); p.ct = centroid(p.tgt); }
+PARTS.sort((a, b) => a.layer - b.layer);
+
+// ---------------------------------------------------------------- data-phase motion (pre-drop), all on the beat grid
+function dataPoly(p, t) {
+  // circles drop vertically onto their intersection, an integer number of modules (from row −1)
+  if (p.id[0] === 'c') {
+    const land = CUE.circles[p.id]; if (t < land - 0.5) return null;
+    const dy = (1 - io(inv(land - 0.5, land, t))) * (SC[p.id].c[1] + 1) * M;
+    return p.src.map(([x, y]) => [x, y - dy]);
+  }
+  if (p.id[0] === 'b') {     // squares drop straight down from above the frame (an integer number of modules) onto the stack
+    const s = SQ[p.id]; if (t < s.t - 0.5) return null;
+    const row = Math.round(p.cs[1] / M - 0.5);
+    const dy = (1 - io(inv(s.t - 0.5, s.t, t))) * (row + 1) * M;
+    return p.src.map(([x, y]) => [x, y - dy]);
+  }
+  if (p.id === 'shaft') { const u = io(inv(CUE.shaft[0], CUE.shaft[1], t)); return u <= 0 ? null : shaftPoly(u); }
+  if (p.id === 'head') {     // the triangle slides up the shaft (integer diagonal modules) turning to point along the trend
+    if (t < CUE.shaft[0]) return null;
+    const u = io(inv(CUE.shaft[0], CUE.head, t));
+    const cx = lerp(AR.a[0], AR.b[0], u), cy = lerp(AR.a[1], AR.b[1], u), ang = lerp(Math.PI / 2, -Math.PI / 4, u);
+    return headPoly(cx, cy, ang);
+  }
+  if (p.id === 'xaxis' || p.id === 'yaxis') {   // axes draw on (linear, mechanical)
+    const u = inv(CUE.axes[0], CUE.axes[1], t); if (u <= 0) return null;
+    return p.id === 'xaxis' ? rect(1, 7 - 0.04, 14 * u, 0.08) : rect(1 - 0.04, 7 - 6 * u, 0.08, 6 * u);
+  }
+}
+
+// ---------------------------------------------------------------- the drop: quarter turn about the shape's centre → letter part
+function typePoly(p, t) {
+  const e = io(inv(p.g[0], p.g[1], t));
+  const c = [lerp(p.cs[0], p.ct[0], e), lerp(p.cs[1], p.ct[1], e)];
+  const rot = (Math.PI / 2) * p.spin;
+  const ang = rot * e, ca = Math.cos(ang), sa = Math.sin(ang), cr = Math.cos(-rot), sr = Math.sin(-rot);
+  return p.src.map((a, i) => {
+    const b = p.tgt[i];
+    const bx = (b[0] - p.ct[0]) * cr - (b[1] - p.ct[1]) * sr, by = (b[0] - p.ct[0]) * sr + (b[1] - p.ct[1]) * cr;   // target pre-rotated by −rot
+    const lx = lerp(a[0] - p.cs[0], bx, e), ly = lerp(a[1] - p.cs[1], by, e);
+    return [c[0] + lx * ca - ly * sa, c[1] + lx * sa + ly * ca];
+  });
+}
+const mix = (a, b, u) => { const pa = parseInt(PAL[a].slice(1), 16), pb = parseInt(PAL[b].slice(1), 16); return `rgb(${[16, 8, 0].map((s) => Math.round(lerp((pa >> s) & 255, (pb >> s) & 255, clamp(u)))).join(',')})`; };
+
+// ---------------------------------------------------------------- frame
+window.renderAt = (t) => {
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over';
+  X.fillStyle = PAL.paper; X.fillRect(0, 0, 1920, 1080);
+  // the grid draws on (linear), then recedes slightly under the type
+  const gu = inv(0, CUE.grid, t), gfade = 1 - 0.45 * io(inv(CUE.groups.D[0], RESOLVE, t));
+  X.strokeStyle = `rgba(17,17,17,${0.16 * gfade})`; X.lineWidth = 1.5;
+  for (let i = 1; i < 16; i++) { const k = clamp(gu * 1.6 - i / 16 * 0.6); if (k <= 0) continue; X.beginPath(); X.moveTo(i * M, 0); X.lineTo(i * M, 1080 * k); X.stroke(); }
+  for (let j = 1; j < 9; j++) { const k = clamp(gu * 1.6 - j / 9 * 0.6); if (k <= 0) continue; X.beginPath(); X.moveTo(1920, j * M); X.lineTo(1920 - 1920 * k, j * M); X.stroke(); }
+
+  for (const p of PARTS) {
+    let pts, col;
+    if (t < p.g[0]) { pts = dataPoly(p, t); col = PAL[p.c0]; }
+    else { pts = typePoly(p, t); col = mix(p.c0, p.c1, io(inv(p.g[0], p.g[1], t))); }
+    if (!pts) continue;
+    X.globalCompositeOperation = p.tgtName === 'X_b2' ? 'multiply' : 'source-over';
+    X.fillStyle = col; X.beginPath(); tracePoly(X, pts); X.fill();
+  }
+  X.globalCompositeOperation = 'source-over';
+  // paper tooth + very slight print misregistration (a faint offset ghost of the ink)
+  X.globalCompositeOperation = 'multiply'; X.globalAlpha = 0.32; X.drawImage(paper, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over';
+};
+window.__ready = true;
+</script></body></html>

@@ -1,0 +1,267 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>01 Cel Boil — Data UX</title>
+<style>html,body{margin:0;background:#f4e9d0;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 01 · Cel animation / line boil. A hand-drawn cursor sketches a wobbly bar chart; the bars grow one by one; the chart's
+// pieces leap and redraw themselves into hand-lettered "Data UX" (y-axis → D, five bars → a t a U X, baseline → underline).
+// Timing: action on 2s (15 drawings/s at 30 fps), fast moves on 1s, the end hold on 3s (10 drawings/s, 3-drawing boil cycle).
+import { FILM, RESOLVE, clamp, lerp, inv, K, E, bez, step, hash, hr, noise1, noise2, canvas, loadImage, loadFont,
+  contours, area, bbox, resample, alignStart, cumLen, along, grain, TAU } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM };
+const C = document.getElementById('c'), X = C.getContext('2d');
+const PAL = { ink: '#1c1613', red: '#e5402b', yel: '#ffc425', cream: '#f4e9d0', hi: '#fff6e2' };
+const [paper, grainImg, font] = await Promise.all([
+  loadImage('/dux/shared/tex/paper.jpg'), loadImage('/dux/shared/tex/grain.png'), loadFont('/dux/fonts/Caveat-Bold.ttf')]);
+
+// ---------------------------------------------------------------- cue sheet (shared with audio.py via cues.json)
+const CUE = await (await fetch('cues.json')).json();
+const N = 220;                                   // points per morphing contour
+
+// ---------------------------------------------------------------- chart geometry
+const O = { x: 560, y: 800 }, YTOP = 300, XEND = 1400;
+const BARS = [0.32, 0.48, 0.62, 0.78, 0.95].map((f, i) => ({ x: 620 + i * 155, w: 110, H: f * 440, land: CUE.bars[i], col: i < 3 ? PAL.red : PAL.yel }));
+
+// ---------------------------------------------------------------- title geometry (Caveat Bold, OFL)
+const SIZE = 370, BASE = 650, ROT = -0.045;
+const glyphs = font.stringToGlyphs('Data UX');
+let adv = 0; const placed = [];
+for (let i = 0; i < glyphs.length; i++) {
+  const g = glyphs[i];
+  if (g.unicode !== 32) placed.push({ g, x: adv });
+  adv += g.advanceWidth * SIZE / font.unitsPerEm;
+  if (i < glyphs.length - 1) adv += font.getKerningValue(g, glyphs[i + 1]) * SIZE / font.unitsPerEm;
+}
+const TX0 = 960 - adv / 2;
+const rotP = ([x, y]) => { const dx = x - 960, dy = y - 560, c = Math.cos(ROT), s = Math.sin(ROT); return [960 + dx * c - dy * s, 560 + dx * s + dy * c]; };
+const LETTERS = placed.map(({ g, x }) => {
+  const cs = contours(g.getPath(TX0 + x, BASE, SIZE), 4).map((p) => p.map(rotP));
+  cs.sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)));
+  return { outer: cs[0], holes: cs.slice(1) };
+});
+const tb = bbox(LETTERS.flatMap((l) => l.outer));
+// underline swoosh (target for the x-axis)
+const UL = []; for (let i = 0; i < N; i++) { const u = i / (N - 1); UL.push(rotP([lerp(tb.x0 - 10, tb.x1 + 30, u), BASE + 70 + 16 * Math.sin(u * Math.PI) - 18 * u * u])); }
+
+// ---------------------------------------------------------------- helpers
+const rectPoly = (x, y, w, h) => { const p = []; const S = 6; for (let i = 0; i <= w; i += S) p.push([x + i, y + h]); for (let i = 0; i <= h; i += S) p.push([x + w, y + h - i]); for (let i = 0; i <= w; i += S) p.push([x + w - i, y]); for (let i = 0; i <= h; i += S) p.push([x, y + i]); return p; };
+const orient = (p, ref) => (Math.sign(area(p)) === Math.sign(area(ref)) ? p : [...p].reverse());
+const centroid = (p) => { let x = 0, y = 0; for (const q of p) { x += q[0]; y += q[1]; } return [x / p.length, y / p.length]; };
+const wob = (p, seed, amp, freq = 0.012) => p.map(([x, y]) => [x + amp * noise2(x * freq, y * freq, seed), y + amp * noise2(x * freq + 31, y * freq + 17, seed)]);
+
+// variable-width inked line (centreline → round-capped chunks, width modulated along the length)
+function brush(pts, w, seed, closed = true, frac = 1) {
+  const n = pts.length; const m = Math.max(2, Math.floor((closed ? n + 1 : n) * frac));
+  X.strokeStyle = PAL.ink; X.lineCap = 'round'; X.lineJoin = 'round';
+  for (let i = 0; i < m - 1; i += 2) {
+    const k = i / n;
+    const ww = w * (0.72 + 0.42 * (0.5 + 0.5 * noise1(k * 9, seed))) * (closed ? 1 : Math.min(1, 0.35 + 3 * Math.min(k, (m - i) / n)));
+    X.lineWidth = ww; X.beginPath();
+    const a = pts[i % n]; X.moveTo(a[0], a[1]);
+    for (let j = 1; j <= 2 && i + j < m; j++) { const b = pts[(i + j) % n]; X.lineTo(b[0], b[1]); }
+    X.stroke();
+  }
+}
+function fillPoly(polys, col, dx, dy) {
+  X.fillStyle = col; X.beginPath();
+  for (const p of polys) { X.moveTo(p[0][0] + dx, p[0][1] + dy); for (let i = 1; i < p.length; i++) X.lineTo(p[i][0] + dx, p[i][1] + dy); X.closePath(); }
+  X.fill('evenodd');
+}
+const boilAmp = 2.4;
+const boil = (p, bs, k = 1) => p.map(([x, y]) => [x + boilAmp * k * noise2(x * 0.03, y * 0.03, bs * 7 + 1), y + boilAmp * k * noise2(x * 0.03 + 9, y * 0.03 + 4, bs * 7 + 2)]);
+
+// ---------------------------------------------------------------- the morphing pieces
+const ease = bez(0.7, 0, 0.3, 1);
+const PIECES = [];
+{ // y-axis → D
+  const src = resample(wob(rectPoly(O.x - 6, YTOP, 12, O.y - YTOP), 3, 3), N);
+  PIECES.push({ src, L: LETTERS[0], col: PAL.red, srcFill: 0, ...CUE.pieces[0] });
+  BARS.forEach((b, i) => {
+    const src = resample(wob(rectPoly(b.x, O.y - b.H, b.w, b.H), 10 + i, 5), N);
+    PIECES.push({ src, L: LETTERS[i + 1], col: b.col, srcFill: 1, ...CUE.pieces[i + 1] });
+  });
+  for (const P of PIECES) {
+    let dst = resample(P.L.outer, N); dst = orient(dst, P.src); dst = alignStart(P.src, dst);
+    P.dst = dst; P.c0 = centroid(P.src); P.c1 = centroid(dst);
+    P.holes = P.L.holes.map((h) => ({ h: resample(h, 120), c: centroid(h) }));
+  }
+}
+const AXIS_X = []; for (let i = 0; i < N; i++) AXIS_X.push([lerp(O.x, XEND, i / (N - 1)), O.y + 2.5 * noise1(i * 0.08, 5)]);
+const AXIS_Y = []; for (let i = 0; i < 60; i++) AXIS_Y.push([O.x + 2 * noise1(i * 0.2, 6), lerp(YTOP, O.y, i / 59)]);
+
+// morph state of a piece at time t → { pts, holes[], fillA }
+function pieceAt(P, t) {
+  const u = inv(P.launch, P.land, t), e = ease(u);
+  const c = [lerp(P.c0[0], P.c1[0], e), lerp(P.c0[1], P.c1[1], e) - P.lift * Math.sin(Math.PI * e)];
+  // smear: stretch along the velocity at the fastest frames (1–2 frames only)
+  const de = (ease(clamp(u + 0.02)) - ease(clamp(u - 0.02))) / 0.04;
+  const smear = 1 + 1.6 * Math.pow(clamp((de - 1.25) / 0.6), 2);
+  const vx = P.c1[0] - P.c0[0], vy = P.c1[1] - P.c0[1] - P.lift * Math.PI * Math.cos(Math.PI * e);
+  const va = Math.atan2(vy, vx);
+  // landing squash (on 1s): 3 frames
+  const land = t - P.land;
+  const sq = land >= 0 && land < 0.2 ? K(land, [[0, 0.8], [0.067, 1.08, 'out2'], [0.2, 1, 'io2']]) : 1;
+  const spin = (1 - e) * P.spin * Math.sin(Math.PI * e);
+  const pts = P.src.map((a, i) => {
+    const b = P.dst[i];
+    const sx = lerp(a[0] - P.c0[0], b[0] - P.c1[0], e), sy = lerp(a[1] - P.c0[1], b[1] - P.c1[1], e);
+    // rotate, smear along velocity, then squash about the landing baseline
+    const cs = Math.cos(spin), sn = Math.sin(spin);
+    let rx = sx * cs - sy * sn, ry = sx * sn + sy * cs;
+    const ca = Math.cos(va), sa = Math.sin(va);
+    let along_ = rx * ca + ry * sa, perp = -rx * sa + ry * ca;
+    along_ *= smear; perp /= Math.sqrt(smear);
+    rx = along_ * ca - perp * sa; ry = along_ * sa + perp * ca;
+    return [c[0] + rx * (2 - sq), c[1] + ry * sq + (1 - sq) * 60];
+  });
+  const hs = smooth(0.55, 1, e);
+  const holes = P.holes.map(({ h, c: hc }) => h.map(([x, y]) => [lerp(hc[0], x, hs) + (c[0] - P.c1[0]), lerp(hc[1], y, hs) + (c[1] - P.c1[1])]))
+    .map((h) => h.map(([x, y]) => [P.c1[0] + (x - P.c1[0]) * (2 - sq), P.c1[1] + (y - P.c1[1]) * sq + (1 - sq) * 60]));
+  return { pts, holes: hs > 0.02 ? holes : [], fillA: lerp(P.srcFill, 1, smooth(0, 0.6, e)), e, c };
+}
+function smooth(a, b, x) { const k = inv(a, b, x); return k * k * (3 - 2 * k); }
+
+// ---------------------------------------------------------------- cel FX
+function popLines(x, y, t0, t, n, r0, seed) {   // radial "pop" strokes at an impact
+  const u = (t - t0) / 0.2; if (u < 0 || u > 1) return;
+  X.strokeStyle = PAL.ink; X.lineCap = 'round';
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + (i - (n - 1) / 2) * 0.5 + hr(-0.1, 0.1, seed, i);
+    const ra = r0 + 60 * E.out2(u), rb = ra + 30 * (1 - u);
+    X.lineWidth = 6 * (1 - u) + 1;
+    X.beginPath(); X.moveTo(x + Math.cos(a) * ra, y + Math.sin(a) * ra); X.lineTo(x + Math.cos(a) * rb, y + Math.sin(a) * rb); X.stroke();
+  }
+}
+function cloud(cx, cy, r, bs, seed, alpha) {     // boiling smoke puff (cream fill, ink outline)
+  if (r < 2 || alpha <= 0) return;
+  const p = []; const n = 70;
+  for (let i = 0; i < n; i++) { const a = (i / n) * TAU; const lobes = 1 + 0.22 * Math.abs(Math.sin(a * 2.5 + seed)); p.push([cx + Math.cos(a) * r * lobes, cy + Math.sin(a) * r * lobes * 0.86]); }
+  const q = boil(p, bs + seed, 1.2);
+  X.globalAlpha = alpha; fillPoly([q], PAL.hi, 0, 0); brush(q, 7, seed + bs); X.globalAlpha = 1;
+}
+function starBurst(cx, cy, t0, t, bs) {
+  const u = (t - t0) / 0.5; if (u < 0 || u > 1) return;
+  const s = u < 0.25 ? E.outBack(u / 0.25, 2.2) : 1 - E.in2((u - 0.25) / 0.75);
+  if (s <= 0.01) return;
+  const p = []; const n = 10;
+  for (let i = 0; i < n * 2; i++) { const a = (i / (n * 2)) * TAU + 0.15; const r = (i % 2 ? 60 : 150 + 30 * hash(i, 3)) * s; p.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+  const q = boil(resample(p, 160), bs, 1.4);
+  fillPoly([q], PAL.yel, 0, 0); brush(q, 6, bs + 77);
+}
+function sparkle(cx, cy, r, bs) {
+  if (r < 1) return;
+  const p = []; for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU; const rr = i % 2 ? r * 0.28 : r; p.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
+  const q = boil(resample(p, 60), bs, 0.6); fillPoly([q], PAL.yel, 0, 0); brush(q, 4, bs + 5);
+}
+
+// ---------------------------------------------------------------- the hand-drawn cursor
+const CUR = [[0, 0], [0, 64], [15, 50], [27, 77], [38, 72], [27, 46], [47, 46]].map(([x, y]) => [x * 1.7, y * 1.7]);
+const CURR = resample(CUR, 90);
+function cursorPos(t) {
+  // tip position, keyed from the cue sheet
+  const k = CUE.cursor;
+  let x = K(t, k.map(([tt, xx, , e]) => [tt, xx, e])), y = K(t, k.map(([tt, , yy, e]) => [tt, yy, e]));
+  // during bar growth the tip rides the bar top
+  BARS.forEach((b, i) => { const g0 = b.land - CUE.grow, g1 = b.land + 0.05; if (t >= g0 && t <= g1) { x = b.x + b.w / 2; y = O.y - barH(b, t); } });
+  return [x, y];
+}
+function drawCursor(t, bs) {
+  const [x, y] = cursorPos(t);
+  const v = [cursorPos(t + 1 / 30)[0] - cursorPos(t - 1 / 30)[0], cursorPos(t + 1 / 30)[1] - cursorPos(t - 1 / 30)[1]];
+  const sp = Math.hypot(v[0], v[1]);
+  const click = CUE.click; const cs = t > click - 0.06 && t < click + 0.2 ? K(t, [[click - 0.06, 1], [click, 0.8, 'out2'], [click + 0.2, 1, 'outBack']]) : 1;
+  const sm = 1 + clamp((sp - 60) / 160) * 1.4;           // smear on the fastest frames
+  const a = Math.atan2(v[1], v[0]);
+  const pts = CURR.map(([px, py]) => {
+    let qx = px * cs, qy = py * cs;
+    if (sm > 1.01) { const ca = Math.cos(a), sa = Math.sin(a); let al = qx * ca + qy * sa, pe = -qx * sa + qy * ca; al = al * sm - (sm - 1) * 40; pe /= Math.sqrt(sm); qx = al * ca - pe * sa; qy = al * sa + pe * ca; }
+    return [x + qx, y + qy];
+  });
+  const q = boil(pts, bs + 50, 0.8);
+  fillPoly([q], '#fffaf0', 0, 0); brush(q, 5.5, bs + 9);
+  if (sm > 1.3) { // speed lines behind the cursor
+    X.strokeStyle = PAL.ink; X.lineCap = 'round';
+    for (let i = 0; i < 3; i++) { const o = (i - 1) * 22; const nx = -Math.sin(a) * o, ny = Math.cos(a) * o; const L = 90 + 50 * hash(i, bs);
+      X.lineWidth = 4; X.beginPath(); X.moveTo(x + nx - Math.cos(a) * 60, y + ny - Math.sin(a) * 60); X.lineTo(x + nx - Math.cos(a) * (60 + L), y + ny - Math.sin(a) * (60 + L)); X.stroke(); }
+  }
+}
+function barH(b, t) {
+  const g0 = b.land - CUE.grow;
+  if (t < g0) return 0;
+  return b.H * K(t, [[g0, 0], [g0 + 0.07, -0.05, 'out2'], [b.land, 1.07, 'out2'], [b.land + 0.13, 0.98, 'io2'], [b.land + 0.27, 1, 'io2']]);
+}
+
+// ---------------------------------------------------------------- frame
+window.renderAt = (t) => {
+  const fast = (t > 0 && t < 0.32) || (t > CUE.launch0 - 0.02 && t < RESOLVE + 0.25) || (t > 4.05 && t < 4.45);
+  const hold = t >= 4.45;
+  const tq = hold ? step(t, 10) : fast ? step(t, 30) : step(t, 15);        // on 3s / on 1s / on 2s
+  const bs = hold ? Math.floor(t * 10) % 3 : Math.floor(t * 15);          // boil seed (3-drawing cycle on the hold)
+
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over';
+  X.fillStyle = PAL.cream; X.fillRect(0, 0, 1920, 1080);
+  X.globalCompositeOperation = 'multiply'; X.globalAlpha = 0.55; X.drawImage(paper, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over';
+
+  // chart squash anticipation (2.5–launch), applied as a transform about the baseline
+  const sqA = K(tq, [[CUE.click, 0], [CUE.launch0 - 0.05, 1, 'io2'], [CUE.launch0, 0, 'in3']]);
+  const chartT = (p) => p.map(([x, y]) => [960 + (x - 960) * (1 + 0.05 * sqA), O.y + (y - O.y) * (1 - 0.1 * sqA)]);
+
+  // axes (draw-on, then the y-axis becomes the D piece, the x-axis the underline)
+  const yFrac = inv(CUE.axisY[0], CUE.axisY[1], tq), xFrac = inv(CUE.axisX[0], CUE.axisX[1], tq);
+  if (tq < PIECES[0].launch && yFrac > 0) brush(chartT(boil(AXIS_Y, bs, 1)), 11, bs + 1, false, E.out2(yFrac));
+  if (xFrac > 0) {
+    const ul = CUE.underline; const u = ease(inv(ul[0], ul[1], tq));
+    const pts = AXIS_X.map((a, i) => { const b = UL[i]; return [lerp(a[0], b[0], u), lerp(a[1], b[1], u) - 120 * Math.sin(Math.PI * u) * Math.sin(Math.PI * i / (N - 1))]; });
+    brush(u > 0 ? boil(pts, bs, 1) : chartT(boil(pts, bs, 1)), u > 0 ? lerp(11, 13, u) : 11, bs + 2, false, E.out2(xFrac));
+  }
+
+  // the resolve: star burst sits BEHIND the letters
+  const xP = PIECES[PIECES.length - 1];
+  starBurst(xP.c1[0] + 150, xP.c1[1] - 150, RESOLVE, tq, bs);
+
+  // bars (before their launch) and pieces (after)
+  PIECES.forEach((P, i) => {
+    if (tq < P.launch) {
+      if (i === 0) return;
+      const b = BARS[i - 1]; const h = barH(b, tq); if (h <= 0.5) return;
+      const stretch = 1 + 0.12 * clamp((h / b.H) * (1 - h / b.H) * 4) * (tq < b.land ? 1 : 0);
+      const w = b.w / stretch; const p = wob(rectPoly(b.x + (b.w - w) / 2, O.y - h, w, h), 10 + i, 5);
+      const q = chartT(boil(p, bs + i * 3, 1));
+      fillPoly([q], b.col, 5, 4); brush(q, 9, bs + i * 11);
+      popLines(b.x + b.w / 2, O.y - b.H - 8, b.land, tq, 3, 20, i);
+      return;
+    }
+    const S = pieceAt(P, tq);
+    const q = boil(S.pts, bs + i * 3, 1), hs = S.holes.map((h, k) => boil(h, bs + i * 3 + k + 1, 1));
+    X.globalAlpha = S.fillA; fillPoly([q, ...hs], P.col, 6, 5); X.globalAlpha = 1;
+    brush(q, lerp(9, 10, S.e), bs + i * 11);
+    hs.forEach((h, k) => brush(h, 8, bs + i * 13 + k));
+    if (S.e > 0.05 && S.e < 0.9) { // trailing speed lines on 1s
+      X.strokeStyle = PAL.ink; X.lineCap = 'round'; X.lineWidth = 4;
+      const d = pieceAt(P, tq - 0.06).c;
+      for (let k = -1; k <= 1; k++) { X.beginPath(); X.moveTo(d[0] + k * 26, d[1] + k * 10); X.lineTo(d[0] + (d[0] - S.c[0]) * 1.4 + k * 26, d[1] + (d[1] - S.c[1]) * 1.4 + k * 10); X.stroke(); }
+    }
+    popLines(P.c1[0], bbox(P.dst).y0 - 10, P.land, tq, 3, 18, i + 20);
+  });
+
+  // smoke puffs at the launch: the chart "poofs" into its letters
+  const L0 = CUE.launch0;
+  [[700, 690, 0], [880, 610, 1], [1080, 560, 2], [1260, 520, 3], [560, 560, 4], [1000, 760, 5]].forEach(([x, y, k]) => {
+    const u = inv(L0 - 0.02 + k * 0.03, L0 + 0.55 + k * 0.03, tq); if (u <= 0 || u >= 1) return;
+    cloud(x + 40 * u * (k % 2 ? 1 : -1), y - 90 * u, 34 + 80 * E.out3(u), bs, k * 3, 1 - smooth(0.6, 1, u));
+  });
+
+  // the resolve: star burst behind the X, then sparkles that fade before 4.6 s
+  [[tb.x0 - 40, tb.y0 + 10, 0], [tb.x1 + 40, tb.y1 - 20, 1], [tb.cx - 160, tb.y0 - 40, 2]].forEach(([x, y, k]) => {
+    const u = inv(RESOLVE + 0.05 + k * 0.07, RESOLVE + 0.6 + k * 0.07, tq); if (u <= 0 || u >= 1) return;
+    sparkle(x, y, 34 * Math.sin(Math.PI * u), bs + k);
+  });
+
+  // cursor (exits before the hold)
+  if (tq < CUE.cursorOut) drawCursor(tq, bs);
+
+  grain(X, grainImg, t, 0.07, 15);
+};
+window.__ready = true;
+</script></body></html>

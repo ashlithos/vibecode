@@ -1,0 +1,14 @@
+{
+  "name": "ashlithos-skills",
+  "description": "Ashley's personal collection of Claude Code skills and plugins",
+  "owner": {
+    "name": "Ashley"
+  },
+  "plugins": [
+    {
+      "name": "designer-to-builder",
+      "source": "./plugins/designer-to-builder",
+      "description": "Senior frontend engineer + technical coach for designers who ship real code with AI and want to understand it"
+    }
+  ]
+}

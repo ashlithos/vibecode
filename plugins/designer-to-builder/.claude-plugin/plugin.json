@@ -1,0 +1,9 @@
+{
+  "name": "designer-to-builder",
+  "version": "0.1.0",
+  "description": "Designer → Builder: helps product/UX designers safely ship production frontend code with AI while building real technical understanding. Run /builder to start.",
+  "author": {
+    "name": "Ashley"
+  },
+  "keywords": ["design", "frontend", "learning", "coaching", "code-review", "react"]
+}

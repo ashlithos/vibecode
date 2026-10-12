@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Activity Playtests</title>
+<style>
+:root{--bg:#fff7ee;--card:#fff;--ink:#1d1b26;--muted:#6b6880;--line:#eadfd2;--accent:#ff5d73;--accent2:#4a6cf7;--good:#16a36a;--warn:#d99000;--bad:#e5484d}
+@media (prefers-color-scheme:dark){:root{--bg:#15131c;--card:#211e2b;--ink:#f3f0fa;--muted:#a8a1bd;--line:#363044}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+.wrap{max-width:1100px;margin:auto;padding:24px 16px 60px}
+h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.2em 0}.lead{color:var(--muted);font-size:1.1rem;max-width:62ch}
+.kicker{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:20px}
+a.card{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;color:inherit;text-decoration:none;box-shadow:0 6px 20px rgba(60,30,80,.07);transition:transform .12s}
+a.card:hover{transform:translateY(-2px);border-color:var(--accent2)}
+a.card.star{border:2px solid var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.num{background:var(--ink);color:var(--bg);border-radius:8px;padding:1px 7px;font-size:.78rem;font-weight:800}
+.t{font-weight:800;font-size:1.1rem}.v{color:var(--muted);font-size:.93rem}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.tag{font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line)}
+.tag.good{background:var(--good);color:#fff}.tag.warn{background:var(--warn);color:#fff}.tag.bad{background:var(--bad);color:#fff}.tag.star{background:var(--accent);color:#fff}
+.how{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 20px;margin-top:18px}
+.how li{margin:.3em 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">7 players · 30 minutes · first-time teammates</div>
+  <h1>AI team-activity playtests</h1>
+  <p class="lead">17 single-file prototypes. Open one and click <b>▶ Simulate</b> to watch 7 synthetic players run a full session in about a minute, or click <b>🎤 Host mode</b> to click through it yourself. Every file works offline.</p>
+  <div class="how"><b>Reading the cards:</b> ⏱ is the simulated session length (3 runs each, phase transitions included). 🛡 is the facilitator risk for a first meeting. Open any game’s <b>📝 Notes</b> for the full verdict, where time leaks, and the suggested cut.</div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const G = [
+  ['17', 'team-origin-story', '🛡️', 'Team Origin Story', 'Frontrunner. Low-risk start, opt-in sharing, and the team keeps a crest.', '~24½ min', 'good', 'low', 'good', true],
+  ['11', 'two-truths-and-an-ai', '🤥', 'Two Truths and an AI', 'Best pure get-to-know-you. Plausible AI lies beat absurd ones.', '~22½ min', 'good', 'low', 'good'],
+  ['16', 'discussion-deck', '🃏', 'AI Discussion Deck', 'Lowest prep. Story questions land; values questions get silence.', '~20–24 min', 'good', 'very low', 'good'],
+  ['13', 'prompt-telephone', '📞', 'Prompt Telephone', 'Best punchline in the set. Run chains in parallel to kill the dead time.', '~18 min', 'good', 'very low', 'good'],
+  ['04', 'secret-angel-gallery', '🎬', 'Secret Angel: Poster Gallery', 'Fairer, tighter version of #2. A uniform medium makes comparing fun.', '~19½ min', 'good', 'low-med', 'warn'],
+  ['02', 'secret-angel-reveal', '😇', 'Secret Angel: Reveal Ceremony', 'Emotional peak, but guessing drags after gift 4.', '~30 min', 'warn', 'med-low', 'warn'],
+  ['12', 'ai-pictionary', '🖼️', 'AI Pictionary', 'High energy. 5 rounds is short, so run 8–9. Free text with a multiple-choice lifeline.', '~14 min', 'good', 'low', 'good'],
+  ['01', 'exquisite-corpse', '🧩', 'Exquisite Corpse', 'Assembly reveal is great; 3 rounds alone are thin for 30 min.', '~16 min', 'good', 'very low', 'good'],
+  ['03', 'prompt-dj', '🎧', 'Prompt Roulette: DJ Edition', 'Brilliant with a performer DJ, dead air with a shy one.', '~16 min', 'good', 'low-med', 'warn'],
+  ['10', 'recognition-songs', '🎤', 'AI Recognition Songs', 'Delightful for 3–4 songs, then energy dips. Use 15s clips.', '~14½ min', 'good', 'low-med', 'warn'],
+  ['08', 'movie-mastermind', '🕵️', 'Movie Mastermind', 'The hint economy works (barely). 8 rounds is too short.', '~9 min', 'good', 'low', 'good'],
+  ['07', 'copilot-or-human', '🤖', 'Copilot or Human?', 'Smooth and fast, but it is trivia night. Better as an opener.', '~9 min', 'good', 'very low', 'good'],
+  ['05', 'describe-your-angel', '🪞', 'Describe Your Angel', 'Strangers have no vibe data, so it drifts to looks. Better at meeting 2+.', '~18 min', 'good', 'medium', 'bad'],
+  ['14', 'ship-it-challenge', '🚢', 'Ship-it Challenge', 'Needs the real build time, which doesn’t fit. Better as a 45-min session.', '~29½ min', 'warn', 'low-med', 'warn'],
+  ['06', 'lights-camera-ai', '🎬', 'Lights, Camera, AI!', 'A 45-minute game. Committee writing leaks time.', '~30½ min', 'bad', 'low', 'good'],
+  ['09', 'emotion-aware-santa', '🎅', 'Emotion-aware Secret Santa', 'A utility with a 5-min comedy moment. Pair it with #2 or #4.', '~6 min (module)', 'good', 'low', 'good'],
+  ['15', 'ai-roast-of-the-team', '🔥', 'AI Roast of the Team', 'Don’t run at a first meeting. Fine at meeting 3+, roasting the team, not people.', '~11 min', 'good', 'HIGH', 'bad'],
+];
+document.getElementById('grid').innerHTML = G.map(([n, slug, e, t, v, time, tc, risk, rc, star]) =>
+  `<a class="card${star ? ' star' : ''}" href="${n}-${slug}.html"><div class="top"><span class="num">${n}</span>${star ? '<span class="tag star">★ frontrunner</span>' : ''}</div>
+   <div class="t">${e} ${t}</div><div class="v">${v}</div>
+   <div class="tags"><span class="tag ${tc}">⏱ ${time}</span><span class="tag ${rc}">🛡 risk: ${risk}</span></div></a>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11 · Two Truths and an AI</title>
+<style>
+/* Shared styles for every prototype. System fonts only, works offline. */
+:root{
+  --bg:#fff7ee; --card:#ffffff; --card2:#fbf4ff; --ink:#1d1b26; --muted:#6b6880; --line:#eadfd2;
+  --accent:#ff5d73; --accent2:#4a6cf7; --good:#16a36a; --warn:#d99000; --bad:#e5484d;
+  --shadow:0 6px 22px rgba(60,30,80,.09); --radius:18px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#15131c; --card:#211e2b; --card2:#2a2438; --ink:#f3f0fa; --muted:#a8a1bd; --line:#363044; --shadow:0 6px 22px rgba(0,0,0,.4); }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3{line-height:1.15;margin:.2em 0 .5em}
+h1{font-size:clamp(1.8rem,4vw,2.6rem)} h2{font-size:1.5rem} h3{font-size:1.1rem}
+small,.muted{color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-height:46px;width:100%}
+input:focus,textarea:focus{outline:none;border-color:var(--accent2)}
+textarea{min-height:110px;resize:vertical}
+details summary{cursor:pointer;color:var(--muted);font-size:.9rem;margin:6px 0}
+
+/* ---------- header / HUD ---------- */
+header.top{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 220px}
+.brand b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .num{background:var(--ink);color:var(--bg);border-radius:8px;padding:2px 7px;font-size:.8rem;font-weight:700}
+.mode{font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--line);text-transform:uppercase;letter-spacing:.04em}
+.mode.sim{background:var(--accent);color:#fff} .mode.host{background:var(--accent2);color:#fff}
+.hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.35rem}
+.clock small{font-weight:600;font-size:.8rem;margin-left:3px}
+.phase{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.phase b{color:var(--ink)} .phase .over{color:var(--bad);font-weight:700}
+.ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.ctrls .btn{min-height:38px;padding:7px 12px;font-size:.88rem;border-radius:10px}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;font-size:.85rem;font-weight:700;border:0;background:transparent;color:var(--ink);padding:6px 10px;cursor:pointer;min-height:34px}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.progress{height:5px;background:var(--line)}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .2s}
+.progress div.over{background:var(--bad)}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding:16px;max-width:1440px;margin:0 auto}
+@media (max-width:960px){.layout{grid-template-columns:1fr}}
+main{min-width:0}
+#stage{min-height:60vh}
+#stage.simlock [data-act]:not([data-act^="core:"]){pointer-events:none}
+.fade{animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border:1px solid var(--line);margin-bottom:16px}
+.card.tint{background:var(--card2)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cols>.card{margin-bottom:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.center{text-align:center}
+.stack>*+*{margin-top:12px}
+.kicker{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.big-text{font-size:clamp(1.3rem,3vw,2rem);font-weight:750;line-height:1.25}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+ul.tight{margin:.3em 0;padding-left:1.2em} ul.tight li{margin:.25em 0}
+
+/* ---------- buttons & chips ---------- */
+.btn{font:inherit;font-weight:700;border:0;border-radius:14px;padding:12px 20px;min-height:48px;cursor:pointer;background:var(--accent2);color:#fff;transition:transform .08s,filter .15s;display:inline-flex;align-items:center;gap:8px;justify-content:center;text-decoration:none}
+.btn:hover{filter:brightness(1.07)} .btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.big{font-size:1.12rem;padding:16px 24px;min-height:58px}
+.btn.pink{background:var(--accent)} .btn.green{background:var(--good)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn.small{min-height:38px;padding:7px 12px;font-size:.9rem;border-radius:10px}
+.pchip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;background:color-mix(in srgb,var(--pc) 16%,transparent);border:1.5px solid color-mix(in srgb,var(--pc) 45%,transparent);font-weight:650;font-size:.92rem;white-space:nowrap}
+.pchip .pe{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--pc);font-size:.9rem}
+.pchip.big{font-size:1.05rem;padding:6px 14px 6px 6px}.pchip.big .pe{width:34px;height:34px;font-size:1.1rem}
+.pchip.dim{opacity:.45}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--ink)}
+.tag.good{background:var(--good);color:#fff}.tag.warn{background:var(--warn);color:#fff}.tag.bad{background:var(--bad);color:#fff}
+.script{border-left:4px solid var(--accent);background:var(--card2);padding:10px 14px;border-radius:0 12px 12px 0;margin:10px 0;font-size:1rem}
+.script b{color:var(--accent)}
+
+/* ---------- player status grid ---------- */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.pcell{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card);display:flex;flex-direction:column;gap:6px;position:relative}
+.pcell.done{border-color:var(--good)}
+.pcell .status{position:absolute;top:8px;right:10px;font-size:1.1rem}
+.pcell .cat{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.pcell input{min-height:40px;padding:7px 10px}
+.counter{font-weight:800;font-size:1.1rem}
+
+/* ---------- round timer ---------- */
+.roundtimer{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px 16px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800;font-variant-numeric:tabular-nums}
+.roundtimer .t{font-size:1.6rem}
+.roundtimer .bar{flex:1;height:8px;border-radius:9px;background:rgba(127,127,127,.35);overflow:hidden}
+.roundtimer .bar i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.roundtimer.ding{background:var(--bad);animation:pulse .6s infinite alternate}
+@keyframes pulse{to{filter:brightness(1.25)}}
+
+/* ---------- transcript ---------- */
+.logwrap{position:sticky;top:76px;align-self:start;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;max-height:calc(100vh - 100px)}
+@media (max-width:960px){.logwrap{position:static;max-height:420px}}
+.loghead{padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;display:flex;justify-content:space-between}
+#log{overflow:auto;padding:8px 10px 14px;font-size:.88rem}
+.le{padding:4px 2px;border-bottom:1px dashed var(--line);animation:fadeIn .25s}
+.le .ts{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.78rem;margin-right:6px}
+.le.sys{color:var(--muted);font-style:italic}
+.le.phase{font-weight:800;color:var(--accent2);border-bottom:2px solid var(--line);padding-top:10px}
+.le.say b{margin-right:4px}
+#bubbles{position:fixed;left:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:40;max-width:min(380px,calc(100vw - 32px));pointer-events:none}
+@media (max-width:960px){#bubbles{left:16px;right:16px;bottom:10px;max-width:none}.bubble{font-size:.85rem;padding:6px 10px;opacity:.97}}
+.bubble{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:2px solid var(--pc);border-radius:16px 16px 16px 4px;padding:8px 12px;box-shadow:var(--shadow);animation:pop .25s ease;font-size:.95rem}
+.bubble .pe{display:grid;place-items:center;min-width:30px;height:30px;border-radius:50%;background:var(--pc)}
+.bubble.out{opacity:0;transform:translateY(6px);transition:all .3s}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- placeholder generation cards ---------- */
+.gen{position:relative;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);max-width:520px}
+.gen-art{aspect-ratio:4/3;display:grid;place-items:center;background:linear-gradient(135deg,hsl(var(--h1) 85% 70%),hsl(var(--h2) 80% 55%));position:relative}
+.gen.poster .gen-art{aspect-ratio:2/3}
+.gen.square .gen-art{aspect-ratio:1/1}
+.gen-art .em{font-size:clamp(3rem,9vw,5.2rem);filter:drop-shadow(0 6px 10px rgba(0,0,0,.2));letter-spacing:.05em;text-align:center;line-height:1.1}
+.gen-art .over{position:absolute;inset:auto 0 0 0;padding:14px;background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff;text-align:center}
+.gen-art .over .pt{font-weight:900;font-size:1.3rem;text-transform:uppercase;letter-spacing:.03em;line-height:1.1}
+.gen-art .over .ps{font-size:.85rem;opacity:.9;font-style:italic}
+.gen-meta{padding:12px 14px;font-size:.9rem}
+.gen-kind{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.gen-title{font-weight:800;font-size:1.05rem;margin:2px 0 4px}
+.gen-prompt{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;background:var(--bg);border-radius:8px;padding:8px;margin-top:6px;color:var(--muted)}
+.gen-load{position:absolute;inset:0;display:none;place-items:center;background:linear-gradient(110deg,var(--card) 30%,var(--card2) 50%,var(--card) 70%);background-size:300% 100%;animation:shimmer 1.2s linear infinite;font-weight:800;color:var(--muted);z-index:2}
+.gen.loading .gen-load{display:grid}
+.gen.done .gen-art .em{animation:pop .5s ease}
+@keyframes shimmer{from{background-position:100% 0}to{background-position:0 0}}
+
+/* ---------- votes ---------- */
+.vcat{margin:10px 0 16px}
+.vtitle{font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.vbar{display:grid;grid-template-columns:minmax(90px,38%) 1fr 28px;gap:8px;align-items:center;margin:5px 0;font-size:.93rem}
+.vbar .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbar .bt{height:16px;border-radius:9px;background:var(--line);overflow:hidden}
+.vbar .bt i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:9px;transition:width .3s}
+.vbar.win .bl{font-weight:800}
+.vrow{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.vname{min-width:92px;font-weight:650;font-size:.9rem}
+.vopts{display:flex;flex-wrap:wrap;gap:4px}
+.vopt{font:inherit;font-size:.8rem;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:5px 8px;min-height:34px;cursor:pointer}
+.vopt.sel{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.vopt:disabled{opacity:.3;cursor:not-allowed}
+
+/* ---------- report ---------- */
+.rtable{width:100%;border-collapse:collapse;font-size:.92rem}
+.rtable th,.rtable td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.rtable td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rbar{position:relative;height:10px;border-radius:6px;background:var(--line);min-width:80px}
+.rbar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--good)}
+.rbar i.over{background:var(--bad)}
+.rbar s{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{font-size:1.2rem;font-weight:800;padding:12px 16px;border-radius:14px;margin:8px 0}
+.verdict.good{background:color-mix(in srgb,var(--good) 18%,transparent)}
+.verdict.warn{background:color-mix(in srgb,var(--warn) 22%,transparent)}
+.verdict.bad{background:color-mix(in srgb,var(--bad) 18%,transparent)}
+.notes h4{margin:14px 0 4px}
+.risk{border:2px solid var(--warn);border-radius:14px;padding:12px 14px;background:color-mix(in srgb,var(--warn) 10%,transparent)}
+
+dialog{border:0;border-radius:20px;padding:0;max-width:min(720px,calc(100vw - 24px));width:100%;background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,5,20,.55)}
+dialog .dlg{padding:22px;max-height:80vh;overflow:auto}
+
+/* ---------- landing ---------- */
+.hero{background:linear-gradient(135deg,var(--card),var(--card2))}
+.namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:14px 0}
+.namefield{display:flex;align-items:center;gap:8px}
+.namefield .pe{display:grid;place-items:center;min-width:42px;height:42px;border-radius:50%;background:var(--pc);font-size:1.2rem}
+
+@media (max-width:600px){
+  body{font-size:16px}
+  .card{padding:16px}
+  .layout{padding:12px 16px}
+  .hud{gap:8px}
+}
+
+/* ---------- slot sentence ---------- */
+.slots{line-height:2.4}
+.slot{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:2px 3px;padding:0 12px;border-radius:14px;border:2px dashed var(--line);min-width:88px;line-height:1.2;padding-top:4px;padding-bottom:3px}
+.slot .sw{opacity:0;transform:translateY(-34px) scale(.5) rotate(-8deg)}
+.slot .sc{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.slot.in{border-style:solid;border-color:var(--pc);background:color-mix(in srgb,var(--pc) 14%,transparent)}
+.slot.in .sw{opacity:1;transform:none;transition:all .5s cubic-bezier(.3,1.7,.5,1)}
+
+</style>
+</head>
+<body>
+<!--
+  11 · Two Truths and an AI: single-file playtest prototype (generated by build.py; edit src/ instead).
+  REAL API PLUG-IN POINT: every AI result is a placeholder card made by Core.genCard() and
+  revealed by Core.generate(). To go live, replace Core.generate() with a call to a real
+  image / video / audio API using the prompt shown on the card.
+-->
+<noscript>This prototype needs JavaScript enabled.</noscript>
+<script>
+/* Core engine shared by every prototype. The build step inlines it into each HTML file,
+   so every file stays a single self-contained page that works offline.
+
+   Game time vs real time:
+   - Host mode: the session clock is real time (it starts when you click "Start the session").
+   - Simulate mode: the session clock is *game* time. Core.wait(sec) advances game time by
+     `sec`, but only takes sec / speed real seconds. At 25x a 30-minute session plays in ~72s.
+*/
+(function () {
+  'use strict';
+
+  const PERSONAS = [
+    { id: 'maya',  name: 'Maya',  tag: 'the chaotic',      emoji: '🌪️', color: '#ff5d73' },
+    { id: 'dev',   name: 'Dev',   tag: 'the deadpan',      emoji: '🗿', color: '#7b8794' },
+    { id: 'priya', name: 'Priya', tag: 'the wholesome',    emoji: '🌻', color: '#e8a317' },
+    { id: 'leo',   name: 'Leo',   tag: 'the overachiever', emoji: '🚀', color: '#4a6cf7' },
+    { id: 'sam',   name: 'Sam',   tag: 'the quiet one',    emoji: '🐢', color: '#16a36a' },
+    { id: 'zoe',   name: 'Zoe',   tag: 'the punster',      emoji: '🎭', color: '#9b59b6' },
+    { id: 'omar',  name: 'Omar',  tag: 'the storyteller',  emoji: '📚', color: '#e67e22' },
+  ];
+
+  // ---------- small utils ----------
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const randi = (a, b) => Math.floor(rand(a, b + 1));
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const sample = (a, n) => shuffle(a).slice(0, n);
+  const chance = p => Math.random() < p;
+  const fmt = s => { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // Random permutation with no fixed points (nobody gets themselves).
+  function derange(n, noMutual) {
+    for (let tries = 0; tries < 5000; tries++) {
+      const p = shuffle([...Array(n).keys()]);
+      if (p.some((v, i) => v === i)) continue;
+      if (noMutual && p.some((v, i) => p[v] === i)) continue;
+      return p;
+    }
+    return [...Array(n).keys()].map(i => (i + 1) % n);
+  }
+  function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return Math.abs(h); }
+
+  // ---------- state ----------
+  const S = {
+    mode: null, cfg: null, players: PERSONAS.map(p => ({ ...p })),
+    clock: 0, running: false, paused: false, speed: 25, last: Date.now(), waiters: [],
+    phase: null, phases: [], timer: null, boards: {}, realStart: 0, finished: false,
+  };
+  const player = p => p == null ? null : typeof p === 'object' ? p : typeof p === 'number' ? S.players[p] : S.players.find(x => x.id === p);
+
+  // ---------- clock ----------
+  setInterval(() => {
+    const t = Date.now(), dt = (t - S.last) / 1000; S.last = t;
+    if (S.running && !S.paused) {
+      if (S.mode === 'host') S.clock += dt;
+      else if (S.mode === 'sim' && S.waiters.length) {
+        // Several waits can be pending at once (e.g. an un-awaited generate()); advance to the nearest.
+        const adv = Math.min(dt * S.speed, ...S.waiters.map(w => w.left));
+        S.clock += adv;
+        const due = [];
+        S.waiters = S.waiters.filter(w => { w.left -= adv; if (w.left <= 1e-6) { due.push(w.res); return false; } return true; });
+        due.forEach(r => r());
+      }
+    }
+    hud();
+  }, 50);
+
+  /** Advance game time (simulate mode only). Resolves immediately in host mode. */
+  function wait(sec) {
+    if (S.mode !== 'sim' || S.finished) return Promise.resolve();
+    return new Promise(res => { S.waiters.push({ left: Math.max(0, sec), res }); });
+  }
+
+  function hud() {
+    const clk = $('#clk'); if (!clk) return;
+    const target = (S.cfg && S.cfg.target) || 1800;
+    clk.textContent = fmt(S.clock);
+    const prog = $('#prog');
+    prog.style.width = Math.min(100, S.clock / target * 100) + '%';
+    prog.classList.toggle('over', S.clock > target);
+    const ph = $('#phName'), pl = $('#phLeft');
+    if (S.phase && !S.finished) {
+      ph.innerHTML = '<b>' + esc(S.phase.name) + '</b>';
+      const left = S.phase.budget - (S.clock - S.phase.start);
+      pl.innerHTML = left >= 0 ? fmt(left) + ' left' : '<span class="over">+' + fmt(-left) + ' over</span>';
+    } else { ph.textContent = S.finished ? 'Finished' : 'Not started'; pl.textContent = ''; }
+    const rt = $('#rt');
+    if (S.timer) {
+      const left = S.timer.sec - (S.clock - S.timer.start);
+      rt.hidden = false;
+      rt.classList.toggle('ding', left <= 0);
+      rt.innerHTML = '<span>⏱ ' + esc(S.timer.label) + '</span><span class="bar"><i style="width:' + Math.max(0, left / S.timer.sec * 100) + '%"></i></span><span class="t">' + (left > 0 ? fmt(left) : "Time!") + '</span>';
+    } else rt.hidden = true;
+  }
+
+  // ---------- phases & timers ----------
+  function closePhase() { if (S.phase && S.phase.actual == null) S.phase.actual = S.clock - S.phase.start; }
+  function phase(name, budgetSec) {
+    // Real rooms lose 6–14s at every phase change ("okay, eyes up here…"); charge it to the phase that's ending.
+    if (S.mode === 'sim' && S.phase) S.clock += rand(6, 14);
+    closePhase();
+    S.phase = { name, budget: budgetSec, start: S.clock, actual: null };
+    S.phases.push(S.phase);
+    log(null, '— ' + name + ' (budget ' + fmt(budgetSec) + ') —', 'phase');
+    hud();
+  }
+  function timer(label, sec) { S.timer = { label, sec, start: S.clock }; hud(); }
+  function clearTimer() { S.timer = null; hud(); }
+  const timerLeft = () => S.timer ? S.timer.sec - (S.clock - S.timer.start) : 0;
+
+  // ---------- transcript ----------
+  function log(p, text, kind) {
+    const el = $('#log'); if (!el) return;
+    p = player(p);
+    const d = document.createElement('div');
+    d.className = 'le ' + (kind || (p ? 'say' : 'sys'));
+    d.innerHTML = '<span class="ts">' + fmt(S.clock) + '</span>' + (p ? '<b style="color:' + p.color + '">' + p.emoji + ' ' + esc(p.name) + '</b>' : '') + esc(text);
+    el.appendChild(d); el.scrollTop = el.scrollHeight;
+    $('#logCount').textContent = el.children.length + ' events';
+  }
+  function bubble(p, text) {
+    p = player(p); const box = $('#bubbles'); if (!box || !p) return;
+    const b = document.createElement('div'); b.className = 'bubble'; b.style.setProperty('--pc', p.color);
+    b.innerHTML = '<span class="pe">' + p.emoji + '</span><div><b>' + esc(p.name) + '</b><div>' + esc(text) + '</div></div>';
+    box.appendChild(b); const max = window.innerWidth < 960 ? 1 : 2; while (box.children.length > max) box.firstChild.remove();
+    setTimeout(() => b.classList.add('out'), 2600); setTimeout(() => b.remove(), 3000);
+  }
+  /** A synthetic player says something; takes `sec` of game time. */
+  function say(p, text, sec) { log(p, '“' + text + '”', 'say'); bubble(p, text); return wait(sec == null ? 6 : sec); }
+  /** A player does something (no quote marks). */
+  function act(p, text, sec) { log(p, ' ' + text, 'say'); return wait(sec == null ? 2 : sec); }
+  function sys(text, sec) { log(null, text, 'sys'); return wait(sec == null ? 2 : sec); }
+
+  // ---------- rendering helpers ----------
+  function stage(html) { const st = $('#stage'); st.innerHTML = '<div class="fade">' + html + '</div>'; window.scrollTo({ top: 0, behavior: 'smooth' }); return st; }
+  function chip(p, opt) { p = player(p); opt = opt || {}; return '<span class="pchip' + (opt.big ? ' big' : '') + (opt.dim ? ' dim' : '') + '" style="--pc:' + p.color + '"><span class="pe">' + p.emoji + '</span>' + esc(p.name) + (opt.suffix ? ' ' + opt.suffix : '') + '</span>'; }
+  const script = t => '<div class="script">🎙️ <b>Say:</b> ' + t + '</div>';
+
+  const EMOJI = [[/corgi|dog|pup/, '🐶'], [/cat|kitten/, '🐱'], [/raccoon/, '🦝'], [/dragon/, '🐉'], [/unicorn/, '🦄'], [/pizza/, '🍕'], [/taco/, '🌮'], [/rocket|space|astronaut/, '🚀'], [/robot|\bai\b/, '🤖'], [/ocean|sea|wave|swim/, '🌊'], [/fire|flame|spicy/, '🔥'], [/music|song|jingle|sing/, '🎵'], [/cake|birthday/, '🎂'], [/coffee|espresso|latte|cold brew/, '☕'], [/moon|night/, '🌙'], [/sun|sunrise|sunset/, '🌅'], [/castle|kingdom/, '🏰'], [/ghost|haunt/, '👻'], [/crown|king|queen|royal/, '👑'], [/banana/, '🍌'], [/penguin/, '🐧'], [/owl/, '🦉'], [/goose|duck/, '🦆'], [/octopus|squid/, '🐙'], [/sloth/, '🦥'], [/frog/, '🐸'], [/bear/, '🐻'], [/shark/, '🦈'], [/cowboy/, '🤠'], [/wizard|magic|spell/, '🧙'], [/ninja/, '🥷'], [/movie|film|poster|cinema/, '🎬'], [/heart|love/, '💖'], [/tree|forest/, '🌲'], [/mountain|peak|summit/, '🏔️'], [/city/, '🏙️'], [/laptop|computer|tabs|code/, '💻'], [/snack|popcorn/, '🍿'], [/star|galaxy/, '⭐'], [/rain|storm/, '🌧️'], [/sword|battle|warrior/, '⚔️'], [/shield/, '🛡️'], [/lion/, '🦁'], [/tiger/, '🐯'], [/fox/, '🦊'], [/bee\b|bees/, '🐝'], [/hamster/, '🐹'], [/llama|alpaca/, '🦙'], [/croissant|bread|baguette|loaf|sandwich/, '🥐'], [/sushi/, '🍣'], [/donut/, '🍩'], [/cheese/, '🧀'], [/disco|dance/, '🪩'], [/volcano/, '🌋'], [/rainbow/, '🌈'], [/hat\b/, '🎩'], [/sock/, '🧦'], [/train/, '🚂'], [/pirate|ship|boat/, '🏴‍☠️'], [/snail/, '🐌'], [/whale/, '🐋'], [/dinosaur|t-rex|raptor/, '🦖'], [/chicken/, '🐔'], [/cloud/, '☁️'], [/cactus|plant/, '🌵'], [/book|library/, '📚'], [/guitar|rock/, '🎸'], [/trophy|award|winner/, '🏆'], [/spreadsheet|chart|graph/, '📊'], [/calendar|meeting|sync/, '📅'], [/dumpling/, '🥟'], [/noodle|ramen/, '🍜'], [/chocolate|cocoa/, '🍫'], [/ice cream/, '🍦'], [/snow|ski|winter/, '❄️'], [/helicopter/, '🚁'], [/church|cathedral|monk/, '⛪'], [/giant|monster/, '👹'], [/\bteam\b|people/, '👥'], [/goat/, '🐐'], [/capybara|beaver/, '🦫'], [/axolotl|lizard|gecko/, '🦎'], [/otter/, '🦦'], [/hedgehog/, '🦔'], [/narwhal|unicorn whale/, '🐳'], [/turtle|tortoise/, '🐢'], [/kraken/, '🦑'], [/bat\b/, '🦇'], [/yeti/, '🦍'], [/cheeto/, '🌶️'], [/oats|porridge/, '🥣'], [/panda/, '🐼'], [/butterfly/, '🦋'], [/tea\b/, '🍵'], [/mango/, '🥭'], [/avocado/, '🥑'], [/phoenix|bird/, '🐦‍🔥'], [/lightning|thunder/, '⚡'], [/time|clock/, '⏰'], [/money|gold|rich/, '💰'], [/plane|fly|wings/, '✈️'], [/car\b|race/, '🏎️'], [/wolf/, '🐺'], [/horse/, '🐴'], [/mushroom/, '🍄'], [/cookie/, '🍪'], [/pickle/, '🥒'], [/egg/, '🥚']];
+  function emojisFor(prompt, max) {
+    // Emoji in the order their keywords appear in the prompt.
+    const t = String(prompt).toLowerCase(), hits = [];
+    for (const [re, e] of EMOJI) { const m = t.match(new RegExp('\\b(?:' + re.source + ')')); if (m && !hits.some(h => h.e === e)) hits.push({ e, at: m.index }); }
+    hits.sort((a, b) => a.at - b.at);
+    return hits.length ? hits.slice(0, max || 3).map(h => h.e).join('') : '✨🎨';
+  }
+  let genN = 0;
+  /**
+   * Placeholder card for an AI generation result. Returns HTML.
+   * kind: image | poster | square | video | song | text
+   */
+  function genCard(o) {
+    const id = o.id || ('gen' + (++genN));
+    const h = hash(o.prompt) % 360, h2 = (h + 40 + hash(o.title || 'x') % 80) % 360;
+    const kindLabel = { image: 'AI image', poster: 'AI movie poster', square: 'AI image', video: 'AI video', song: 'AI song', text: 'AI text' }[o.kind || 'image'];
+    return '<div class="gen ' + (o.kind || 'image') + (o.loading === false ? ' done' : ' loading') + '" id="' + id + '" style="--h1:' + h + 'deg;--h2:' + h2 + 'deg">' +
+      '<!-- REAL API PLUG-IN POINT: send the prompt below to an image/video/audio generation API and replace .gen-art with the returned media. -->' +
+      '<div class="gen-art"><div class="em">' + (o.emoji || emojisFor(o.prompt)) + '</div>' +
+      (o.overlayTitle ? '<div class="over"><div class="pt">' + esc(o.overlayTitle) + '</div>' + (o.overlaySub ? '<div class="ps">' + esc(o.overlaySub) + '</div>' : '') + '</div>' : '') + '</div>' +
+      '<div class="gen-meta"><div class="gen-kind">' + kindLabel + ' · placeholder</div>' + (o.title ? '<div class="gen-title">' + esc(o.title) + '</div>' : '') + (o.sub || '') +
+      (o.hidePrompt ? '' : '<div class="gen-prompt"><b>Prompt that would be sent:</b><br>' + esc(o.prompt) + '</div>') + '</div>' +
+      '<div class="gen-load">Generating…</div></div>';
+  }
+  /** Flip a genCard from loading to done. ~10s of game time in sim, ~1.5s real in host. */
+  async function generate(id, sec) {
+    log(null, '🎨 Prompt sent to generator… (placeholder, no real API call)', 'sys');
+    if (S.mode === 'sim') await wait(sec == null ? 10 : sec); else await sleep(1500);
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('loading'); el.classList.add('done'); }
+  }
+
+  // ---------- sentence assembly (words fly into slots) ----------
+  /** parts: array of strings and {word, cat, p} slots. Returns HTML; reveal with revealSlots(id). */
+  function slotSentence(id, parts, revealed) {
+    return '<div class="slots big-text" id="' + id + '">' + parts.map(x => {
+      if (typeof x === 'string') return '<span>' + esc(x) + '</span>';
+      const p = player(x.p);
+      return '<span class="slot' + (revealed ? ' in' : '') + '" style="--pc:' + (p ? p.color : 'var(--accent2)') + '"><span class="sw">' + esc(x.word || '???') + '</span><span class="sc">' + esc(x.cat || '') + (p ? ' · ' + esc(p.name) : '') + '</span></span>';
+    }).join(' ') + '</div>';
+  }
+  async function revealSlots(id, sec) {
+    for (const e of $$('#' + id + ' .slot')) { e.classList.add('in'); await (S.mode === 'sim' ? wait(sec == null ? 2.5 : sec) : sleep(550)); }
+  }
+
+  // ---------- simultaneous word collection grid ----------
+  /** items: [{p, cat, word?}]. Host gets inputs; sim shows hidden ✅ as words arrive (setCollected). */
+  function collectGrid(id, items, o) {
+    o = o || {};
+    const done = items.filter(x => x.word).length;
+    return '<div class="spread"><div class="counter" id="' + id + '-count">' + done + ' / ' + items.length + ' submitted</div>' +
+      (S.mode === 'host' && o.fillAct ? '<button class="btn small ghost" data-act="' + o.fillAct + '">🎲 Fill with sample answers</button>' : '') + '</div>' +
+      '<div class="pgrid" id="' + id + '" style="margin-top:10px">' + items.map((x, i) => {
+        const p = player(x.p);
+        return '<div class="pcell' + (x.word ? ' done' : '') + '" data-cell="' + i + '"><span class="status">' + (x.word ? '✅' : '⏳') + '</span>' + chip(p) +
+          '<span class="cat">' + esc(x.cat) + '</span>' +
+          (S.mode === 'host' ? '<input data-ci="' + i + '" data-grid="' + id + '" value="' + esc(x.word || '') + '" placeholder="' + esc(x.hint || 'type their word') + '" autocomplete="off">'
+            : '<span class="muted">' + (x.word ? (o.showWords ? '<b>' + esc(x.word) + '</b>' : 'submitted (hidden)') : 'thinking…') + '</span>') + '</div>';
+      }).join('') + '</div>';
+  }
+  /** Read host inputs back into items. */
+  function readGrid(id, items) { $$('#' + id + ' input[data-ci]').forEach(inp => { items[+inp.dataset.ci].word = inp.value.trim(); }); return items; }
+  /** Mark item i as submitted in an already-rendered grid. */
+  function markGrid(id, items, i, show) {
+    const cell = $('#' + id + ' [data-cell="' + i + '"]'); if (!cell) return;
+    cell.classList.add('done'); cell.querySelector('.status').textContent = '✅';
+    const m = cell.querySelector('.muted'); if (m) m.innerHTML = show ? '<b>' + esc(items[i].word) + '</b>' : 'submitted (hidden)';
+    const c = $('#' + id + '-count'); if (c) c.textContent = items.filter(x => x.word).length + ' / ' + items.length + ' submitted';
+  }
+  document.addEventListener('input', e => {
+    const inp = e.target.closest('[data-ci]'); if (!inp) return;
+    const grid = inp.dataset.grid, cell = inp.closest('.pcell'), has = !!inp.value.trim();
+    cell.classList.toggle('done', has); cell.querySelector('.status').textContent = has ? '✅' : '⏳';
+    const all = $$('#' + grid + ' input[data-ci]'), n = all.filter(x => x.value.trim()).length;
+    const c = $('#' + grid + '-count'); if (c) c.textContent = n + ' / ' + all.length + ' submitted';
+  });
+
+  // ---------- vote board ----------
+  let vbN = 0;
+  class VoteBoard {
+    /** options: [{id,label,emoji?,short?}], cats: [{id,label}], exclude(voter, option) -> bool */
+    constructor(o) {
+      this.id = o.id || ('vb' + (++vbN));
+      this.options = o.options; this.voters = o.voters || S.players;
+      this.cats = o.cats || [{ id: 'main', label: o.title || 'Vote' }];
+      this.exclude = o.exclude; this.onChange = o.onChange;
+      this.votes = {}; this.cats.forEach(c => this.votes[c.id] = {});
+      S.boards[this.id] = this;
+    }
+    count(cat, opt) { return Object.values(this.votes[cat]).filter(v => v === opt).length; }
+    tally(cat) { cat = cat || this.cats[0].id; return this.options.map(o => ({ id: o.id, label: o.label, emoji: o.emoji, n: this.count(cat, o.id) })).sort((a, b) => b.n - a.n); }
+    winner(cat) { return this.tally(cat)[0]; }
+    voted(cat) { return Object.keys(this.votes[cat || this.cats[0].id]).length; }
+    cast(voter, opt, cat) { cat = cat || this.cats[0].id; this.votes[cat][voter] = opt; this.refresh(); }
+    html() { return '<div class="vboard" id="' + this.id + '">' + this.inner() + '</div>'; }
+    inner() {
+      return this.cats.map(c => {
+        const max = Math.max(1, ...this.options.map(o => this.count(c.id, o.id)));
+        const top = this.voted(c.id) ? this.winner(c.id).n : -1;
+        return '<div class="vcat"><div class="vtitle"><span>' + esc(c.label) + '</span><small>' + this.voted(c.id) + '/' + this.voters.length + ' voted</small></div>' +
+          this.options.map(o => { const n = this.count(c.id, o.id); return '<div class="vbar' + (n === top && n > 0 ? ' win' : '') + '"><span class="bl">' + (o.emoji || '') + ' ' + esc(o.label) + '</span><span class="bt"><i style="width:' + (n / max * 100) + '%"></i></span><b>' + n + '</b></div>'; }).join('') +
+          '<details' + (S.mode === 'host' ? ' open' : '') + '><summary>' + (S.mode === 'host' ? 'Record each person’s vote (tap)' : 'Who voted for what') + '</summary>' +
+          this.voters.map(v => '<div class="vrow"><span class="vname">' + v.emoji + ' ' + esc(v.name) + '</span><div class="vopts">' +
+            this.options.map(o => { const ex = this.exclude && this.exclude(v, o); const sel = this.votes[c.id][v.id] === o.id; return '<button class="vopt' + (sel ? ' sel' : '') + '"' + (ex ? ' disabled' : '') + ' data-act="core:vote" data-b="' + this.id + '" data-c="' + c.id + '" data-v="' + v.id + '" data-o="' + esc(o.id) + '">' + (o.emoji ? o.emoji + ' ' : '') + esc(o.short || o.label) + '</button>'; }).join('') +
+            '</div></div>').join('') + '</details></div>';
+      }).join('');
+    }
+    refresh() { const el = document.getElementById(this.id); if (el) el.innerHTML = this.inner(); if (this.onChange) this.onChange(this); }
+  }
+  /** Synthetic voters vote one by one. chooser(voter) -> option id. */
+  async function simVotes(board, chooser, o) {
+    o = o || {}; const cat = o.cat || board.cats[0].id;
+    for (const v of shuffle(board.voters)) {
+      let opt = chooser(v);
+      if (board.exclude && board.exclude(v, board.options.find(x => x.id === opt))) opt = pick(board.options.filter(x => !board.exclude(v, x))).id;
+      board.cast(v.id, opt, cat);
+      await wait((o.gap || 4) * rand(.5, 1.5));
+    }
+    await wait(o.straggler == null ? 6 : o.straggler); // "is everyone in?" — waiting on the last voter
+    const label = board.cats.find(c => c.id === cat).label;
+    log(null, '🗳️ ' + label + ': ' + board.tally(cat).filter(x => x.n).map(x => x.label + ' ×' + x.n).join(' · '), 'sys');
+  }
+
+  // ---------- shell, landing, setup ----------
+  function shell() {
+    const c = S.cfg;
+    document.title = c.num + ' · ' + c.title;
+    document.body.innerHTML =
+      '<header class="top"><div class="brand"><span class="num">' + esc(c.num) + '</span><b>' + c.emoji + ' ' + esc(c.title) + '</b><span class="mode" id="modeBadge">preview</span></div>' +
+      '<div class="hud"><div class="clock" title="Session clock"><span id="clk">00:00</span><small>/ ' + fmt(c.target || 1800) + '</small></div><div class="phase"><span id="phName">Not started</span> <span id="phLeft"></span></div></div>' +
+      '<div class="ctrls" id="ctrls"></div></header><div class="progress"><div id="prog"></div></div>' +
+      '<div class="layout"><main><div id="rt" class="roundtimer" hidden></div><div id="stage"></div></main>' +
+      '<aside class="logwrap"><div class="loghead"><span>📜 Transcript</span><small id="logCount"></small></div><div id="log"></div></aside></div>' +
+      '<div id="bubbles"></div><dialog id="notesDlg"><div class="dlg" id="notesBody"></div></dialog>';
+    ctrls();
+  }
+  function ctrls() {
+    const el = $('#ctrls'); if (!el) return;
+    let h = '';
+    if (S.mode === 'sim' && !S.finished) {
+      h += '<button class="btn small ghost" data-act="core:pause">' + (S.paused ? '▶ Resume' : '⏸ Pause') + '</button>';
+      h += '<span class="seg">' + [10, 25, 60].map(x => '<button data-act="core:speed" data-x="' + x + '" class="' + (S.speed === x ? 'on' : '') + '">' + x + '×</button>').join('') + '</span>';
+    }
+    if (S.mode === 'host' && S.running) {
+      h += '<button class="btn small ghost" data-act="core:pause">' + (S.paused ? '▶ Resume clock' : '⏸ Pause clock') + '</button>';
+      h += '<button class="btn small ghost" data-act="core:end">🏁 End & report</button>';
+    }
+    h += '<button class="btn small ghost" data-act="core:notes">📝 Notes</button>';
+    if (S.mode) h += '<button class="btn small ghost" data-act="core:restart">↺ Start over</button>';
+    el.innerHTML = h;
+    const b = $('#modeBadge');
+    b.className = 'mode ' + (S.mode || '');
+    b.textContent = S.mode === 'sim' ? 'Simulate' : S.mode === 'host' ? 'Host' : 'preview';
+  }
+  function agendaHtml() {
+    const c = S.cfg, total = c.plan.reduce((a, p) => a + p.sec, 0);
+    return '<table class="rtable">' + c.plan.map(p => '<tr><td>' + esc(p.name) + '</td><td class="n">' + fmt(p.sec) + '</td></tr>').join('') +
+      '<tr><th>Total</th><th class="n">' + fmt(total) + '</th></tr></table>';
+  }
+  function landing() {
+    const c = S.cfg;
+    stage('<div class="card hero"><div class="kicker">AI team-activity playtest · 7 players · 30 min · first-time teammates</div>' +
+      '<h1>' + c.emoji + ' ' + esc(c.title) + '</h1><p class="lead">' + c.tagline + '</p>' +
+      '<div class="cta"><button class="btn big pink" data-act="core:sim">▶ Simulate with synthetic players</button>' +
+      '<button class="btn big ghost" data-act="core:host">🎤 Host mode: click through it yourself</button></div></div>' +
+      '<div class="cols"><div class="card"><h3>How it plays</h3>' + c.how + '</div>' +
+      '<div class="card"><h3>Planned agenda</h3>' + agendaHtml() + '</div>' +
+      '<div class="card"><h3>What you’re evaluating</h3><ul class="tight">' + c.evaluating.map(e => '<li>' + e + '</li>').join('') + '</ul></div>' +
+      '<div class="card"><h3>Synthetic cast</h3><div class="stack">' + PERSONAS.map(p => '<div>' + chip(p) + ' <small>' + p.tag + '</small></div>').join('') + '</div></div></div>');
+    log(null, 'Ready. Pick Simulate or Host mode.', 'sys');
+  }
+  function setup() {
+    stage('<div class="card"><h2>Who’s playing?</h2><p class="muted">Rename the seats to your real teammates, or keep the sample cast. The 🎲 buttons later fill in sample answers using these seats.</p>' +
+      '<div class="namegrid">' + S.players.map((p, i) => '<label class="namefield" style="--pc:' + p.color + '"><span class="pe">' + p.emoji + '</span><input value="' + esc(p.name) + '" data-i="' + i + '" maxlength="18" aria-label="Player ' + (i + 1) + '"></label>').join('') + '</div>' +
+      '<button class="btn big" data-act="core:go">Start the session →</button></div>');
+  }
+
+  function notesHtml() {
+    const c = S.cfg;
+    return '<div class="notes"><h3>📝 Facilitator notes</h3>' + c.notes + '<h4>What you’re evaluating</h4><ul class="tight">' + c.evaluating.map(e => '<li>' + e + '</li>').join('') + '</ul></div>';
+  }
+
+  // ---------- finish / report ----------
+  function finish(resultHtml) {
+    if (S.finished) return;
+    closePhase(); S.finished = true; S.running = false; S.timer = null;
+    S.waiters = [];
+    log(null, '🏁 Session ended at ' + fmt(S.clock), 'phase');
+    const rows = [];
+    for (const p of S.phases) {
+      let r = rows.find(x => x.name === p.name);
+      if (!r) { r = { name: p.name, budget: 0, actual: 0, n: 0 }; rows.push(r); }
+      r.budget += p.budget; r.actual += p.actual || 0; r.n++;
+    }
+    const target = S.cfg.target || 1800, total = S.clock, budget = rows.reduce((a, r) => a + r.budget, 0);
+    const v = total <= target - 60 ? ['good', '✅ Fits in ' + fmt(target) + ' with ' + fmt(target - total) + ' to spare']
+      : total <= target ? ['warn', '🟡 Fits, but with almost no buffer (' + fmt(target - total) + ' left)']
+      : ['bad', '🔴 Over the ' + fmt(target) + ' slot by ' + fmt(total - target) + '. See the suggested cut below'];
+    const maxv = Math.max(...rows.map(r => Math.max(r.actual, r.budget)), 1);
+    const realSec = (Date.now() - S.realStart) / 1000;
+    const leaks = rows.filter(r => r.actual > r.budget + 15).sort((a, b) => (b.actual - b.budget) - (a.actual - a.budget));
+    stage((resultHtml || '') +
+      '<div class="card"><h2>⏱ Pacing report</h2><div class="verdict ' + v[0] + '">' + v[1] + '</div>' +
+      '<p class="muted">' + (S.mode === 'sim' ? 'Simulated ' + fmt(total) + ' of session time in ' + Math.round(realSec) + ' real seconds. ' : 'Real time measured while you hosted. ') +
+      'Planned total: ' + fmt(budget) + '. Bars: actual (green, red if over), with the planned budget shown as a black tick.</p>' +
+      '<table class="rtable"><tr><th>Phase</th><th>Planned</th><th>Actual</th><th style="width:38%"></th></tr>' +
+      rows.map(r => '<tr><td>' + esc(r.name) + (r.n > 1 ? ' <small>×' + r.n + '</small>' : '') + '</td><td class="n">' + fmt(r.budget) + '</td><td class="n">' + fmt(r.actual) + '</td><td><div class="rbar"><i class="' + (r.actual > r.budget + 5 ? 'over' : '') + '" style="width:' + (r.actual / maxv * 100) + '%"></i><s style="left:' + (r.budget / maxv * 100) + '%"></s></div></td></tr>').join('') +
+      '<tr><th>Total</th><th class="n">' + fmt(budget) + '</th><th class="n">' + fmt(total) + '</th><th></th></tr></table>' +
+      (leaks.length ? '<p><b>Where time leaked:</b> ' + leaks.slice(0, 3).map(r => esc(r.name) + ' (+' + fmt(r.actual - r.budget) + ')').join(', ') + '</p>' : '<p><b>No phase ran meaningfully over budget.</b></p>') +
+      '</div><div class="card tint">' + notesHtml() + '</div>' +
+      '<div class="cta"><button class="btn big pink" data-act="core:sim">▶ Simulate again</button><button class="btn big ghost" data-act="core:host">🎤 Try Host mode</button><button class="btn big ghost" data-act="core:restart">↺ Back to start</button></div>');
+    ctrls(); hud();
+  }
+
+  // ---------- modes ----------
+  function reset(mode) {
+    S.mode = mode; S.clock = 0; S.phase = null; S.phases = []; S.timer = null; S.finished = false; S.paused = false; S.boards = {};
+    S.waiters = [];
+    S.runId = (S.runId || 0) + 1;
+    $('#log').innerHTML = ''; $('#stage').classList.toggle('simlock', mode === 'sim');
+  }
+  async function startSim() {
+    reset('sim'); S.players = PERSONAS.map(p => ({ ...p }));
+    S.running = true; S.realStart = Date.now(); ctrls();
+    log(null, '▶ Simulation started with 7 synthetic players at ' + S.speed + '× speed', 'sys');
+    const run = S.runId;
+    try { await S.cfg.simulate(); } catch (e) { if (run === S.runId) { console.error(e); log(null, '⚠️ Simulation error: ' + e.message, 'sys'); } }
+    if (run === S.runId && !S.finished) finish(S.cfg.summary ? S.cfg.summary() : '');
+  }
+  function startHost() { reset('host'); S.running = false; ctrls(); setup(); log(null, 'Host mode. Name the players, then start.', 'sys'); }
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]'); if (!el) return;
+    const a = el.dataset.act;
+    if (a.indexOf('core:') === 0) {
+      const k = a.slice(5);
+      if (k === 'sim') startSim();
+      else if (k === 'host') startHost();
+      else if (k === 'go') {
+        $$('.namefield input').forEach(inp => { const v = inp.value.trim(); if (v) S.players[+inp.dataset.i].name = v; });
+        S.running = true; S.realStart = Date.now(); S.last = Date.now(); ctrls();
+        log(null, '🎤 Session started: ' + S.players.map(p => p.name).join(', '), 'sys');
+        S.cfg.host();
+      }
+      else if (k === 'pause') { S.paused = !S.paused; ctrls(); }
+      else if (k === 'speed') { S.speed = +el.dataset.x; ctrls(); }
+      else if (k === 'notes') { $('#notesBody').innerHTML = notesHtml() + '<p><button class="btn" data-act="core:closeNotes">Close</button></p>'; $('#notesDlg').showModal(); }
+      else if (k === 'closeNotes') $('#notesDlg').close();
+      else if (k === 'end') finish(S.cfg.summary ? S.cfg.summary() : '');
+      else if (k === 'restart') { S.runId++; S.mode = null; S.running = false; S.finished = false; S.waiters = []; S.timer = null; S.phase = null; S.players = PERSONAS.map(p => ({ ...p })); $('#log').innerHTML = ''; $('#stage').classList.remove('simlock'); ctrls(); hud(); landing(); }
+      else if (k === 'vote') { if (S.mode !== 'host') return; const b = S.boards[el.dataset.b]; if (b) b.cast(el.dataset.v, el.dataset.o, el.dataset.c); }
+      return;
+    }
+    if (S.mode !== 'host') return;
+    const fn = S.cfg.acts && S.cfg.acts[a];
+    if (fn) { e.preventDefault(); fn(el.dataset, el, e); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    const el = e.target.closest('[data-enter]'); if (!el || S.mode !== 'host') return;
+    const fn = S.cfg.acts && S.cfg.acts[el.dataset.enter];
+    if (fn) { e.preventDefault(); fn(el.dataset, el, e); }
+  });
+
+  // ---------- public API ----------
+  window.Core = {
+    game(cfg) { S.cfg = cfg; shell(); landing(); },
+    get players() { return S.players; }, get mode() { return S.mode; }, get clock() { return S.clock; },
+    get finished() { return S.finished; },
+    PERSONAS, player, chip, script, stage, log, say, act, sys, wait, sleep, phase, timer, clearTimer, timerLeft, finish,
+    genCard, generate, emojisFor, slotSentence, revealSlots, collectGrid, readGrid, markGrid, VoteBoard, simVotes, esc, rand, randi, pick, shuffle, sample, chance, fmt, derange, hash, $, $$,
+    css(t) { const s = document.createElement('style'); s.textContent = t; document.head.appendChild(s); },
+    /** Real-time pause in host mode, game-time wait in sim. */
+    beat(sec, ms) { return S.mode === 'sim' ? wait(sec) : sleep(ms == null ? 600 : ms); },
+  };
+})();
+
+</script>
+<script>
+// TITLE: 11 · Two Truths and an AI
+(function () {
+  const C = Core;
+  const TRUTHS = {
+    maya: ['I have over 40 houseplants.', 'I once got lost in IKEA for two hours.'],
+    dev: ['I own five copies of the same shirt.', 'I’ve never seen a single Star Wars movie.'],
+    priya: ['I bake when I’m stressed.', 'My grandmother taught me to fold dumplings.'],
+    leo: ['I’ve run three marathons.', 'I started two companies before I turned 30.'],
+    sam: ['I used to work as a field biologist.', 'I go on sunrise hikes most weekends.'],
+    zoe: ['I did musical theater all through college.', 'I once won a pun competition.'],
+    omar: ['I missed a flight in Lisbon and ended up joining a startup.', 'I speak four languages.'],
+  };
+  const L = {
+    local: ['local car dealership', 'regional pizza chain', 'small-town furniture store', 'late-night mattress'], product: ['mattresses', 'frozen waffles', 'a water park', 'a dental clinic'],
+    n: ['14', '22', '9', '17'], mundane: ['snow', 'the ocean', 'a real cow', 'a Broadway show'], skill: ['juggle', 'solve a Rubik’s cube in under two minutes', 'play the accordion', 'do a passable British accent'],
+    time: ['the 2020 lockdown', 'a very long summer at camp', 'a boring internship', 'a semester abroad'], who: ['a famous chef', 'an Olympic swimmer', 'a 90s pop star', 'a late-night TV host'],
+    place: ['an airport bookstore', 'a hardware store', 'a wedding', 'a laundromat'], job: ['scooping ice cream', 'a lifeguard', 'a mall Santa’s elf', 'washing dishes'],
+    work: ['a theme park', 'a bowling alley', 'a hotel in Vegas', 'a summer camp'], pet: ['parrot', 'tortoise', 'hedgehog', 'three-legged cat'], petname: ['Professor', 'Waffles', 'Gerald', 'Admiral Snuggles'],
+    contest: ['spelling bee', 'chili cook-off', 'yo-yo contest', 'regional chess tournament'], grade: ['fourth grade', 'high school', 'college', 'my first job'],
+    verb: ['wrestled', 'adopted', 'outran', 'accidentally befriended', 'sold a car to'], animal: ['an alpaca', 'a goose', 'a raccoon', 'an emu', 'a llama'], aplace: ['a Walmart parking lot', 'the Louvre', 'a funeral', 'an airplane bathroom'],
+  };
+  const g = k => C.pick(L[k]);
+  const PLAUSIBLE = [() => 'I was an extra in a ' + g('local') + ' commercial for ' + g('product') + '.', () => 'I’ve been to ' + g('n') + ' countries but have never seen ' + g('mundane') + '.', () => 'I can ' + g('skill') + '. I learned during ' + g('time') + '.', () => 'I once met ' + g('who') + ' at ' + g('place') + ' and didn’t recognize them.', () => 'My first job was ' + g('job') + ' at ' + g('work') + '.', () => 'I have a ' + g('pet') + ' named ' + g('petname') + '.', () => 'I won a ' + g('contest') + ' in ' + g('grade') + '.'];
+  const ABSURD = [() => 'I once ' + g('verb') + ' ' + g('animal') + ' in ' + g('aplace') + '.'];
+  const lie = mode => C.pick(mode === 'absurd' ? ABSURD : PLAUSIBLE)();
+
+  let st;
+  const fresh = () => ({ subs: {}, order: [], i: 0, board: null, score: {}, res: [] });
+  function initSubs() { C.players.forEach(p => { st.subs[p.id] = { t1: TRUTHS[p.id][0], t2: TRUTHS[p.id][1], lie: lie('plausible'), mode: 'plausible' }; }); }
+  const add = (id, n) => st.score[id] = (st.score[id] || 0) + n;
+  const lb = () => '<table class="rtable">' + C.players.slice().sort((a, b) => (st.score[b.id] || 0) - (st.score[a.id] || 0)).map((p, i) => '<tr><td>' + (i + 1) + '</td><td>' + C.chip(p) + '</td><td class="n"><b>' + (st.score[p.id] || 0) + '</b></td></tr>').join('') + '</table>';
+
+  function submitScreen() {
+    const host = C.mode === 'host';
+    C.stage('<div class="card"><div class="kicker">Submissions</div><h2>Two truths + one AI lie</h2>' + C.script('Write two true things about yourself. Then hit “Generate my lie”: the AI writes a believable fake. Edit it to sound like you.') +
+      '<div class="subs">' + C.players.map(p => { const s = st.subs[p.id]; return '<div class="pcell">' + C.chip(p) +
+        (host ? '<input data-f="t1" data-p="' + p.id + '" value="' + C.esc(s.t1) + '"><input data-f="t2" data-p="' + p.id + '" value="' + C.esc(s.t2) + '"><div class="row"><input data-f="lie" data-p="' + p.id + '" value="' + C.esc(s.lie) + '" style="flex:1"><button class="btn small" data-act="gen" data-p="' + p.id + '" data-m="plausible">🤖 Plausible lie</button><button class="btn small ghost" data-act="gen" data-p="' + p.id + '" data-m="absurd">🤪 Absurd</button></div>'
+          : '<span class="muted" id="sub' + p.id + '">writing truths…</span>') + '</div>'; }).join('') + '</div>' +
+      (host ? '<div class="cta"><button class="btn big pink" data-act="go">Start presenting →</button></div>' : '') + '</div>');
+  }
+  function readSubs() { C.$$('[data-f]').forEach(i => { st.subs[i.dataset.p][i.dataset.f] = i.value.trim(); }); }
+  function presentScreen(reveal) {
+    const p = C.player(st.order[st.i]), s = st.subs[p.id];
+    if (!s.shuffled) s.shuffled = C.shuffle([{ t: s.t1, lie: false }, { t: s.t2, lie: false }, { t: s.lie, lie: true }]);
+    if (!reveal) st.board = new C.VoteBoard({ title: 'Which one is the AI lie?', voters: C.players.filter(q => q.id !== p.id), options: s.shuffled.map((x, k) => ({ id: 'abc'[k], label: 'ABC'[k] + ': ' + x.t.slice(0, 40) + (x.t.length > 40 ? '…' : ''), short: 'ABC'[k] })) });
+    C.stage('<div class="card"><div class="spread"><div class="kicker">Player ' + (st.i + 1) + ' of 7</div>' + C.chip(p, { big: true }) + '</div>' +
+      '<div class="stmts">' + s.shuffled.map((x, k) => '<div class="stmt ' + (reveal ? (x.lie ? 'lie' : 'truth') : '') + '"><b>' + 'ABC'[k] + '</b> ' + C.esc(x.t) + (reveal ? (x.lie ? ' <span class="tag bad">🤖 AI LIE</span>' : ' <span class="tag good">TRUE</span>') : '') + '</div>').join('') + '</div></div>' +
+      '<div class="cols"><div class="card">' + st.board.html() + (C.mode === 'host' ? '<div class="cta">' + (reveal ? '<button class="btn big" data-act="next">' + (st.i < 6 ? 'Next player →' : '🏆 Final scores') + '</button>' : '<button class="btn big pink" data-act="reveal">Reveal the lie →</button>') + '</div>' : '') + '</div><div class="card"><h3>Scores</h3>' + lb() + '</div></div>');
+  }
+  function score() {
+    const p = C.player(st.order[st.i]), s = st.subs[p.id], lieId = 'abc'[s.shuffled.findIndex(x => x.lie)];
+    let right = 0;
+    Object.entries(st.board.votes.main).forEach(([v, o]) => { if (o === lieId) { add(v, 1); right++; } else add(p.id, 1); });
+    st.res.push({ p, mode: s.mode, fooled: 6 - right });
+  }
+  function summary() {
+    if (!st.res.length) return '';
+    const avg = m => { const r = st.res.filter(x => x.mode === m); return r.length ? (r.reduce((a, x) => a + x.fooled, 0) / r.length).toFixed(1) : '–'; };
+    return '<div class="card"><h2>🏆 Final scores</h2>' + lb() + '<h3>How good were the AI lies?</h3><p>Average people fooled (out of 6): 🤖 plausible lies <b>' + avg('plausible') + '</b> · 🤪 absurd lies <b>' + avg('absurd') + '</b></p></div>';
+  }
+
+  const acts = {
+    gen(d) { readSubs(); st.subs[d.p].lie = lie(d.m); st.subs[d.p].mode = d.m; submitScreen(); },
+    go() { readSubs(); C.clearTimer(); st.order = C.shuffle(C.players.map(p => p.id)); st.i = 0; C.phase('Present + questions', 80); presentScreen(false); },
+    reveal() { C.phase('Vote, reveal + story', 90); score(); presentScreen(true); },
+    next() { if (st.i < 6) { st.i++; C.phase('Present + questions', 80); presentScreen(false); } else { C.phase('Final scores', 60); C.stage(summary() + '<button class="btn big" data-act="end">🏁 Finish & pacing report</button>'); } },
+    end() { C.finish(summary()); },
+  };
+
+  async function simulate() {
+    st = fresh(); initSubs();
+    C.phase('Intro', 90); C.stage('<div class="card"><h2>🤥 Two Truths and an AI</h2>' + C.script('Classic two truths and a lie, except the AI writes your lie. Your job: make it sound like you.') + '</div>');
+    await C.sys('Facilitator explains', 50); await C.say('omar', 'Can my truth be a long story?', 6); await C.sys('Facilitator: “One sentence, please, Omar.” (laughter)', 10);
+    C.phase('Write truths + generate lies', 240); C.timer('Submit', 240); submitScreen();
+    for (const p of C.shuffle(C.players)) {
+      await C.wait(C.rand(18, 32)); const s = st.subs[p.id];
+      if (p.id === 'maya') { s.lie = lie('absurd'); s.mode = 'absurd'; await C.act(p, ' clicked 🤪 Absurd: “' + s.lie + '”', 2); }
+      else if (C.chance(.4)) { await C.act(p, ' regenerated the lie twice (first ones didn’t sound like them)', 6); s.lie = lie('plausible'); }
+      C.$('#sub' + p.id).textContent = '✅ ready'; await C.act(p, ' submitted', 1);
+    }
+    C.clearTimer(); st.order = C.shuffle(C.players.map(p => p.id));
+    for (let i = 0; i < 7; i++) {
+      st.i = i; const p = C.player(st.order[i]), s = st.subs[p.id];
+      C.phase('Present + questions', 80); presentScreen(false);
+      await C.say(p, 'A, B or C. One of these is the AI.', 18);
+      for (let q = 0; q < 2; q++) await C.say(C.pick(C.players.filter(x => x.id !== p.id)), C.pick(['Which countries?', 'What was the dog’s name?', 'Prove it. Do the accent.', 'How long ago?', 'Wait, say B again.']), 10), await C.say(p, C.pick(['No comment.', 'You’ll find out.', 'It was a long time ago…', 'Next question.']), 8);
+      C.phase('Vote, reveal + story', 90);
+      const lieId = 'abc'[s.shuffled.findIndex(x => x.lie)], hit = s.mode === 'absurd' ? .85 : .38;
+      await C.simVotes(st.board, () => C.chance(hit) ? lieId : C.pick(['a', 'b', 'c'].filter(x => x !== lieId)), { gap: 3 });
+      score(); presentScreen(true);
+      const r = st.res[st.res.length - 1];
+      await C.sys(r.fooled >= 4 ? '😱 ' + r.fooled + ' people fooled!' : r.fooled === 0 ? 'Everyone spotted it instantly.' : r.fooled + ' fooled', 5);
+      await C.say(p, 'The true story behind “' + s.t2.slice(0, 40) + '…”: ' + C.pick(['it was worse than it sounds.', 'my mom still brings it up.', 'it changed my career, honestly.', 'there are photos.']), 35);
+      await C.wait(8);
+    }
+    C.phase('Final scores', 60); C.stage(summary()); await C.sys('Scores + best liar crowned', 30);
+  }
+
+  C.css('.subs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}.subs input{min-height:38px;padding:6px 10px;font-size:.9rem}.stmts{display:flex;flex-direction:column;gap:10px;margin-top:12px}.stmt{font-size:1.2rem;padding:14px 16px;border:2px solid var(--line);border-radius:14px}.stmt b{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);margin-right:8px}.stmt.lie{border-color:var(--bad);animation:pop .4s}.stmt.truth{border-color:var(--good);opacity:.75}');
+
+  C.game({
+    num: '11', title: 'Two Truths and an AI', emoji: '🤥',
+    tagline: 'Each player submits 2 true facts plus 1 lie written by an AI lie generator. The room guesses which is the AI lie, then hears the real story behind a truth.',
+    how: '<ol class="tight"><li>Everyone writes 2 truths, then clicks “generate my lie”</li><li>One at a time: 3 shuffled statements + quick questions</li><li>Vote: which is the lie?</li><li>Reveal + the story behind a truth</li><li>+1 per correct guess; presenter +1 per person fooled</li></ol>',
+    plan: [{ name: 'Intro', sec: 90 }, { name: 'Write truths + generate lies', sec: 240 }, { name: 'Present + questions', sec: 560 }, { name: 'Vote, reveal + story', sec: 630 }, { name: 'Final scores', sec: 60 }],
+    evaluating: ['~3.5 min per person × 7: does it fit in 30 min?', 'Does the lie generator produce good lies?'],
+    notes: '<p><b>Verdict: the best pure get-to-know-you format in the set, and it fits.</b> In practice each person takes about 2¼ min, not 3½, so 7 people take about 16 min. With about 6 min of setup the simulation lands at 22–23 min, which leaves room for longer stories.</p>' +
+      '<h4>Lie generator quality</h4><ul class="tight"><li><b>Absurd templates</b> (“I once wrestled an emu in the Louvre”) are funny but fool almost nobody (about 1 of 6). They become the obvious answer.</li><li><b>Plausible templates</b> (commercial extra, first job, a pet’s name) fool about 3–4 of 6. Much better game.</li><li>The real tell is <i>voice</i>: AI lies sound slightly generic. Prompt players to edit the lie so it sounds like them.</li></ul>' +
+      '<h4>Where time leaks</h4><p>The “story behind the truth” is the best part and the biggest leak (30–60s). If you’re over, cap questions at 2 per person and keep the story.</p>' +
+      '<div class="risk"><b>Facilitator risk note:</b> low. People control exactly what they share. Remind them to pick truths they’re happy for the team to know.</div>',
+    host() {
+      st = fresh(); initSubs(); C.phase('Intro', 90);
+      C.stage('<div class="card"><h2>🤥 Two Truths and an AI</h2>' + C.script('Classic two truths and a lie, except the AI writes your lie. Your job: make it sound like you.') + '<button class="btn big" data-act="write">Write submissions →</button></div>');
+    },
+    simulate, summary, acts: Object.assign(acts, { write() { C.phase('Write truths + generate lies', 240); C.timer('Submit', 240); submitScreen(); } }),
+  });
+})();
+
+</script>
+</body>
+</html>

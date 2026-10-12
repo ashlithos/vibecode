@@ -17,7 +17,7 @@ a.card:hover{transform:translateY(-2px);border-color:var(--accent2)}
 a.card.star{border:2px solid var(--accent)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .num{background:var(--ink);color:var(--bg);border-radius:8px;padding:1px 7px;font-size:.78rem;font-weight:800}
-.t{font-weight:800;font-size:1.1rem}.v{color:var(--muted);font-size:.93rem}
+.t{font-weight:800;font-size:1.1rem}.what{margin:0;font-size:.95rem}.v{margin:0 0 6px;color:var(--muted);font-size:.9rem}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
 .tag{font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line)}
 .tag.good{background:var(--good);color:#fff}.tag.warn{background:var(--warn);color:#fff}.tag.bad{background:var(--bad);color:#fff}.tag.star{background:var(--accent);color:#fff}
@@ -30,33 +30,35 @@ a.card.star{border:2px solid var(--accent)}
   <div class="kicker">7 players · 30 minutes · first-time teammates</div>
   <h1>AI team-activity playtests</h1>
   <p class="lead">17 single-file prototypes. Open one and click <b>▶ Simulate</b> to watch 7 synthetic players run a full session in about a minute, or click <b>🎤 Host mode</b> to click through it yourself. Every file works offline.</p>
+  <div class="how"><b>Real AI images:</b> games tagged 🖼 can show real pictures. Open a game, then tap <b>🖼 Real images</b> in the top bar. It uses the free FLUX model via Pollinations: no key, no cost, a few seconds per image. This works when you open the downloaded file in your browser, but the claude.ai preview blocks outside images. Prompts are sent to pollinations.ai, so leave real names out.</div>
   <div class="how"><b>Reading the cards:</b> ⏱ is the simulated session length (3 runs each, phase transitions included). 🛡 is the facilitator risk for a first meeting. Open any game’s <b>📝 Notes</b> for the full verdict, where time leaks, and the suggested cut.</div>
   <div class="grid" id="grid"></div>
 </div>
 <script>
 const G = [
-  ['17', 'team-origin-story', '🛡️', 'Team Origin Story', 'Frontrunner. Low-risk start, opt-in sharing, and the team keeps a crest.', '~24½ min', 'good', 'low', 'good', true],
-  ['11', 'two-truths-and-an-ai', '🤥', 'Two Truths and an AI', 'Best pure get-to-know-you. Plausible AI lies beat absurd ones.', '~22½ min', 'good', 'low', 'good'],
-  ['16', 'discussion-deck', '🃏', 'AI Discussion Deck', 'Lowest prep. Story questions land; values questions get silence.', '~20–24 min', 'good', 'very low', 'good'],
-  ['13', 'prompt-telephone', '📞', 'Prompt Telephone', 'Best punchline in the set. Run chains in parallel to kill the dead time.', '~18 min', 'good', 'very low', 'good'],
-  ['04', 'secret-angel-gallery', '🎬', 'Secret Angel: Poster Gallery', 'Fairer, tighter version of #2. A uniform medium makes comparing fun.', '~19½ min', 'good', 'low-med', 'warn'],
-  ['02', 'secret-angel-reveal', '😇', 'Secret Angel: Reveal Ceremony', 'Emotional peak, but guessing drags after gift 4.', '~30 min', 'warn', 'med-low', 'warn'],
-  ['12', 'ai-pictionary', '🖼️', 'AI Pictionary', 'High energy. 5 rounds is short, so run 8–9. Free text with a multiple-choice lifeline.', '~14 min', 'good', 'low', 'good'],
-  ['01', 'exquisite-corpse', '🧩', 'Exquisite Corpse', 'Assembly reveal is great; 3 rounds alone are thin for 30 min.', '~16 min', 'good', 'very low', 'good'],
-  ['03', 'prompt-dj', '🎧', 'Prompt Roulette: DJ Edition', 'Brilliant with a performer DJ, dead air with a shy one.', '~16 min', 'good', 'low-med', 'warn'],
-  ['10', 'recognition-songs', '🎤', 'AI Recognition Songs', 'Delightful for 3–4 songs, then energy dips. Use 15s clips.', '~14½ min', 'good', 'low-med', 'warn'],
-  ['08', 'movie-mastermind', '🕵️', 'Movie Mastermind', 'The hint economy works (barely). 8 rounds is too short.', '~9 min', 'good', 'low', 'good'],
-  ['07', 'copilot-or-human', '🤖', 'Copilot or Human?', 'Smooth and fast, but it is trivia night. Better as an opener.', '~9 min', 'good', 'very low', 'good'],
-  ['05', 'describe-your-angel', '🪞', 'Describe Your Angel', 'Strangers have no vibe data, so it drifts to looks. Better at meeting 2+.', '~18 min', 'good', 'medium', 'bad'],
-  ['14', 'ship-it-challenge', '🚢', 'Ship-it Challenge', 'Needs the real build time, which doesn’t fit. Better as a 45-min session.', '~29½ min', 'warn', 'low-med', 'warn'],
-  ['06', 'lights-camera-ai', '🎬', 'Lights, Camera, AI!', 'A 45-minute game. Committee writing leaks time.', '~30½ min', 'bad', 'low', 'good'],
-  ['09', 'emotion-aware-santa', '🎅', 'Emotion-aware Secret Santa', 'A utility with a 5-min comedy moment. Pair it with #2 or #4.', '~6 min (module)', 'good', 'low', 'good'],
-  ['15', 'ai-roast-of-the-team', '🔥', 'AI Roast of the Team', 'Don’t run at a first meeting. Fine at meeting 3+, roasting the team, not people.', '~11 min', 'good', 'HIGH', 'bad'],
+  // [num, slug, emoji, title, what happens, verdict, time, timeClass, risk, riskClass, usesImages, frontrunner]
+  ['17', 'team-origin-story', '🛡️', 'Team Origin Story', 'Quick intros, then two rounds where everyone secretly adds one word. The words become an AI team mascot and a team motto. Each person then shares why they picked their word, the team votes on a name for the mascot, and you end with a team crest.', 'Strongest for a first meeting. Starts low-risk, sharing is optional, and the team keeps the crest.', '~24½ min', 'good', 'low', 'good', 1, 1],
+  ['11', 'two-truths-and-an-ai', '🤥', 'Two Truths and an AI', 'Each person writes two true facts about themselves, and an AI writes a believable lie to go with them. One at a time, the room asks questions and guesses which statement is the AI’s lie. Then the person tells the story behind one of their truths.', 'Best for getting to know each other. Believable AI lies work far better than absurd ones.', '~22½ min', 'good', 'low', 'good', 0],
+  ['16', 'discussion-deck', '🃏', 'AI Discussion Deck', 'Not a game: a deck of 12 AI-themed conversation questions. Draw a card, pass the mic around the circle (anyone can pass), and move on after 3 minutes. Rate each card to learn which questions get people talking.', 'Lowest prep. Story questions land; questions that ask for opinions or values get polite silence.', '~20–24 min', 'good', 'very low', 'good', 0],
+  ['13', 'prompt-telephone', '📞', 'Prompt Telephone', 'The telephone game with pictures. The first person writes a prompt and the AI draws it. The next person sees only the picture and describes it, and so on through 7 people. Then compare the first and last pictures to see how far the idea drifted.', 'Funniest ending of all 17. Run the chains at the same time so people aren’t waiting.', '~18 min', 'good', 'very low', 'good', 1],
+  ['04', 'secret-angel-gallery', '🎬', 'Secret Angel: Poster Gallery', 'Before the meeting, each person secretly makes an AI movie poster about one teammate’s life. In the session, everyone browses the gallery of 7 posters, guesses who made each one, and votes for the best poster.', 'A fairer, tighter version of #2. Everyone makes the same thing, so comparing is fun.', '~19½ min', 'good', 'low-med', 'warn', 1],
+  ['02', 'secret-angel-reveal', '😇', 'Secret Angel: Reveal Ceremony', 'Before the meeting, each person secretly makes an AI gift for one teammate: a song, a poem, a portrait or a fake ad. In the session, gifts are revealed one at a time. The recipient reads it out, the room guesses who made it, and the maker explains why.', 'The most emotional format, but the guessing drags after gift 4.', '~30 min', 'warn', 'med-low', 'warn', 1],
+  ['12', 'ai-pictionary', '🖼️', 'AI Pictionary', 'One person gets a secret word but can’t draw. They can only describe it to an AI image generator. Everyone else guesses the word from the AI’s picture within 60 seconds. Has a free-text mode and a multiple-choice mode.', 'High energy. 5 rounds is short, so play 8–9.', '~14 min', 'good', 'low', 'good', 1],
+  ['01', 'exquisite-corpse', '🧩', 'Exquisite Corpse', 'Each person secretly types one word in an assigned category: a number, an animal, a place… The words drop into a sentence one at a time, and the sentence becomes an AI image. Three rounds, then vote for the favorite.', 'The moment the words land is great, but 3 rounds alone are thin for 30 minutes.', '~16 min', 'good', 'very low', 'good', 1],
+  ['03', 'prompt-dj', '🎧', 'Prompt Roulette: DJ Edition', 'Like Exquisite Corpse, but one person is the “DJ” who arranges everyone’s words into the prompt live, in any order, while the room watches. Then everyone votes: funniest, most cursed or most beautiful. The DJ changes each round.', 'Brilliant with an outgoing DJ, awkward silence with a shy one.', '~16 min', 'good', 'low-med', 'warn', 1],
+  ['10', 'recognition-songs', '🎤', 'AI Recognition Songs', 'A mock awards show. Each person gets a 30-second AI song about them in a different genre: sea shanty, opera, country… Play each one with the lyrics on screen, applaud, hear the nominee react, then vote for Track of the Night.', 'Delightful for 3–4 songs, then energy dips. Use 15-second clips.', '~14½ min', 'good', 'low-med', 'warn', 0],
+  ['08', 'movie-mastermind', '🕵️', 'Movie Mastermind', 'Two teams decode cryptic clues about famous movies. Clues get easier every 30 seconds but are worth fewer points. A team can pay points to get the next clue early from the AI.', 'The point-spending decision works. 8 rounds is too short, so add more movies.', '~9 min', 'good', 'low', 'good', 0],
+  ['07', 'copilot-or-human', '🤖', 'Copilot or Human?', 'A 10-round quiz. Each round shows one movie quote: either a real line from a famous film or one the AI wrote. Everyone votes “real movie” or “AI”, then the answer and the film are revealed.', 'Smooth and fast, but it feels like trivia night. Best as an opener.', '~9 min', 'good', 'very low', 'good', 0],
+  ['05', 'describe-your-angel', '🪞', 'Describe Your Angel', 'Each person secretly describes a teammate’s vibe (not their looks), like “golden retriever who brings cookies to every meeting”. The AI turns it into a portrait, and the room guesses who it is.', 'Strangers have little to go on, so descriptions drift to looks. Better from the second meeting on.', '~18 min', 'good', 'medium', 'bad', 1],
+  ['14', 'ship-it-challenge', '🚢', 'Ship-it Challenge', 'A mini hackathon. Three teams get 20 minutes to make something with AI (a landing page, a mascot or a jingle) for a theme like “redesign our team as a product”. Then demo day and voting in three categories.', 'Needs the real build time, which doesn’t fit. Better as a 45-minute session.', '~29½ min', 'warn', 'low-med', 'warn', 1],
+  ['06', 'lights-camera-ai', '🎬', 'Lights, Camera, AI!', 'Two teams each draw 3 random words and have 12 minutes to invent a movie: a title, a 100-word plot and an AI poster. Then each team pitches its movie and the room votes.', 'Really a 45-minute game. Writing as a group takes longer than planned.', '~30½ min', 'bad', 'low', 'good', 1],
+  ['09', 'emotion-aware-santa', '🎅', 'Emotion-aware Secret Santa', 'A tool for the organizer, not a game. Enter 7 names and how each person is feeling this week. The app pairs gift-givers with recipients (nobody gets themselves) and writes a funny reason for each match.', 'Useful, with a fun 5-minute moment. Pair it with #2 or #4.', '~6 min (add-on)', 'good', 'low', 'good', 0],
+  ['15', 'ai-roast-of-the-team', '🔥', 'AI Roast of the Team', 'Everyone anonymously writes one gentle joke about the team’s habits. The AI rewrites them as a corporate “About Us” page, and the host reads it aloud while the room rates each line from “mild” to “too far”.', 'Don’t run it at a first meeting. Fine from the third meeting on, if people joke about the team and not each other.', '~11 min', 'good', 'HIGH', 'bad', 0],
 ];
-document.getElementById('grid').innerHTML = G.map(([n, slug, e, t, v, time, tc, risk, rc, star]) =>
+document.getElementById('grid').innerHTML = G.map(([n, slug, e, t, what, verdict, time, tc, risk, rc, img, star]) =>
   `<a class="card${star ? ' star' : ''}" href="${n}-${slug}.html"><div class="top"><span class="num">${n}</span>${star ? '<span class="tag star">★ frontrunner</span>' : ''}</div>
-   <div class="t">${e} ${t}</div><div class="v">${v}</div>
-   <div class="tags"><span class="tag ${tc}">⏱ ${time}</span><span class="tag ${rc}">🛡 risk: ${risk}</span></div></a>`).join('');
+   <div class="t">${e} ${t}</div><p class="what">${what}</p><p class="v"><b>Verdict:</b> ${verdict}</p>
+   <div class="tags"><span class="tag ${tc}">⏱ ${time}</span><span class="tag ${rc}">🛡 risk: ${risk}</span>${img ? '<span class="tag">🖼 AI images</span>' : ''}</div></a>`).join('');
 </script>
 </body>
 </html>

@@ -135,7 +135,9 @@
   function sys(text, sec) { log(null, text, 'sys'); return wait(sec == null ? 2 : sec); }
 
   // ---------- rendering helpers ----------
-  function stage(html) { const st = $('#stage'); st.innerHTML = '<div class="fade">' + html + '</div>'; window.scrollTo({ top: 0, behavior: 'smooth' }); return st; }
+  function stage(html) { const st = $('#stage'); st.innerHTML = '<div class="fade">' + html + '</div>'; window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(hydrate, 0); return st; }
+  let hydrateT = 0;
+  new MutationObserver(() => { clearTimeout(hydrateT); hydrateT = setTimeout(hydrate, 30); }).observe(document.documentElement, { childList: true, subtree: true });
   function chip(p, opt) { p = player(p); opt = opt || {}; return '<span class="pchip' + (opt.big ? ' big' : '') + (opt.dim ? ' dim' : '') + '" style="--pc:' + p.color + '"><span class="pe">' + p.emoji + '</span>' + esc(p.name) + (opt.suffix ? ' ' + opt.suffix : '') + '</span>'; }
   const script = t => '<div class="script">🎙️ <b>Say:</b> ' + t + '</div>';
 
@@ -159,18 +161,53 @@
     return '<div class="gen ' + (o.kind || 'image') + (o.loading === false ? ' done' : ' loading') + '" id="' + id + '" style="--h1:' + h + 'deg;--h2:' + h2 + 'deg">' +
       '<!-- REAL API PLUG-IN POINT: send the prompt below to an image/video/audio generation API and replace .gen-art with the returned media. -->' +
       '<div class="gen-art"><div class="em">' + (o.emoji || emojisFor(o.prompt)) + '</div>' +
+      (IMG.on && IMG_KINDS[o.kind || 'image'] ? '<img class="gen-img" alt="" data-q="' + esc(imgUrl(o.prompt, o.kind || 'image')) + '">' : '') +
       (o.overlayTitle ? '<div class="over"><div class="pt">' + esc(o.overlayTitle) + '</div>' + (o.overlaySub ? '<div class="ps">' + esc(o.overlaySub) + '</div>' : '') + '</div>' : '') + '</div>' +
-      '<div class="gen-meta"><div class="gen-kind">' + kindLabel + ' · placeholder</div>' + (o.title ? '<div class="gen-title">' + esc(o.title) + '</div>' : '') + (o.sub || '') +
-      (o.hidePrompt ? '' : '<div class="gen-prompt"><b>Prompt that would be sent:</b><br>' + esc(o.prompt) + '</div>') + '</div>' +
+      '<div class="gen-meta"><div class="gen-kind">' + kindLabel + ' · ' + (IMG.on && IMG_KINDS[o.kind || 'image'] ? 'live, FLUX via Pollinations' : 'placeholder') + '</div>' + (o.title ? '<div class="gen-title">' + esc(o.title) + '</div>' : '') + (o.sub || '') +
+      (o.hidePrompt ? '' : '<div class="gen-prompt"><b>' + (IMG.on && IMG_KINDS[o.kind || 'image'] ? 'Prompt sent:' : 'Prompt that would be sent:') + '</b><br>' + esc(o.prompt) + '</div>') + '</div>' +
       '<div class="gen-load">Generating…</div></div>';
   }
   /** Flip a genCard from loading to done. ~10s of game time in sim, ~1.5s real in host. */
   async function generate(id, sec) {
-    log(null, '🎨 Prompt sent to generator… (placeholder, no real API call)', 'sys');
-    if (S.mode === 'sim') await wait(sec == null ? 10 : sec); else await sleep(1500);
+    const el0 = document.getElementById(id), live = el0 && el0.querySelector('img[data-q]');
+    log(null, live ? '🎨 Prompt sent to FLUX (Pollinations)…' : '🎨 Prompt sent to generator… (placeholder, no real API call)', 'sys');
+    if (S.mode === 'sim') await wait(sec == null ? 10 : sec);
+    else if (live) { loadImg(live); await Promise.race([live.ready, sleep(25000)]); }
+    else await sleep(1500);
     const el = document.getElementById(id);
-    if (el) { el.classList.remove('loading'); el.classList.add('done'); }
+    if (el) { el.classList.remove('loading'); el.classList.add('done'); hydrate(); }
   }
+
+  // ---------- optional real AI images ----------
+  // Off by default. When on, image cards load a real picture from Pollinations (free, no key, FLUX model).
+  // REAL API PLUG-IN POINT: swap imgUrl() for another provider (e.g. a paid FLUX/Imagen endpoint with a key).
+  const IMG = { on: false, ok: 0, failed: 0, warned: false, active: 0, queue: [] };
+  try { IMG.on = localStorage.getItem('realImages') === '1'; } catch (e) { /* storage blocked: stay off */ }
+  const IMG_KINDS = { image: [768, 576], square: [640, 640], poster: [512, 768] };
+  function imgUrl(prompt, kind) {
+    const p = String(prompt).replace(/\s+/g, ' ').trim().slice(0, 380), [w, h] = IMG_KINDS[kind];
+    return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(p) + '?width=' + w + '&height=' + h + '&nologo=true&model=flux&seed=' + (hash(p) % 100000);
+  }
+  // One request at a time: the free tier rate-limits bursts. Same prompt = same URL, so repeats come from the browser cache.
+  function loadImg(img) {
+    if (img.dataset.s) return; img.dataset.s = '1';
+    img.ready = new Promise(res => { img.done = res; });
+    IMG.queue.push(img); pump();
+  }
+  function pump() {
+    while (IMG.active < 1 && IMG.queue.length) {
+      const img = IMG.queue.shift(); IMG.active++;
+      const fin = ok => { IMG.active--; img.done && img.done(); if (ok) { img.classList.add('ok'); IMG.ok++; } else { IMG.failed++; warnImg(); } pump(); };
+      img.onload = () => fin(true); img.onerror = () => fin(false);
+      img.src = img.dataset.q;
+    }
+  }
+  function warnImg() {
+    if (IMG.warned || IMG.ok) return; IMG.warned = true;
+    log(null, '⚠️ Real images couldn’t load. You may be offline, or this viewer blocks outside images (the claude.ai page does). Download the file and open it in Chrome or Safari. Placeholders are shown instead.', 'sys');
+  }
+  // Load images for cards that are visible and not mid-"Generating…".
+  function hydrate() { if (IMG.on) $$('.gen:not(.loading) img[data-q]:not([data-s])').forEach(loadImg); }
 
   // ---------- sentence assembly (words fly into slots) ----------
   /** parts: array of strings and {word, cat, p} slots. Returns HTML; reveal with revealSlots(id). */
@@ -287,6 +324,7 @@
       h += '<button class="btn small ghost" data-act="core:pause">' + (S.paused ? '▶ Resume clock' : '⏸ Pause clock') + '</button>';
       h += '<button class="btn small ghost" data-act="core:end">🏁 End & report</button>';
     }
+    h += '<button class="btn small ' + (IMG.on ? '' : 'ghost') + '" data-act="core:img" title="Load real AI images from Pollinations (free, no key). Prompts are sent to pollinations.ai.">🖼 Real images: ' + (IMG.on ? 'on' : 'off') + '</button>';
     h += '<button class="btn small ghost" data-act="core:notes">📝 Notes</button>';
     if (S.mode) h += '<button class="btn small ghost" data-act="core:restart">↺ Start over</button>';
     el.innerHTML = h;
@@ -388,6 +426,11 @@
       else if (k === 'speed') { S.speed = +el.dataset.x; ctrls(); }
       else if (k === 'notes') { $('#notesBody').innerHTML = notesHtml() + '<p><button class="btn" data-act="core:closeNotes">Close</button></p>'; $('#notesDlg').showModal(); }
       else if (k === 'closeNotes') $('#notesDlg').close();
+      else if (k === 'img') {
+        IMG.on = !IMG.on; IMG.warned = false; try { localStorage.setItem('realImages', IMG.on ? '1' : '0'); } catch (e) { /* not persisted */ }
+        log(null, IMG.on ? '🖼 Real images on: new image cards use FLUX via Pollinations (free). Prompts are sent to pollinations.ai, so avoid real names.' : '🖼 Real images off: placeholders only.', 'sys');
+        ctrls();
+      }
       else if (k === 'end') finish(S.cfg.summary ? S.cfg.summary() : '');
       else if (k === 'restart') { S.runId++; S.mode = null; S.running = false; S.finished = false; S.waiters = []; S.timer = null; S.phase = null; S.players = PERSONAS.map(p => ({ ...p })); $('#log').innerHTML = ''; $('#stage').classList.remove('simlock'); ctrls(); hud(); landing(); }
       else if (k === 'vote') { if (S.mode !== 'host') return; const b = S.boards[el.dataset.b]; if (b) b.cast(el.dataset.v, el.dataset.o, el.dataset.c); }

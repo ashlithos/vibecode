@@ -15,6 +15,14 @@ Both modes end with a **⏱ Pacing report**: planned vs. actual time per phase, 
 
 Where the real game would call an image, video or music API, a **placeholder card** shows the exact prompt that would be sent. An HTML comment marks the plug-in point.
 
+### Real AI images (optional)
+
+Tap **🖼 Real images** in a game's top bar to swap placeholder images for real ones. It uses the free FLUX model through [Pollinations](https://pollinations.ai): no API key, no cost, a few seconds per image. Images load one at a time, and repeated prompts come from the browser cache. The setting is remembered in your browser.
+
+- This works when you open a downloaded file in a normal browser. The claude.ai artifact preview blocks outside images, so there you keep the placeholders and the transcript says why.
+- Prompts are sent to pollinations.ai, a third-party service, so leave real names out of your prompts.
+- Song cards (the songs in #2, #10, and the jingle in #14) stay placeholders, because this adds images only.
+
 ## The 17 prototypes
 
 | # | File | Simulated length |
@@ -58,4 +66,4 @@ python3 build.py
 
 ### Plugging in a real AI API later
 
-Every generated result goes through `Core.genCard()` (renders the placeholder) and `Core.generate()` (reveals it). Replace `Core.generate()` in `src/core.js` with a real API call that uses the card's prompt, then rebuild.
+Every generated result goes through `Core.genCard()` (renders the card) and `Core.generate()` (reveals it). Real images come from `imgUrl()` in `src/core.js`. To use a different image provider (for example a paid FLUX or Imagen endpoint with your own key), change that function, then rebuild.

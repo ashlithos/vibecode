@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>17 · Team Origin Story</title>
+<style>
+/* Shared styles for every prototype. System fonts only, works offline. */
+:root{
+  --bg:#fff7ee; --card:#ffffff; --card2:#fbf4ff; --ink:#1d1b26; --muted:#6b6880; --line:#eadfd2;
+  --accent:#ff5d73; --accent2:#4a6cf7; --good:#16a36a; --warn:#d99000; --bad:#e5484d;
+  --shadow:0 6px 22px rgba(60,30,80,.09); --radius:18px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#15131c; --card:#211e2b; --card2:#2a2438; --ink:#f3f0fa; --muted:#a8a1bd; --line:#363044; --shadow:0 6px 22px rgba(0,0,0,.4); }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3{line-height:1.15;margin:.2em 0 .5em}
+h1{font-size:clamp(1.8rem,4vw,2.6rem)} h2{font-size:1.5rem} h3{font-size:1.1rem}
+small,.muted{color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-height:46px;width:100%}
+input:focus,textarea:focus{outline:none;border-color:var(--accent2)}
+textarea{min-height:110px;resize:vertical}
+details summary{cursor:pointer;color:var(--muted);font-size:.9rem;margin:6px 0}
+
+/* ---------- header / HUD ---------- */
+header.top{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 220px}
+.brand b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .num{background:var(--ink);color:var(--bg);border-radius:8px;padding:2px 7px;font-size:.8rem;font-weight:700}
+.mode{font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--line);text-transform:uppercase;letter-spacing:.04em}
+.mode.sim{background:var(--accent);color:#fff} .mode.host{background:var(--accent2);color:#fff}
+.hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.35rem}
+.clock small{font-weight:600;font-size:.8rem;margin-left:3px}
+.phase{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.phase b{color:var(--ink)} .phase .over{color:var(--bad);font-weight:700}
+.ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.ctrls .btn{min-height:38px;padding:7px 12px;font-size:.88rem;border-radius:10px}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;font-size:.85rem;font-weight:700;border:0;background:transparent;color:var(--ink);padding:6px 10px;cursor:pointer;min-height:34px}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.progress{height:5px;background:var(--line)}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .2s}
+.progress div.over{background:var(--bad)}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding:16px;max-width:1440px;margin:0 auto}
+@media (max-width:960px){.layout{grid-template-columns:1fr}}
+main{min-width:0}
+#stage{min-height:60vh}
+#stage.simlock [data-act]:not([data-act^="core:"]){pointer-events:none}
+.fade{animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border:1px solid var(--line);margin-bottom:16px}
+.card.tint{background:var(--card2)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cols>.card{margin-bottom:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.center{text-align:center}
+.stack>*+*{margin-top:12px}
+.kicker{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.big-text{font-size:clamp(1.3rem,3vw,2rem);font-weight:750;line-height:1.25}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+ul.tight{margin:.3em 0;padding-left:1.2em} ul.tight li{margin:.25em 0}
+
+/* ---------- buttons & chips ---------- */
+.btn{font:inherit;font-weight:700;border:0;border-radius:14px;padding:12px 20px;min-height:48px;cursor:pointer;background:var(--accent2);color:#fff;transition:transform .08s,filter .15s;display:inline-flex;align-items:center;gap:8px;justify-content:center;text-decoration:none}
+.btn:hover{filter:brightness(1.07)} .btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.big{font-size:1.12rem;padding:16px 24px;min-height:58px}
+.btn.pink{background:var(--accent)} .btn.green{background:var(--good)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn.small{min-height:38px;padding:7px 12px;font-size:.9rem;border-radius:10px}
+.pchip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;background:color-mix(in srgb,var(--pc) 16%,transparent);border:1.5px solid color-mix(in srgb,var(--pc) 45%,transparent);font-weight:650;font-size:.92rem;white-space:nowrap}
+.pchip .pe{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--pc);font-size:.9rem}
+.pchip.big{font-size:1.05rem;padding:6px 14px 6px 6px}.pchip.big .pe{width:34px;height:34px;font-size:1.1rem}
+.pchip.dim{opacity:.45}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--ink)}
+.tag.good{background:var(--good);color:#fff}.tag.warn{background:var(--warn);color:#fff}.tag.bad{background:var(--bad);color:#fff}
+.script{border-left:4px solid var(--accent);background:var(--card2);padding:10px 14px;border-radius:0 12px 12px 0;margin:10px 0;font-size:1rem}
+.script b{color:var(--accent)}
+
+/* ---------- player status grid ---------- */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.pcell{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card);display:flex;flex-direction:column;gap:6px;position:relative}
+.pcell.done{border-color:var(--good)}
+.pcell .status{position:absolute;top:8px;right:10px;font-size:1.1rem}
+.pcell .cat{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.pcell input{min-height:40px;padding:7px 10px}
+.counter{font-weight:800;font-size:1.1rem}
+
+/* ---------- round timer ---------- */
+.roundtimer{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px 16px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800;font-variant-numeric:tabular-nums}
+.roundtimer .t{font-size:1.6rem}
+.roundtimer .bar{flex:1;height:8px;border-radius:9px;background:rgba(127,127,127,.35);overflow:hidden}
+.roundtimer .bar i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.roundtimer.ding{background:var(--bad);animation:pulse .6s infinite alternate}
+@keyframes pulse{to{filter:brightness(1.25)}}
+
+/* ---------- transcript ---------- */
+.logwrap{position:sticky;top:76px;align-self:start;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;max-height:calc(100vh - 100px)}
+@media (max-width:960px){.logwrap{position:static;max-height:420px}}
+.loghead{padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;display:flex;justify-content:space-between}
+#log{overflow:auto;padding:8px 10px 14px;font-size:.88rem}
+.le{padding:4px 2px;border-bottom:1px dashed var(--line);animation:fadeIn .25s}
+.le .ts{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.78rem;margin-right:6px}
+.le.sys{color:var(--muted);font-style:italic}
+.le.phase{font-weight:800;color:var(--accent2);border-bottom:2px solid var(--line);padding-top:10px}
+.le.say b{margin-right:4px}
+#bubbles{position:fixed;left:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:40;max-width:min(380px,calc(100vw - 32px));pointer-events:none}
+@media (max-width:960px){#bubbles{left:16px;right:16px;bottom:10px;max-width:none}.bubble{font-size:.85rem;padding:6px 10px;opacity:.97}}
+.bubble{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:2px solid var(--pc);border-radius:16px 16px 16px 4px;padding:8px 12px;box-shadow:var(--shadow);animation:pop .25s ease;font-size:.95rem}
+.bubble .pe{display:grid;place-items:center;min-width:30px;height:30px;border-radius:50%;background:var(--pc)}
+.bubble.out{opacity:0;transform:translateY(6px);transition:all .3s}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- placeholder generation cards ---------- */
+.gen{position:relative;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);max-width:520px}
+.gen-art{aspect-ratio:4/3;display:grid;place-items:center;background:linear-gradient(135deg,hsl(var(--h1) 85% 70%),hsl(var(--h2) 80% 55%));position:relative}
+.gen.poster .gen-art{aspect-ratio:2/3}
+.gen.square .gen-art{aspect-ratio:1/1}
+.gen-art .em{font-size:clamp(3rem,9vw,5.2rem);filter:drop-shadow(0 6px 10px rgba(0,0,0,.2));letter-spacing:.05em;text-align:center;line-height:1.1}
+.gen-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s}.gen-img.ok{opacity:1}
+.gen-art .over{z-index:1;position:absolute;inset:auto 0 0 0;padding:14px;background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff;text-align:center}
+.gen-art .over .pt{font-weight:900;font-size:1.3rem;text-transform:uppercase;letter-spacing:.03em;line-height:1.1}
+.gen-art .over .ps{font-size:.85rem;opacity:.9;font-style:italic}
+.gen-meta{padding:12px 14px;font-size:.9rem}
+.gen-kind{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.gen-title{font-weight:800;font-size:1.05rem;margin:2px 0 4px}
+.gen-prompt{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;background:var(--bg);border-radius:8px;padding:8px;margin-top:6px;color:var(--muted)}
+.gen-load{position:absolute;inset:0;display:none;place-items:center;background:linear-gradient(110deg,var(--card) 30%,var(--card2) 50%,var(--card) 70%);background-size:300% 100%;animation:shimmer 1.2s linear infinite;font-weight:800;color:var(--muted);z-index:2}
+.gen.loading .gen-load{display:grid}
+.gen.done .gen-art .em{animation:pop .5s ease}
+@keyframes shimmer{from{background-position:100% 0}to{background-position:0 0}}
+
+/* ---------- votes ---------- */
+.vcat{margin:10px 0 16px}
+.vtitle{font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.vbar{display:grid;grid-template-columns:minmax(90px,38%) 1fr 28px;gap:8px;align-items:center;margin:5px 0;font-size:.93rem}
+.vbar .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbar .bt{height:16px;border-radius:9px;background:var(--line);overflow:hidden}
+.vbar .bt i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:9px;transition:width .3s}
+.vbar.win .bl{font-weight:800}
+.vrow{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.vname{min-width:92px;font-weight:650;font-size:.9rem}
+.vopts{display:flex;flex-wrap:wrap;gap:4px}
+.vopt{font:inherit;font-size:.8rem;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:5px 8px;min-height:34px;cursor:pointer}
+.vopt.sel{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.vopt:disabled{opacity:.3;cursor:not-allowed}
+
+/* ---------- report ---------- */
+.rtable{width:100%;border-collapse:collapse;font-size:.92rem}
+.rtable th,.rtable td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.rtable td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rbar{position:relative;height:10px;border-radius:6px;background:var(--line);min-width:80px}
+.rbar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--good)}
+.rbar i.over{background:var(--bad)}
+.rbar s{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{font-size:1.2rem;font-weight:800;padding:12px 16px;border-radius:14px;margin:8px 0}
+.verdict.good{background:color-mix(in srgb,var(--good) 18%,transparent)}
+.verdict.warn{background:color-mix(in srgb,var(--warn) 22%,transparent)}
+.verdict.bad{background:color-mix(in srgb,var(--bad) 18%,transparent)}
+.notes h4{margin:14px 0 4px}
+.risk{border:2px solid var(--warn);border-radius:14px;padding:12px 14px;background:color-mix(in srgb,var(--warn) 10%,transparent)}
+
+dialog{border:0;border-radius:20px;padding:0;max-width:min(720px,calc(100vw - 24px));width:100%;background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,5,20,.55)}
+dialog .dlg{padding:22px;max-height:80vh;overflow:auto}
+
+/* ---------- landing ---------- */
+.hero{background:linear-gradient(135deg,var(--card),var(--card2))}
+.namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:14px 0}
+.namefield{display:flex;align-items:center;gap:8px}
+.namefield .pe{display:grid;place-items:center;min-width:42px;height:42px;border-radius:50%;background:var(--pc);font-size:1.2rem}
+
+@media (max-width:600px){
+  body{font-size:16px}
+  .card{padding:16px}
+  .layout{padding:12px 16px}
+  .hud{gap:8px}
+}
+
+/* ---------- slot sentence ---------- */
+.slots{line-height:2.4}
+.slot{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:2px 3px;padding:0 12px;border-radius:14px;border:2px dashed var(--line);min-width:88px;line-height:1.2;padding-top:4px;padding-bottom:3px}
+.slot .sw{opacity:0;transform:translateY(-34px) scale(.5) rotate(-8deg)}
+.slot .sc{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.slot.in{border-style:solid;border-color:var(--pc);background:color-mix(in srgb,var(--pc) 14%,transparent)}
+.slot.in .sw{opacity:1;transform:none;transition:all .5s cubic-bezier(.3,1.7,.5,1)}
+
+</style>
+</head>
+<body>
+<!--
+  17 · Team Origin Story: single-file playtest prototype (generated by build.py; edit src/ instead).
+  REAL API PLUG-IN POINT: every AI result is a placeholder card made by Core.genCard() and
+  revealed by Core.generate(). To go live, replace Core.generate() with a call to a real
+  image / video / audio API using the prompt shown on the card.
+-->
+<noscript>This prototype needs JavaScript enabled.</noscript>
+<script>
+/* Core engine shared by every prototype. The build step inlines it into each HTML file,
+   so every file stays a single self-contained page that works offline.
+
+   Game time vs real time:
+   - Host mode: the session clock is real time (it starts when you click "Start the session").
+   - Simulate mode: the session clock is *game* time. Core.wait(sec) advances game time by
+     `sec`, but only takes sec / speed real seconds. At 25x a 30-minute session plays in ~72s.
+*/
+(function () {
+  'use strict';
+
+  const PERSONAS = [
+    { id: 'maya',  name: 'Maya',  tag: 'the chaotic',      emoji: '🌪️', color: '#ff5d73' },
+    { id: 'dev',   name: 'Dev',   tag: 'the deadpan',      emoji: '🗿', color: '#7b8794' },
+    { id: 'priya', name: 'Priya', tag: 'the wholesome',    emoji: '🌻', color: '#e8a317' },
+    { id: 'leo',   name: 'Leo',   tag: 'the overachiever', emoji: '🚀', color: '#4a6cf7' },
+    { id: 'sam',   name: 'Sam',   tag: 'the quiet one',    emoji: '🐢', color: '#16a36a' },
+    { id: 'zoe',   name: 'Zoe',   tag: 'the punster',      emoji: '🎭', color: '#9b59b6' },
+    { id: 'omar',  name: 'Omar',  tag: 'the storyteller',  emoji: '📚', color: '#e67e22' },
+  ];
+
+  // ---------- small utils ----------
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const randi = (a, b) => Math.floor(rand(a, b + 1));
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const sample = (a, n) => shuffle(a).slice(0, n);
+  const chance = p => Math.random() < p;
+  const fmt = s => { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // Random permutation with no fixed points (nobody gets themselves).
+  function derange(n, noMutual) {
+    for (let tries = 0; tries < 5000; tries++) {
+      const p = shuffle([...Array(n).keys()]);
+      if (p.some((v, i) => v === i)) continue;
+      if (noMutual && p.some((v, i) => p[v] === i)) continue;
+      return p;
+    }
+    return [...Array(n).keys()].map(i => (i + 1) % n);
+  }
+  function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return Math.abs(h); }
+
+  // ---------- state ----------
+  const S = {
+    mode: null, cfg: null, players: PERSONAS.map(p => ({ ...p })),
+    clock: 0, running: false, paused: false, speed: 25, last: Date.now(), waiters: [],
+    phase: null, phases: [], timer: null, boards: {}, realStart: 0, finished: false,
+  };
+  const player = p => p == null ? null : typeof p === 'object' ? p : typeof p === 'number' ? S.players[p] : S.players.find(x => x.id === p);
+
+  // ---------- clock ----------
+  setInterval(() => {
+    const t = Date.now(), dt = (t - S.last) / 1000; S.last = t;
+    if (S.running && !S.paused) {
+      if (S.mode === 'host') S.clock += dt;
+      else if (S.mode === 'sim' && S.waiters.length) {
+        // Several waits can be pending at once (e.g. an un-awaited generate()); advance to the nearest.
+        const adv = Math.min(dt * S.speed, ...S.waiters.map(w => w.left));
+        S.clock += adv;
+        const due = [];
+        S.waiters = S.waiters.filter(w => { w.left -= adv; if (w.left <= 1e-6) { due.push(w.res); return false; } return true; });
+        due.forEach(r => r());
+      }
+    }
+    hud();
+  }, 50);
+
+  /** Advance game time (simulate mode only). Resolves immediately in host mode. */
+  function wait(sec) {
+    if (S.mode !== 'sim' || S.finished) return Promise.resolve();
+    return new Promise(res => { S.waiters.push({ left: Math.max(0, sec), res }); });
+  }
+
+  function hud() {
+    const clk = $('#clk'); if (!clk) return;
+    const target = (S.cfg && S.cfg.target) || 1800;
+    clk.textContent = fmt(S.clock);
+    const prog = $('#prog');
+    prog.style.width = Math.min(100, S.clock / target * 100) + '%';
+    prog.classList.toggle('over', S.clock > target);
+    const ph = $('#phName'), pl = $('#phLeft');
+    if (S.phase && !S.finished) {
+      ph.innerHTML = '<b>' + esc(S.phase.name) + '</b>';
+      const left = S.phase.budget - (S.clock - S.phase.start);
+      pl.innerHTML = left >= 0 ? fmt(left) + ' left' : '<span class="over">+' + fmt(-left) + ' over</span>';
+    } else { ph.textContent = S.finished ? 'Finished' : 'Not started'; pl.textContent = ''; }
+    const rt = $('#rt');
+    if (S.timer) {
+      const left = S.timer.sec - (S.clock - S.timer.start);
+      rt.hidden = false;
+      rt.classList.toggle('ding', left <= 0);
+      rt.innerHTML = '<span>⏱ ' + esc(S.timer.label) + '</span><span class="bar"><i style="width:' + Math.max(0, left / S.timer.sec * 100) + '%"></i></span><span class="t">' + (left > 0 ? fmt(left) : "Time!") + '</span>';
+    } else rt.hidden = true;
+  }
+
+  // ---------- phases & timers ----------
+  function closePhase() { if (S.phase && S.phase.actual == null) S.phase.actual = S.clock - S.phase.start; }
+  function phase(name, budgetSec) {
+    // Real rooms lose 6–14s at every phase change ("okay, eyes up here…"); charge it to the phase that's ending.
+    if (S.mode === 'sim' && S.phase) S.clock += rand(6, 14);
+    closePhase();
+    S.phase = { name, budget: budgetSec, start: S.clock, actual: null };
+    S.phases.push(S.phase);
+    log(null, '— ' + name + ' (budget ' + fmt(budgetSec) + ') —', 'phase');
+    hud();
+  }
+  function timer(label, sec) { S.timer = { label, sec, start: S.clock }; hud(); }
+  function clearTimer() { S.timer = null; hud(); }
+  const timerLeft = () => S.timer ? S.timer.sec - (S.clock - S.timer.start) : 0;
+
+  // ---------- transcript ----------
+  function log(p, text, kind) {
+    const el = $('#log'); if (!el) return;
+    p = player(p);
+    const d = document.createElement('div');
+    d.className = 'le ' + (kind || (p ? 'say' : 'sys'));
+    d.innerHTML = '<span class="ts">' + fmt(S.clock) + '</span>' + (p ? '<b style="color:' + p.color + '">' + p.emoji + ' ' + esc(p.name) + '</b>' : '') + esc(text);
+    el.appendChild(d); el.scrollTop = el.scrollHeight;
+    $('#logCount').textContent = el.children.length + ' events';
+  }
+  function bubble(p, text) {
+    p = player(p); const box = $('#bubbles'); if (!box || !p) return;
+    const b = document.createElement('div'); b.className = 'bubble'; b.style.setProperty('--pc', p.color);
+    b.innerHTML = '<span class="pe">' + p.emoji + '</span><div><b>' + esc(p.name) + '</b><div>' + esc(text) + '</div></div>';
+    box.appendChild(b); const max = window.innerWidth < 960 ? 1 : 2; while (box.children.length > max) box.firstChild.remove();
+    setTimeout(() => b.classList.add('out'), 2600); setTimeout(() => b.remove(), 3000);
+  }
+  /** A synthetic player says something; takes `sec` of game time. */
+  function say(p, text, sec) { log(p, '“' + text + '”', 'say'); bubble(p, text); return wait(sec == null ? 6 : sec); }
+  /** A player does something (no quote marks). */
+  function act(p, text, sec) { log(p, ' ' + text, 'say'); return wait(sec == null ? 2 : sec); }
+  function sys(text, sec) { log(null, text, 'sys'); return wait(sec == null ? 2 : sec); }
+
+  // ---------- rendering helpers ----------
+  function stage(html) { const st = $('#stage'); st.innerHTML = '<div class="fade">' + html + '</div>'; window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(hydrate, 0); return st; }
+  let hydrateT = 0;
+  new MutationObserver(() => { clearTimeout(hydrateT); hydrateT = setTimeout(hydrate, 30); }).observe(document.documentElement, { childList: true, subtree: true });
+  function chip(p, opt) { p = player(p); opt = opt || {}; return '<span class="pchip' + (opt.big ? ' big' : '') + (opt.dim ? ' dim' : '') + '" style="--pc:' + p.color + '"><span class="pe">' + p.emoji + '</span>' + esc(p.name) + (opt.suffix ? ' ' + opt.suffix : '') + '</span>'; }
+  const script = t => '<div class="script">🎙️ <b>Say:</b> ' + t + '</div>';
+
+  const EMOJI = [[/corgi|dog|pup/, '🐶'], [/cat|kitten/, '🐱'], [/raccoon/, '🦝'], [/dragon/, '🐉'], [/unicorn/, '🦄'], [/pizza/, '🍕'], [/taco/, '🌮'], [/rocket|space|astronaut/, '🚀'], [/robot|\bai\b/, '🤖'], [/ocean|sea|wave|swim/, '🌊'], [/fire|flame|spicy/, '🔥'], [/music|song|jingle|sing/, '🎵'], [/cake|birthday/, '🎂'], [/coffee|espresso|latte|cold brew/, '☕'], [/moon|night/, '🌙'], [/sun|sunrise|sunset/, '🌅'], [/castle|kingdom/, '🏰'], [/ghost|haunt/, '👻'], [/crown|king|queen|royal/, '👑'], [/banana/, '🍌'], [/penguin/, '🐧'], [/owl/, '🦉'], [/goose|duck/, '🦆'], [/octopus|squid/, '🐙'], [/sloth/, '🦥'], [/frog/, '🐸'], [/bear/, '🐻'], [/shark/, '🦈'], [/cowboy/, '🤠'], [/wizard|magic|spell/, '🧙'], [/ninja/, '🥷'], [/movie|film|poster|cinema/, '🎬'], [/heart|love/, '💖'], [/tree|forest/, '🌲'], [/mountain|peak|summit/, '🏔️'], [/city/, '🏙️'], [/laptop|computer|tabs|code/, '💻'], [/snack|popcorn/, '🍿'], [/star|galaxy/, '⭐'], [/rain|storm/, '🌧️'], [/sword|battle|warrior/, '⚔️'], [/shield/, '🛡️'], [/lion/, '🦁'], [/tiger/, '🐯'], [/fox/, '🦊'], [/bee\b|bees/, '🐝'], [/hamster/, '🐹'], [/llama|alpaca/, '🦙'], [/croissant|bread|baguette|loaf|sandwich/, '🥐'], [/sushi/, '🍣'], [/donut/, '🍩'], [/cheese/, '🧀'], [/disco|dance/, '🪩'], [/volcano/, '🌋'], [/rainbow/, '🌈'], [/hat\b/, '🎩'], [/sock/, '🧦'], [/train/, '🚂'], [/pirate|ship|boat/, '🏴‍☠️'], [/snail/, '🐌'], [/whale/, '🐋'], [/dinosaur|t-rex|raptor/, '🦖'], [/chicken/, '🐔'], [/cloud/, '☁️'], [/cactus|plant/, '🌵'], [/book|library/, '📚'], [/guitar|rock/, '🎸'], [/trophy|award|winner/, '🏆'], [/spreadsheet|chart|graph/, '📊'], [/calendar|meeting|sync/, '📅'], [/dumpling/, '🥟'], [/noodle|ramen/, '🍜'], [/chocolate|cocoa/, '🍫'], [/ice cream/, '🍦'], [/snow|ski|winter/, '❄️'], [/helicopter/, '🚁'], [/church|cathedral|monk/, '⛪'], [/giant|monster/, '👹'], [/\bteam\b|people/, '👥'], [/goat/, '🐐'], [/capybara|beaver/, '🦫'], [/axolotl|lizard|gecko/, '🦎'], [/otter/, '🦦'], [/hedgehog/, '🦔'], [/narwhal|unicorn whale/, '🐳'], [/turtle|tortoise/, '🐢'], [/kraken/, '🦑'], [/bat\b/, '🦇'], [/yeti/, '🦍'], [/cheeto/, '🌶️'], [/oats|porridge/, '🥣'], [/panda/, '🐼'], [/butterfly/, '🦋'], [/tea\b/, '🍵'], [/mango/, '🥭'], [/avocado/, '🥑'], [/phoenix|bird/, '🐦‍🔥'], [/lightning|thunder/, '⚡'], [/time|clock/, '⏰'], [/money|gold|rich/, '💰'], [/plane|fly|wings/, '✈️'], [/car\b|race/, '🏎️'], [/wolf/, '🐺'], [/horse/, '🐴'], [/mushroom/, '🍄'], [/cookie/, '🍪'], [/pickle/, '🥒'], [/egg/, '🥚']];
+  function emojisFor(prompt, max) {
+    // Emoji in the order their keywords appear in the prompt.
+    const t = String(prompt).toLowerCase(), hits = [];
+    for (const [re, e] of EMOJI) { const m = t.match(new RegExp('\\b(?:' + re.source + ')')); if (m && !hits.some(h => h.e === e)) hits.push({ e, at: m.index }); }
+    hits.sort((a, b) => a.at - b.at);
+    return hits.length ? hits.slice(0, max || 3).map(h => h.e).join('') : '✨🎨';
+  }
+  let genN = 0;
+  /**
+   * Placeholder card for an AI generation result. Returns HTML.
+   * kind: image | poster | square | video | song | text
+   */
+  function genCard(o) {
+    const id = o.id || ('gen' + (++genN));
+    const h = hash(o.prompt) % 360, h2 = (h + 40 + hash(o.title || 'x') % 80) % 360;
+    const kindLabel = { image: 'AI image', poster: 'AI movie poster', square: 'AI image', video: 'AI video', song: 'AI song', text: 'AI text' }[o.kind || 'image'];
+    return '<div class="gen ' + (o.kind || 'image') + (o.loading === false ? ' done' : ' loading') + '" id="' + id + '" style="--h1:' + h + 'deg;--h2:' + h2 + 'deg">' +
+      '<!-- REAL API PLUG-IN POINT: send the prompt below to an image/video/audio generation API and replace .gen-art with the returned media. -->' +
+      '<div class="gen-art"><div class="em">' + (o.emoji || emojisFor(o.prompt)) + '</div>' +
+      (IMG.on && IMG_KINDS[o.kind || 'image'] ? '<img class="gen-img" alt="" data-q="' + esc(imgUrl(o.prompt, o.kind || 'image')) + '">' : '') +
+      (o.overlayTitle ? '<div class="over"><div class="pt">' + esc(o.overlayTitle) + '</div>' + (o.overlaySub ? '<div class="ps">' + esc(o.overlaySub) + '</div>' : '') + '</div>' : '') + '</div>' +
+      '<div class="gen-meta"><div class="gen-kind">' + kindLabel + ' · ' + (IMG.on && IMG_KINDS[o.kind || 'image'] ? 'live, FLUX via Pollinations' : 'placeholder') + '</div>' + (o.title ? '<div class="gen-title">' + esc(o.title) + '</div>' : '') + (o.sub || '') +
+      (o.hidePrompt ? '' : '<div class="gen-prompt"><b>' + (IMG.on && IMG_KINDS[o.kind || 'image'] ? 'Prompt sent:' : 'Prompt that would be sent:') + '</b><br>' + esc(o.prompt) + '</div>') + '</div>' +
+      '<div class="gen-load">Generating…</div></div>';
+  }
+  /** Flip a genCard from loading to done. ~10s of game time in sim, ~1.5s real in host. */
+  async function generate(id, sec) {
+    const el0 = document.getElementById(id), live = el0 && el0.querySelector('img[data-q]');
+    log(null, live ? '🎨 Prompt sent to FLUX (Pollinations)…' : '🎨 Prompt sent to generator… (placeholder, no real API call)', 'sys');
+    if (S.mode === 'sim') await wait(sec == null ? 10 : sec);
+    else if (live) { loadImg(live); await Promise.race([live.ready, sleep(25000)]); }
+    else await sleep(1500);
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('loading'); el.classList.add('done'); hydrate(); }
+  }
+
+  // ---------- optional real AI images ----------
+  // Off by default. When on, image cards load a real picture from Pollinations (free, no key, FLUX model).
+  // REAL API PLUG-IN POINT: swap imgUrl() for another provider (e.g. a paid FLUX/Imagen endpoint with a key).
+  const IMG = { on: false, ok: 0, failed: 0, warned: false, active: 0, queue: [] };
+  try { IMG.on = localStorage.getItem('realImages') === '1'; } catch (e) { /* storage blocked: stay off */ }
+  const IMG_KINDS = { image: [768, 576], square: [640, 640], poster: [512, 768] };
+  function imgUrl(prompt, kind) {
+    const p = String(prompt).replace(/\s+/g, ' ').trim().slice(0, 380), [w, h] = IMG_KINDS[kind];
+    return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(p) + '?width=' + w + '&height=' + h + '&nologo=true&model=flux&seed=' + (hash(p) % 100000);
+  }
+  // One request at a time: the free tier rate-limits bursts. Same prompt = same URL, so repeats come from the browser cache.
+  function loadImg(img) {
+    if (img.dataset.s) return; img.dataset.s = '1';
+    img.ready = new Promise(res => { img.done = res; });
+    IMG.queue.push(img); pump();
+  }
+  function pump() {
+    while (IMG.active < 1 && IMG.queue.length) {
+      const img = IMG.queue.shift(); IMG.active++;
+      const fin = ok => { IMG.active--; img.done && img.done(); if (ok) { img.classList.add('ok'); IMG.ok++; } else { IMG.failed++; warnImg(); } pump(); };
+      img.onload = () => fin(true); img.onerror = () => fin(false);
+      img.src = img.dataset.q;
+    }
+  }
+  function warnImg() {
+    if (IMG.warned || IMG.ok) return; IMG.warned = true;
+    log(null, '⚠️ Real images couldn’t load. You may be offline, or this viewer blocks outside images (the claude.ai page does). Download the file and open it in Chrome or Safari. Placeholders are shown instead.', 'sys');
+  }
+  // Load images for cards that are visible and not mid-"Generating…".
+  function hydrate() { if (IMG.on) $$('.gen:not(.loading) img[data-q]:not([data-s])').forEach(loadImg); }
+
+  // ---------- sentence assembly (words fly into slots) ----------
+  /** parts: array of strings and {word, cat, p} slots. Returns HTML; reveal with revealSlots(id). */
+  function slotSentence(id, parts, revealed) {
+    return '<div class="slots big-text" id="' + id + '">' + parts.map(x => {
+      if (typeof x === 'string') return '<span>' + esc(x) + '</span>';
+      const p = player(x.p);
+      return '<span class="slot' + (revealed ? ' in' : '') + '" style="--pc:' + (p ? p.color : 'var(--accent2)') + '"><span class="sw">' + esc(x.word || '???') + '</span><span class="sc">' + esc(x.cat || '') + (p ? ' · ' + esc(p.name) : '') + '</span></span>';
+    }).join(' ') + '</div>';
+  }
+  async function revealSlots(id, sec) {
+    for (const e of $$('#' + id + ' .slot')) { e.classList.add('in'); await (S.mode === 'sim' ? wait(sec == null ? 2.5 : sec) : sleep(550)); }
+  }
+
+  // ---------- simultaneous word collection grid ----------
+  /** items: [{p, cat, word?}]. Host gets inputs; sim shows hidden ✅ as words arrive (setCollected). */
+  function collectGrid(id, items, o) {
+    o = o || {};
+    const done = items.filter(x => x.word).length;
+    return '<div class="spread"><div class="counter" id="' + id + '-count">' + done + ' / ' + items.length + ' submitted</div>' +
+      (S.mode === 'host' && o.fillAct ? '<button class="btn small ghost" data-act="' + o.fillAct + '">🎲 Fill with sample answers</button>' : '') + '</div>' +
+      '<div class="pgrid" id="' + id + '" style="margin-top:10px">' + items.map((x, i) => {
+        const p = player(x.p);
+        return '<div class="pcell' + (x.word ? ' done' : '') + '" data-cell="' + i + '"><span class="status">' + (x.word ? '✅' : '⏳') + '</span>' + chip(p) +
+          '<span class="cat">' + esc(x.cat) + '</span>' +
+          (S.mode === 'host' ? '<input data-ci="' + i + '" data-grid="' + id + '" value="' + esc(x.word || '') + '" placeholder="' + esc(x.hint || 'type their word') + '" autocomplete="off">'
+            : '<span class="muted">' + (x.word ? (o.showWords ? '<b>' + esc(x.word) + '</b>' : 'submitted (hidden)') : 'thinking…') + '</span>') + '</div>';
+      }).join('') + '</div>';
+  }
+  /** Read host inputs back into items. */
+  function readGrid(id, items) { $$('#' + id + ' input[data-ci]').forEach(inp => { items[+inp.dataset.ci].word = inp.value.trim(); }); return items; }
+  /** Mark item i as submitted in an already-rendered grid. */
+  function markGrid(id, items, i, show) {
+    const cell = $('#' + id + ' [data-cell="' + i + '"]'); if (!cell) return;
+    cell.classList.add('done'); cell.querySelector('.status').textContent = '✅';
+    const m = cell.querySelector('.muted'); if (m) m.innerHTML = show ? '<b>' + esc(items[i].word) + '</b>' : 'submitted (hidden)';
+    const c = $('#' + id + '-count'); if (c) c.textContent = items.filter(x => x.word).length + ' / ' + items.length + ' submitted';
+  }
+  document.addEventListener('input', e => {
+    const inp = e.target.closest('[data-ci]'); if (!inp) return;
+    const grid = inp.dataset.grid, cell = inp.closest('.pcell'), has = !!inp.value.trim();
+    cell.classList.toggle('done', has); cell.querySelector('.status').textContent = has ? '✅' : '⏳';
+    const all = $$('#' + grid + ' input[data-ci]'), n = all.filter(x => x.value.trim()).length;
+    const c = $('#' + grid + '-count'); if (c) c.textContent = n + ' / ' + all.length + ' submitted';
+  });
+
+  // ---------- vote board ----------
+  let vbN = 0;
+  class VoteBoard {
+    /** options: [{id,label,emoji?,short?}], cats: [{id,label}], exclude(voter, option) -> bool */
+    constructor(o) {
+      this.id = o.id || ('vb' + (++vbN));
+      this.options = o.options; this.voters = o.voters || S.players;
+      this.cats = o.cats || [{ id: 'main', label: o.title || 'Vote' }];
+      this.exclude = o.exclude; this.onChange = o.onChange;
+      this.votes = {}; this.cats.forEach(c => this.votes[c.id] = {});
+      S.boards[this.id] = this;
+    }
+    count(cat, opt) { return Object.values(this.votes[cat]).filter(v => v === opt).length; }
+    tally(cat) { cat = cat || this.cats[0].id; return this.options.map(o => ({ id: o.id, label: o.label, emoji: o.emoji, n: this.count(cat, o.id) })).sort((a, b) => b.n - a.n); }
+    winner(cat) { return this.tally(cat)[0]; }
+    voted(cat) { return Object.keys(this.votes[cat || this.cats[0].id]).length; }
+    cast(voter, opt, cat) { cat = cat || this.cats[0].id; this.votes[cat][voter] = opt; this.refresh(); }
+    html() { return '<div class="vboard" id="' + this.id + '">' + this.inner() + '</div>'; }
+    inner() {
+      return this.cats.map(c => {
+        const max = Math.max(1, ...this.options.map(o => this.count(c.id, o.id)));
+        const top = this.voted(c.id) ? this.winner(c.id).n : -1;
+        return '<div class="vcat"><div class="vtitle"><span>' + esc(c.label) + '</span><small>' + this.voted(c.id) + '/' + this.voters.length + ' voted</small></div>' +
+          this.options.map(o => { const n = this.count(c.id, o.id); return '<div class="vbar' + (n === top && n > 0 ? ' win' : '') + '"><span class="bl">' + (o.emoji || '') + ' ' + esc(o.label) + '</span><span class="bt"><i style="width:' + (n / max * 100) + '%"></i></span><b>' + n + '</b></div>'; }).join('') +
+          '<details' + (S.mode === 'host' ? ' open' : '') + '><summary>' + (S.mode === 'host' ? 'Record each person’s vote (tap)' : 'Who voted for what') + '</summary>' +
+          this.voters.map(v => '<div class="vrow"><span class="vname">' + v.emoji + ' ' + esc(v.name) + '</span><div class="vopts">' +
+            this.options.map(o => { const ex = this.exclude && this.exclude(v, o); const sel = this.votes[c.id][v.id] === o.id; return '<button class="vopt' + (sel ? ' sel' : '') + '"' + (ex ? ' disabled' : '') + ' data-act="core:vote" data-b="' + this.id + '" data-c="' + c.id + '" data-v="' + v.id + '" data-o="' + esc(o.id) + '">' + (o.emoji ? o.emoji + ' ' : '') + esc(o.short || o.label) + '</button>'; }).join('') +
+            '</div></div>').join('') + '</details></div>';
+      }).join('');
+    }
+    refresh() { const el = document.getElementById(this.id); if (el) el.innerHTML = this.inner(); if (this.onChange) this.onChange(this); }
+  }
+  /** Synthetic voters vote one by one. chooser(voter) -> option id. */
+  async function simVotes(board, chooser, o) {
+    o = o || {}; const cat = o.cat || board.cats[0].id;
+    for (const v of shuffle(board.voters)) {
+      let opt = chooser(v);
+      if (board.exclude && board.exclude(v, board.options.find(x => x.id === opt))) opt = pick(board.options.filter(x => !board.exclude(v, x))).id;
+      board.cast(v.id, opt, cat);
+      await wait((o.gap || 4) * rand(.5, 1.5));
+    }
+    await wait(o.straggler == null ? 6 : o.straggler); // "is everyone in?" — waiting on the last voter
+    const label = board.cats.find(c => c.id === cat).label;
+    log(null, '🗳️ ' + label + ': ' + board.tally(cat).filter(x => x.n).map(x => x.label + ' ×' + x.n).join(' · '), 'sys');
+  }
+
+  // ---------- shell, landing, setup ----------
+  function shell() {
+    const c = S.cfg;
+    document.title = c.num + ' · ' + c.title;
+    document.body.innerHTML =
+      '<header class="top"><div class="brand"><span class="num">' + esc(c.num) + '</span><b>' + c.emoji + ' ' + esc(c.title) + '</b><span class="mode" id="modeBadge">preview</span></div>' +
+      '<div class="hud"><div class="clock" title="Session clock"><span id="clk">00:00</span><small>/ ' + fmt(c.target || 1800) + '</small></div><div class="phase"><span id="phName">Not started</span> <span id="phLeft"></span></div></div>' +
+      '<div class="ctrls" id="ctrls"></div></header><div class="progress"><div id="prog"></div></div>' +
+      '<div class="layout"><main><div id="rt" class="roundtimer" hidden></div><div id="stage"></div></main>' +
+      '<aside class="logwrap"><div class="loghead"><span>📜 Transcript</span><small id="logCount"></small></div><div id="log"></div></aside></div>' +
+      '<div id="bubbles"></div><dialog id="notesDlg"><div class="dlg" id="notesBody"></div></dialog>';
+    ctrls();
+  }
+  function ctrls() {
+    const el = $('#ctrls'); if (!el) return;
+    let h = '';
+    if (S.mode === 'sim' && !S.finished) {
+      h += '<button class="btn small ghost" data-act="core:pause">' + (S.paused ? '▶ Resume' : '⏸ Pause') + '</button>';
+      h += '<span class="seg">' + [10, 25, 60].map(x => '<button data-act="core:speed" data-x="' + x + '" class="' + (S.speed === x ? 'on' : '') + '">' + x + '×</button>').join('') + '</span>';
+    }
+    if (S.mode === 'host' && S.running) {
+      h += '<button class="btn small ghost" data-act="core:pause">' + (S.paused ? '▶ Resume clock' : '⏸ Pause clock') + '</button>';
+      h += '<button class="btn small ghost" data-act="core:end">🏁 End & report</button>';
+    }
+    h += '<button class="btn small ' + (IMG.on ? '' : 'ghost') + '" data-act="core:img" title="Load real AI images from Pollinations (free, no key). Prompts are sent to pollinations.ai.">🖼 Real images: ' + (IMG.on ? 'on' : 'off') + '</button>';
+    h += '<button class="btn small ghost" data-act="core:notes">📝 Notes</button>';
+    if (S.mode) h += '<button class="btn small ghost" data-act="core:restart">↺ Start over</button>';
+    el.innerHTML = h;
+    const b = $('#modeBadge');
+    b.className = 'mode ' + (S.mode || '');
+    b.textContent = S.mode === 'sim' ? 'Simulate' : S.mode === 'host' ? 'Host' : 'preview';
+  }
+  function agendaHtml() {
+    const c = S.cfg, total = c.plan.reduce((a, p) => a + p.sec, 0);
+    return '<table class="rtable">' + c.plan.map(p => '<tr><td>' + esc(p.name) + '</td><td class="n">' + fmt(p.sec) + '</td></tr>').join('') +
+      '<tr><th>Total</th><th class="n">' + fmt(total) + '</th></tr></table>';
+  }
+  function landing() {
+    const c = S.cfg;
+    stage('<div class="card hero"><div class="kicker">AI team-activity playtest · 7 players · 30 min · first-time teammates</div>' +
+      '<h1>' + c.emoji + ' ' + esc(c.title) + '</h1><p class="lead">' + c.tagline + '</p>' +
+      '<div class="cta"><button class="btn big pink" data-act="core:sim">▶ Simulate with synthetic players</button>' +
+      '<button class="btn big ghost" data-act="core:host">🎤 Host mode: click through it yourself</button></div></div>' +
+      '<div class="cols"><div class="card"><h3>How it plays</h3>' + c.how + '</div>' +
+      '<div class="card"><h3>Planned agenda</h3>' + agendaHtml() + '</div>' +
+      '<div class="card"><h3>What you’re evaluating</h3><ul class="tight">' + c.evaluating.map(e => '<li>' + e + '</li>').join('') + '</ul></div>' +
+      '<div class="card"><h3>Synthetic cast</h3><div class="stack">' + PERSONAS.map(p => '<div>' + chip(p) + ' <small>' + p.tag + '</small></div>').join('') + '</div></div></div>');
+    log(null, 'Ready. Pick Simulate or Host mode.', 'sys');
+  }
+  function setup() {
+    stage('<div class="card"><h2>Who’s playing?</h2><p class="muted">Rename the seats to your real teammates, or keep the sample cast. The 🎲 buttons later fill in sample answers using these seats.</p>' +
+      '<div class="namegrid">' + S.players.map((p, i) => '<label class="namefield" style="--pc:' + p.color + '"><span class="pe">' + p.emoji + '</span><input value="' + esc(p.name) + '" data-i="' + i + '" maxlength="18" aria-label="Player ' + (i + 1) + '"></label>').join('') + '</div>' +
+      '<button class="btn big" data-act="core:go">Start the session →</button></div>');
+  }
+
+  function notesHtml() {
+    const c = S.cfg;
+    return '<div class="notes"><h3>📝 Facilitator notes</h3>' + c.notes + '<h4>What you’re evaluating</h4><ul class="tight">' + c.evaluating.map(e => '<li>' + e + '</li>').join('') + '</ul></div>';
+  }
+
+  // ---------- finish / report ----------
+  function finish(resultHtml) {
+    if (S.finished) return;
+    closePhase(); S.finished = true; S.running = false; S.timer = null;
+    S.waiters = [];
+    log(null, '🏁 Session ended at ' + fmt(S.clock), 'phase');
+    const rows = [];
+    for (const p of S.phases) {
+      let r = rows.find(x => x.name === p.name);
+      if (!r) { r = { name: p.name, budget: 0, actual: 0, n: 0 }; rows.push(r); }
+      r.budget += p.budget; r.actual += p.actual || 0; r.n++;
+    }
+    const target = S.cfg.target || 1800, total = S.clock, budget = rows.reduce((a, r) => a + r.budget, 0);
+    const v = total <= target - 60 ? ['good', '✅ Fits in ' + fmt(target) + ' with ' + fmt(target - total) + ' to spare']
+      : total <= target ? ['warn', '🟡 Fits, but with almost no buffer (' + fmt(target - total) + ' left)']
+      : ['bad', '🔴 Over the ' + fmt(target) + ' slot by ' + fmt(total - target) + '. See the suggested cut below'];
+    const maxv = Math.max(...rows.map(r => Math.max(r.actual, r.budget)), 1);
+    const realSec = (Date.now() - S.realStart) / 1000;
+    const leaks = rows.filter(r => r.actual > r.budget + 15).sort((a, b) => (b.actual - b.budget) - (a.actual - a.budget));
+    stage((resultHtml || '') +
+      '<div class="card"><h2>⏱ Pacing report</h2><div class="verdict ' + v[0] + '">' + v[1] + '</div>' +
+      '<p class="muted">' + (S.mode === 'sim' ? 'Simulated ' + fmt(total) + ' of session time in ' + Math.round(realSec) + ' real seconds. ' : 'Real time measured while you hosted. ') +
+      'Planned total: ' + fmt(budget) + '. Bars: actual (green, red if over), with the planned budget shown as a black tick.</p>' +
+      '<table class="rtable"><tr><th>Phase</th><th>Planned</th><th>Actual</th><th style="width:38%"></th></tr>' +
+      rows.map(r => '<tr><td>' + esc(r.name) + (r.n > 1 ? ' <small>×' + r.n + '</small>' : '') + '</td><td class="n">' + fmt(r.budget) + '</td><td class="n">' + fmt(r.actual) + '</td><td><div class="rbar"><i class="' + (r.actual > r.budget + 5 ? 'over' : '') + '" style="width:' + (r.actual / maxv * 100) + '%"></i><s style="left:' + (r.budget / maxv * 100) + '%"></s></div></td></tr>').join('') +
+      '<tr><th>Total</th><th class="n">' + fmt(budget) + '</th><th class="n">' + fmt(total) + '</th><th></th></tr></table>' +
+      (leaks.length ? '<p><b>Where time leaked:</b> ' + leaks.slice(0, 3).map(r => esc(r.name) + ' (+' + fmt(r.actual - r.budget) + ')').join(', ') + '</p>' : '<p><b>No phase ran meaningfully over budget.</b></p>') +
+      '</div><div class="card tint">' + notesHtml() + '</div>' +
+      '<div class="cta"><button class="btn big pink" data-act="core:sim">▶ Simulate again</button><button class="btn big ghost" data-act="core:host">🎤 Try Host mode</button><button class="btn big ghost" data-act="core:restart">↺ Back to start</button></div>');
+    ctrls(); hud();
+  }
+
+  // ---------- modes ----------
+  function reset(mode) {
+    S.mode = mode; S.clock = 0; S.phase = null; S.phases = []; S.timer = null; S.finished = false; S.paused = false; S.boards = {};
+    S.waiters = [];
+    S.runId = (S.runId || 0) + 1;
+    $('#log').innerHTML = ''; $('#stage').classList.toggle('simlock', mode === 'sim');
+  }
+  async function startSim() {
+    reset('sim'); S.players = PERSONAS.map(p => ({ ...p }));
+    S.running = true; S.realStart = Date.now(); ctrls();
+    log(null, '▶ Simulation started with 7 synthetic players at ' + S.speed + '× speed', 'sys');
+    const run = S.runId;
+    try { await S.cfg.simulate(); } catch (e) { if (run === S.runId) { console.error(e); log(null, '⚠️ Simulation error: ' + e.message, 'sys'); } }
+    if (run === S.runId && !S.finished) finish(S.cfg.summary ? S.cfg.summary() : '');
+  }
+  function startHost() { reset('host'); S.running = false; ctrls(); setup(); log(null, 'Host mode. Name the players, then start.', 'sys'); }
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]'); if (!el) return;
+    const a = el.dataset.act;
+    if (a.indexOf('core:') === 0) {
+      const k = a.slice(5);
+      if (k === 'sim') startSim();
+      else if (k === 'host') startHost();
+      else if (k === 'go') {
+        $$('.namefield input').forEach(inp => { const v = inp.value.trim(); if (v) S.players[+inp.dataset.i].name = v; });
+        S.running = true; S.realStart = Date.now(); S.last = Date.now(); ctrls();
+        log(null, '🎤 Session started: ' + S.players.map(p => p.name).join(', '), 'sys');
+        S.cfg.host();
+      }
+      else if (k === 'pause') { S.paused = !S.paused; ctrls(); }
+      else if (k === 'speed') { S.speed = +el.dataset.x; ctrls(); }
+      else if (k === 'notes') { $('#notesBody').innerHTML = notesHtml() + '<p><button class="btn" data-act="core:closeNotes">Close</button></p>'; $('#notesDlg').showModal(); }
+      else if (k === 'closeNotes') $('#notesDlg').close();
+      else if (k === 'img') {
+        IMG.on = !IMG.on; IMG.warned = false; try { localStorage.setItem('realImages', IMG.on ? '1' : '0'); } catch (e) { /* not persisted */ }
+        log(null, IMG.on ? '🖼 Real images on: new image cards use FLUX via Pollinations (free). Prompts are sent to pollinations.ai, so avoid real names.' : '🖼 Real images off: placeholders only.', 'sys');
+        ctrls();
+      }
+      else if (k === 'end') finish(S.cfg.summary ? S.cfg.summary() : '');
+      else if (k === 'restart') { S.runId++; S.mode = null; S.running = false; S.finished = false; S.waiters = []; S.timer = null; S.phase = null; S.players = PERSONAS.map(p => ({ ...p })); $('#log').innerHTML = ''; $('#stage').classList.remove('simlock'); ctrls(); hud(); landing(); }
+      else if (k === 'vote') { if (S.mode !== 'host') return; const b = S.boards[el.dataset.b]; if (b) b.cast(el.dataset.v, el.dataset.o, el.dataset.c); }
+      return;
+    }
+    if (S.mode !== 'host') return;
+    const fn = S.cfg.acts && S.cfg.acts[a];
+    if (fn) { e.preventDefault(); fn(el.dataset, el, e); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    const el = e.target.closest('[data-enter]'); if (!el || S.mode !== 'host') return;
+    const fn = S.cfg.acts && S.cfg.acts[el.dataset.enter];
+    if (fn) { e.preventDefault(); fn(el.dataset, el, e); }
+  });
+
+  // ---------- public API ----------
+  window.Core = {
+    game(cfg) { S.cfg = cfg; shell(); landing(); },
+    get players() { return S.players; }, get mode() { return S.mode; }, get clock() { return S.clock; },
+    get finished() { return S.finished; },
+    PERSONAS, player, chip, script, stage, log, say, act, sys, wait, sleep, phase, timer, clearTimer, timerLeft, finish,
+    genCard, generate, emojisFor, imgUrl, slotSentence, revealSlots, collectGrid, readGrid, markGrid, VoteBoard, simVotes, esc, rand, randi, pick, shuffle, sample, chance, fmt, derange, hash, $, $$,
+    css(t) { const s = document.createElement('style'); s.textContent = t; document.head.appendChild(s); },
+    /** Real-time pause in host mode, game-time wait in sim. */
+    beat(sec, ms) { return S.mode === 'sim' ? wait(sec) : sleep(ms == null ? 600 : ms); },
+  };
+})();
+
+</script>
+<script>
+// TITLE: 17 · Team Origin Story
+(function () {
+  const C = Core;
+
+  // Round categories. 7 players, so each round spreads 3 categories across 7 seats.
+  const R1 = ['adjective', 'creature', 'power', 'adjective', 'creature', 'power', 'adjective'];
+  const R2 = ['food', 'battle-cry verb', 'value', 'food', 'value', 'battle-cry verb', 'value'];
+  const HINT = { adjective: 'e.g. fearless', creature: 'e.g. axolotl', power: 'e.g. infinite snacks', value: 'e.g. curiosity', food: 'e.g. dumplings', 'battle-cry verb': 'e.g. Charge' };
+
+  // Synthetic word choices + the "why" they share in the sharing circle.
+  // depth: surface | personal | story. This is what the evaluator is watching for.
+  const WORDS = {
+    maya:  { 1: [['feral', 'Honestly my calendar is feral and I wanted the mascot to match.', 'surface'], ['unhinged', 'I grew up with four siblings. Unhinged is just my baseline.', 'personal']],
+             2: [['hot cheetos', 'I moved here alone last year and hot cheetos at 2am got me through it.', 'personal'], ['cold pizza', 'Best breakfast. No notes.', 'surface']] },
+    dev:   { 1: [['goose', 'Geese fear nothing. Professionally, I aspire to that.', 'surface'], ['capybara', 'My kid is obsessed with capybaras, so now they’re my whole personality.', 'personal']],
+             2: [['Ship', 'I’ve watched too many good projects die in a doc. Ship it.', 'personal'], ['Persist', 'It sounded intimidating.', 'surface']] },
+    priya: { 1: [['remembering everyone’s birthday', 'My grandmother remembered every birthday in our village without a phone. I’m trying to be her.', 'story'], ['infinite snacks', 'Snacks are love.', 'surface']],
+             2: [['kindness', 'My first manager was kind when I messed up badly. It’s why I stayed in this field.', 'story'], ['patience', 'I need more of it.', 'surface']] },
+    leo:   { 1: [['relentless', 'I train for marathons, so relentless is kind of my default setting.', 'personal'], ['turbo', 'Fast is fun.', 'surface']],
+             2: [['overnight oats', 'Meal-prep Sunday is my therapy, honestly.', 'personal'], ['espresso', 'Fuel.', 'surface']] },
+    sam:   { 1: [['axolotl', 'They regrow parts of themselves. Starting a new job feels a bit like that.', 'story'], ['owl', 'I do my best thinking after 11pm.', 'personal']],
+             2: [['curiosity', 'I switched careers from biology. Curiosity is the one thing I brought with me.', 'story'], ['calm', 'We’ll need it.', 'surface']] },
+    zoe:   { 1: [['pun-based mind control', 'Because if you groan, I win.', 'surface'], ['teleporting to the snack table', 'Self-explanatory.', 'surface']],
+             2: [['Yeet', 'It’s the only battle cry my nephew taught me that I’m allowed to say at work.', 'personal'], ['Pounce', 'Cats are right about most things.', 'surface']] },
+    omar:  { 1: [['legendary', 'My dad told stories about everyone at dinner. I want us to be a team worth a story.', 'story'], ['majestic', 'Aim high.', 'surface']],
+             2: [['trust', 'I was once on a team where nobody trusted each other. Never again.', 'story'], ['honesty', 'Saves time.', 'surface']] },
+  };
+  const FILL = {
+    adjective: ['fearless', 'sparkly', 'caffeinated', 'cozy', 'mighty', 'sleepy'], creature: ['otter', 'dragon', 'raccoon', 'narwhal', 'hedgehog', 'phoenix'],
+    power: ['time travel', 'instant naps', 'reading minds', 'summoning pizza', 'flight'], value: ['curiosity', 'courage', 'play', 'candor', 'care'],
+    food: ['dumplings', 'tacos', 'mango', 'croissants', 'ramen'], 'battle-cry verb': ['Charge', 'Rise', 'Ship', 'Rally', 'Pounce'],
+  };
+  const INTROS = {
+    maya: ['Hi! Maya, product design. Fun fact: I once got lost in IKEA for two hours and kind of loved it. Also I have a lot of plants, probably too many plants, like 40', 58],
+    dev: ['Dev. Backend. I own one shirt in five copies.', 28],
+    priya: ['I’m Priya, I’m in research and I’m so happy to be here! I bake when I’m stressed, so expect cookies in week three.', 48],
+    leo: ['Leo, PM. Three marathons, two startups, one very tired dog. I’m excited because this team’s roadmap is honestly the most interesting thing I’ve seen in years and…', 64],
+    sam: ['Sam. Data. I like quiet hikes.', 26],
+    zoe: ['Zoe, marketing! I’m the person who will make a pun out of your name within a week. Sorry in advance, Dev.', 44],
+    omar: ['Omar, engineering. So, funny story about how I got here. It involves a missed flight in Lisbon, a stranger, and a startup that no longer exists…', 78],
+  };
+
+  let st;
+  const fresh = () => ({ screen: 'welcome', intro: 0, r1: [], r2: [], choice: {}, order: [], share: 0, depth: {}, candidates: [], board: null, mascotPrompt: '', motto: '', name: '' });
+
+  function items(round) {
+    const cats = round === 1 ? R1 : R2;
+    return C.players.map((p, i) => ({ p, cat: cats[i], hint: HINT[cats[i]], word: '' }));
+  }
+  const words = (list, cat) => list.filter(x => x.cat === cat);
+  function mascotParts(list) {
+    const a = words(list, 'adjective'), c = words(list, 'creature'), w = words(list, 'power');
+    return ['A', a[0], ',', a[1], ',', a[2], c[0], '–', c[1], 'hybrid with the power of', w[0], 'and', w[1]];
+  }
+  function mottoParts(list) {
+    const v = words(list, 'value'), f = words(list, 'food'), b = words(list, 'battle-cry verb');
+    return [b[0], '!', b[1], '! We stand for', v[0], ',', v[1], 'and', v[2], ', fueled by', f[0], 'and', f[1], '.'];
+  }
+  const partsText = parts => parts.map(x => typeof x === 'string' ? x : x.word).join(' ').replace(/ ([,!.])/g, '$1').replace(/ – /g, '–');
+
+  // ---------- screens ----------
+  function welcome() {
+    C.stage('<div class="card"><div class="kicker">Phase 0 · Welcome</div><h2>Today we invent our team’s origin story 🛡️</h2>' +
+      C.script('We’ve never all been in one room before, so instead of a boring round of intros we’re going to <b>build a team crest together</b>: a mascot, a motto and a name. Every word you add becomes part of it, and later you’ll tell us why you picked yours.') +
+      '<p class="muted">Arc: lightning intros → mascot words → motto words → sharing circle → name the mascot → crest.</p>' +
+      '<button class="btn big" data-act="startIntros">Start lightning intros →</button></div>');
+  }
+  function introScreen() {
+    const p = C.players[st.intro];
+    C.stage('<div class="card center"><div class="kicker">Phase 1 · Lightning intros · ' + (st.intro + 1) + ' of 7</div>' +
+      '<div style="margin:18px 0">' + C.chip(p, { big: true }) + '</div><p class="big-text">Name · what you do · one fun fact</p>' +
+      '<p class="muted">45 seconds. The timer goes red at zero. Be kind but firm.</p>' +
+      '<div class="row" style="justify-content:center">' + C.players.map((q, i) => C.chip(q, { dim: i !== st.intro })).join(' ') + '</div>' +
+      '<div class="cta" style="justify-content:center"><button class="btn big" data-act="nextIntro">' + (st.intro < 6 ? 'Next speaker →' : 'On to the mascot →') + '</button></div></div>');
+  }
+  function collectScreen(round) {
+    const list = round === 1 ? st.r1 : st.r2;
+    C.stage('<div class="card"><div class="kicker">Phase ' + (round + 1) + ' · Round ' + round + ': ' + (round === 1 ? 'the team mascot' : 'the team motto') + '</div>' +
+      '<h2>' + (round === 1 ? 'Everyone secretly picks one word for our mascot' : 'Now one word each for our motto') + '</h2>' +
+      C.script(round === 1 ? 'Look at your category, pick a word that feels like <i>you</i>, and keep it secret. Remember why you picked it. You’ll tell us later.' : 'Same thing: one word in your category. Values, a food, or a battle cry. Pick something you could explain in a sentence.') +
+      C.collectGrid('grid' + round, list, { fillAct: 'fill' + round }) +
+      '<div class="cta"><button class="btn big pink" data-act="gen' + round + '">✨ Generate the ' + (round === 1 ? 'mascot' : 'motto') + '</button></div></div>');
+  }
+  function mascotScreen() {
+    const parts = mascotParts(st.r1);
+    st.mascotPrompt = partsText(parts) + ', heroic mascot, sticker style';
+    C.stage('<div class="card"><div class="kicker">Round 1 · Assembly</div><h2>Our mascot is…</h2>' + C.slotSentence('mslots', parts) +
+      '<div style="margin-top:18px" id="mwrap"></div><div class="cta" id="mnext"></div></div>');
+  }
+  function mottoScreen() {
+    const parts = mottoParts(st.r2);
+    st.motto = partsText(parts);
+    C.stage('<div class="card"><div class="kicker">Round 2 · Assembly</div><h2>Our motto is…</h2>' + C.slotSentence('tslots', parts) +
+      '<div class="cta" id="tnext"></div></div>');
+  }
+  function shareScreen() {
+    const p = C.player(st.order[st.share]);
+    const i = C.players.indexOf(p), w1 = st.r1[i], w2 = st.r2[i];
+    C.stage('<div class="card"><div class="kicker">Phase 4 · Sharing circle · ' + (st.share + 1) + ' of 7</div>' +
+      '<div class="spread"><div>' + C.chip(p, { big: true }) + '</div><div class="row">' + st.order.map((id, k) => C.chip(id, { dim: k !== st.share })).join(' ') + '</div></div>' +
+      '<p class="big-text" style="margin-top:16px">You picked <span class="tag">' + C.esc(w1.word) + '</span> and <span class="tag">' + C.esc(w2.word) + '</span>. Why?</p>' +
+      C.script('No wrong answers. "It sounded funny" is fine. But if there’s a story, we want it.') +
+      '<p class="muted">How deep did they go? (tap; this is the thing you’re evaluating)</p><div class="row" id="depthBtns">' +
+      ['surface', 'personal', 'story'].map(d => '<button class="btn small ' + (st.depth[p.id] === d ? '' : 'ghost') + '" data-act="depth" data-d="' + d + '">' + { surface: '🙂 surface', personal: '💛 personal', story: '📖 real story' }[d] + '</button>').join('') +
+      '</div><div class="cta"><button class="btn big" data-act="nextShare">' + (st.share < 6 ? 'Next person →' : 'Name the mascot →') + '</button></div></div>');
+  }
+  function suggestNames() {
+    const c = words(st.r1, 'creature').map(x => x.word), a = words(st.r1, 'adjective').map(x => x.word);
+    const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+    return [cap(c[0]) + cap(c[1] || '').slice(0, 4), 'Sir ' + cap(a[0]) + ' the ' + cap(c[1] || c[0]), 'Captain ' + cap(a[1] || a[0]), 'The ' + cap(a[2] || a[0]) + ' One'];
+  }
+  function nameScreen() {
+    if (C.mode === 'host' && !st.candidates.length) {
+      const sug = suggestNames();
+      C.stage('<div class="card"><div class="kicker">Phase 5 · Name the mascot</div><h2>Shout out names. Pick 4 finalists.</h2>' +
+        '<div class="mascot-mini">' + C.genCard({ kind: 'square', prompt: st.mascotPrompt, loading: false, hidePrompt: true }) + '</div>' +
+        '<div class="namegrid">' + sug.map((s, k) => '<input class="cand" value="' + C.esc(s) + '" aria-label="Finalist ' + (k + 1) + '">').join('') + '</div>' +
+        '<button class="btn big" data-act="openVote">Open the vote →</button></div>');
+      return;
+    }
+    st.board = new C.VoteBoard({ title: 'Name our mascot', options: st.candidates.map((c, k) => ({ id: 'c' + k, label: c })) });
+    C.stage('<div class="card"><div class="kicker">Phase 5 · Name the mascot</div><h2>Vote: what’s our mascot called?</h2>' + st.board.html() +
+      '<div class="cta"><button class="btn big pink" data-act="crest">🛡️ Reveal our team crest</button></div></div>');
+  }
+  function crestScreen() {
+    const w = st.board.winner(); st.name = w && w.n ? w.label : st.candidates[0];
+    C.stage(crestHtml());
+  }
+  function crestHtml() {
+    return '<div class="card crest center"><div class="kicker">Phase 6 · Our team crest</div>' +
+      '<div class="crest-shield">' + C.genCard({ kind: 'square', prompt: st.mascotPrompt, loading: false, hidePrompt: true, overlayTitle: st.name, overlaySub: 'Est. ' + new Date().getFullYear() }) + '</div>' +
+      '<p class="big-text">“' + C.esc(st.motto) + '”</p><div class="row" style="justify-content:center">' + C.players.map(p => C.chip(p)).join(' ') + '</div>' +
+      (C.mode === 'host' ? '<div class="cta" style="justify-content:center"><button class="btn big" data-act="end">🏁 Finish & see pacing report</button></div>' : '') + '</div>';
+  }
+  function summary() {
+    const d = Object.values(st.depth), n = k => d.filter(x => x === k).length;
+    return (st.name ? crestHtml() : '') + '<div class="card"><h2>💛 Did the sharing circle produce real sharing?</h2>' +
+      '<p class="big-text">' + (n('personal') + n('story')) + ' of ' + (d.length || 7) + ' people went beyond surface level</p>' +
+      '<p>📖 real story: <b>' + n('story') + '</b> · 💛 personal: <b>' + n('personal') + '</b> · 🙂 surface: <b>' + n('surface') + '</b></p>' +
+      '<p class="muted">In the simulation, people who got an <i>abstract</i> category (value, creature) went deeper than people who got a jokey one (power, battle-cry verb). That’s a design lever: give everyone at least one “meaningful” category.</p></div>';
+  }
+
+  // ---------- host actions ----------
+  const acts = {
+    startIntros() { C.phase('Lightning intros', 360); st.intro = 0; C.timer('Intro', 45); introScreen(); },
+    nextIntro() {
+      C.log(C.players[st.intro], ' finished their intro', 'say');
+      if (st.intro < 6) { st.intro++; C.timer('Intro', 45); introScreen(); }
+      else { C.clearTimer(); C.phase('Round 1: mascot words', 150); C.timer('Pick your word', 90); collectScreen(1); }
+    },
+    fill1() { st.r1.forEach(x => { x.word = C.pick(FILL[x.cat]); }); collectScreen(1); },
+    fill2() { st.r2.forEach(x => { x.word = C.pick(FILL[x.cat]); }); collectScreen(2); },
+    async gen1() {
+      C.readGrid('grid1', st.r1); st.r1.forEach(x => { if (!x.word) x.word = C.pick(FILL[x.cat]); });
+      C.clearTimer(); mascotScreen(); await C.revealSlots('mslots');
+      C.$('#mwrap').innerHTML = C.genCard({ id: 'mascot', kind: 'square', prompt: st.mascotPrompt }); await C.generate('mascot');
+      C.$('#mnext').innerHTML = '<button class="btn big" data-act="toR2">Round 2: the motto →</button>';
+      C.log(null, '🦄 Mascot: ' + st.mascotPrompt, 'sys');
+    },
+    toR2() { C.phase('Round 2: motto words', 150); C.timer('Pick your word', 90); collectScreen(2); },
+    async gen2() {
+      C.readGrid('grid2', st.r2); st.r2.forEach(x => { if (!x.word) x.word = C.pick(FILL[x.cat]); });
+      C.clearTimer(); mottoScreen(); await C.revealSlots('tslots');
+      C.$('#tnext').innerHTML = '<button class="btn big" data-act="toShare">Sharing circle →</button>';
+      C.log(null, '📣 Motto: ' + st.motto, 'sys');
+    },
+    toShare() { C.phase('Sharing circle', 450); st.order = C.players.map(p => p.id); st.share = 0; C.timer('Why that word?', 60); shareScreen(); },
+    depth(d) { st.depth[st.order[st.share]] = d.d; shareScreen(); },
+    nextShare() { if (st.share < 6) { st.share++; C.timer('Why that word?', 60); shareScreen(); } else { C.clearTimer(); C.phase('Name the mascot', 180); nameScreen(); } },
+    openVote() { st.candidates = C.$$('.cand').map(x => x.value.trim()).filter(Boolean); if (!st.candidates.length) st.candidates = suggestNames(); nameScreen(); },
+    crest() { C.phase('Crest finale', 120); crestScreen(); },
+    end() { C.finish(summary()); },
+  };
+
+  // ---------- simulation ----------
+  async function simulate() {
+    st = fresh();
+    C.phase('Welcome & framing', 60); welcome();
+    await C.say('maya', 'Wait, we get a mascot?? I’m in.', 20); await C.sys('Facilitator explains the arc', 35);
+
+    acts.startIntros();
+    for (let i = 0; i < 7; i++) {
+      const p = C.players[i]; st.intro = i; C.timer('Intro', 45); introScreen();
+      const [line, sec] = INTROS[p.id];
+      await C.say(p, line, sec);
+      if (sec > 55) await C.sys('⏰ Timer went red. Facilitator gently wraps them up.', 6);
+      await C.wait(5);
+    }
+    C.clearTimer();
+
+    // Round 1
+    C.phase('Round 1: mascot words', 150); C.timer('Pick your word', 90);
+    st.r1 = items(1); collectScreen(1);
+    await C.say('sam', 'Can the creature be made up?', 6); await C.sys('Facilitator: “Anything goes.”', 5);
+    for (const k of C.shuffle([0, 1, 2, 3, 4, 5, 6])) {
+      await C.wait(C.rand(7, 16));
+      const p = C.players[k], opt = C.pick(WORDS[p.id][1]);
+      st.r1[k].word = opt[0]; st.choice[p.id] = [opt]; C.markGrid('grid1', st.r1, k);
+      await C.act(p, ' submitted a word (' + st.r1[k].cat + ')', 1);
+    }
+    C.clearTimer(); mascotScreen(); await C.sys('Assembling the mascot prompt…', 2); await C.revealSlots('mslots', 2.5);
+    C.$('#mwrap').innerHTML = C.genCard({ id: 'mascot', kind: 'square', prompt: st.mascotPrompt }); await C.generate('mascot', 10);
+    await C.say('zoe', 'It’s… beautiful? I think?', 6); await C.say('dev', 'I would follow it into battle.', 6); await C.say('priya', 'It needs a tiny hat.', 8);
+
+    // Round 2
+    C.phase('Round 2: motto words', 150); C.timer('Pick your word', 90);
+    st.r2 = items(2); collectScreen(2);
+    for (const k of C.shuffle([0, 1, 2, 3, 4, 5, 6])) {
+      await C.wait(C.rand(8, 18));
+      const p = C.players[k], opt = C.pick(WORDS[p.id][2]);
+      st.r2[k].word = opt[0]; st.choice[p.id].push(opt); C.markGrid('grid2', st.r2, k);
+      await C.act(p, ' submitted a word (' + st.r2[k].cat + ')', 1);
+    }
+    C.clearTimer(); mottoScreen(); await C.revealSlots('tslots', 2.5);
+    await C.say('leo', 'Okay this is going on a hoodie.', 6); await C.say('omar', 'Read it again, dramatically.', 10);
+
+    // Sharing circle
+    C.phase('Sharing circle', 450); st.order = C.shuffle(C.players.map(p => p.id));
+    for (let k = 0; k < 7; k++) {
+      st.share = k; const id = st.order[k], p = C.player(id); C.timer('Why that word?', 60); shareScreen();
+      const picks = st.choice[id].slice().sort((a, b) => ({ surface: 0, personal: 1, story: 2 }[b[2]] - { surface: 0, personal: 1, story: 2 }[a[2]]));
+      const best = picks[0];
+      st.depth[id] = best[2]; shareScreen();
+      await C.wait(C.rand(4, 9)); // the "um, okay so…" pause before answering
+      await C.say(p, 'I picked “' + best[0] + '”. ' + best[1], best[2] === 'story' ? 58 : best[2] === 'personal' ? 42 : 18);
+      if (best[2] !== 'surface') await C.say(C.pick(C.players.filter(q => q.id !== id)), C.pick(['Oh that’s lovely.', 'Wait, tell me more about that later.', 'Okay I wasn’t ready for feelings.', 'Same, honestly.', 'Love that.']), 10);
+      else await C.sys('Light laugh, quick handoff', 6);
+      await C.wait(8);
+    }
+    C.clearTimer();
+
+    // Vote
+    C.phase('Name the mascot', 180);
+    await C.sys('Facilitator: “Shout out names!” (room brainstorms)', 25);
+    await C.say('zoe', 'Sir Honks-a-Lot. I will not be taking questions.', 12);
+    await C.say('maya', 'Chaos Goblin!!', 8); await C.say('priya', 'What about… Biscuit?', 10);
+    st.candidates = ['Sir Honks-a-Lot', 'Chaos Goblin', 'Biscuit', suggestNames()[0]];
+    nameScreen(); await C.wait(10);
+    await C.simVotes(st.board, v => v.id === 'zoe' ? 'c0' : v.id === 'maya' ? 'c1' : C.pick(['c0', 'c0', 'c1', 'c2', 'c2', 'c3']));
+    await C.say('dev', 'Democracy has spoken.', 8); await C.say('zoe', 'I demand a recount.', 10);
+
+    C.phase('Crest finale', 120); crestScreen();
+    await C.sys('Crest revealed. Group screenshot 📸', 30); await C.say('sam', 'Can this be our Slack emoji?', 15); await C.sys('Facilitator wraps: “That’s us now.”', 30);
+  }
+
+  C.css('.crest-shield .gen{margin:12px auto;max-width:340px;border-radius:40px 40px 50% 50%/40px 40px 30% 30%} .mascot-mini .gen{max-width:220px}');
+
+  C.game({
+    num: '17', title: 'Team Origin Story', emoji: '🛡️',
+    tagline: 'A brand-new team invents its own mascot, motto and name, one secret word at a time. Then everyone shares <i>why</i> they picked their word. That sharing is the real get-to-know-you engine.',
+    how: '<ol class="tight"><li>Lightning intros (45s each)</li><li>Round 1: one word each → AI mascot</li><li>Round 2: one word each → team motto</li><li>Sharing circle: why did you pick that?</li><li>Vote on the mascot’s name → team crest</li></ol>',
+    plan: [{ name: 'Welcome & framing', sec: 60 }, { name: 'Lightning intros', sec: 360 }, { name: 'Round 1: mascot words', sec: 150 }, { name: 'Round 2: motto words', sec: 150 }, { name: 'Sharing circle', sec: 450 }, { name: 'Name the mascot', sec: 180 }, { name: 'Crest finale', sec: 120 }],
+    evaluating: ['Does the “why did you pick that word” sharing actually produce personal sharing?', 'Does the whole arc fit in 30 minutes?'],
+    notes: '<p><b>Verdict: the strongest candidate for a first meeting.</b> The simulation lands at about 24–25 min, transitions included. Real groups add a few minutes of settling in and laughter, so plan on 27–29. It runs low-risk early (intros, secret words) and builds to opt-in vulnerability (the sharing circle), and it ends with an artifact the team keeps.</p>' +
+      '<h4>Where time leaks</h4><ul class="tight"><li><b>Intros</b>: storytellers and over-achievers run 60–80s. The 45s timer must be visible and enforced, or this phase eats 2 extra minutes.</li><li><b>Sharing circle</b>: real stories take about 60s each, which is the point. Budget 7½ min and protect it.</li></ul>' +
+      '<h4>Does the sharing work?</h4><p>Mostly. Abstract categories (<i>value</i>, <i>creature</i>, <i>adjective</i>) pull out stories. Jokey ones (<i>power</i>, <i>battle-cry verb</i>) tend to get one-liners. Fix: let each person explain only their <b>more meaningful</b> word, or make Round 2 all “value” words.</p>' +
+      '<h4>If you need to cut</h4><ul class="tight"><li>Cut intros to name + one word (20s each): saves about 3 min, since the sharing circle replaces fun facts anyway.</li><li>Skip the naming vote and let the AI name it: saves about 2 min.</li></ul>' +
+      '<div class="risk"><b>Facilitator risk note:</b> low. Nobody is singled out, and sharing is opt-in depth (“it sounded funny” is a valid answer). Model it yourself by going first with a real story.</div>',
+    host() { st = fresh(); st.r1 = items(1); st.r2 = items(2); st.choice = {}; C.phase('Welcome & framing', 60); welcome(); },
+    simulate, summary, acts,
+  });
+})();
+
+</script>
+</body>
+</html>

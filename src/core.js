@@ -453,7 +453,7 @@
     get players() { return S.players; }, get mode() { return S.mode; }, get clock() { return S.clock; },
     get finished() { return S.finished; },
     PERSONAS, player, chip, script, stage, log, say, act, sys, wait, sleep, phase, timer, clearTimer, timerLeft, finish,
-    genCard, generate, emojisFor, slotSentence, revealSlots, collectGrid, readGrid, markGrid, VoteBoard, simVotes, esc, rand, randi, pick, shuffle, sample, chance, fmt, derange, hash, $, $$,
+    genCard, generate, emojisFor, imgUrl, slotSentence, revealSlots, collectGrid, readGrid, markGrid, VoteBoard, simVotes, esc, rand, randi, pick, shuffle, sample, chance, fmt, derange, hash, $, $$,
     css(t) { const s = document.createElement('style'); s.textContent = t; document.head.appendChild(s); },
     /** Real-time pause in host mode, game-time wait in sim. */
     beat(sec, ms) { return S.mode === 'sim' ? wait(sec) : sleep(ms == null ? 600 : ms); },

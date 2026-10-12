@@ -12,9 +12,18 @@
 h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.2em 0}.lead{color:var(--muted);font-size:1.1rem;max-width:62ch}
 .kicker{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:20px}
-a.card{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;color:inherit;text-decoration:none;box-shadow:0 6px 20px rgba(60,30,80,.07);transition:transform .12s}
-a.card:hover{transform:translateY(-2px);border-color:var(--accent2)}
-a.card.star{border:2px solid var(--accent)}
+.card{display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(60,30,80,.07);transition:transform .12s}
+a.open{display:flex;flex-direction:column;gap:6px;color:inherit;text-decoration:none;flex:1}
+.stars{display:flex;align-items:center;gap:2px;border-top:1px dashed var(--line);padding-top:8px}
+.rstar{font:inherit;font-size:1.6rem;line-height:1;background:none;border:0;padding:4px 3px;cursor:pointer;color:color-mix(in srgb,var(--muted) 45%,transparent);min-width:36px;min-height:40px}
+.rstar.on{color:var(--warn)}
+.rstar:hover{transform:scale(1.15)}
+.rstar:focus-visible,.sortbtn:focus-visible{outline:3px solid var(--accent2);outline-offset:2px;border-radius:6px}
+.slabel{margin-left:8px;font-size:.85rem;color:var(--muted);font-weight:650}
+.ratebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:18px;color:var(--muted)}
+.sortbtn{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 14px;min-height:42px;cursor:pointer}
+.card:hover{border-color:var(--accent2)}
+.card.star{border:2px solid var(--accent)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .num{background:var(--ink);color:var(--bg);border-radius:8px;padding:1px 7px;font-size:.78rem;font-weight:800}
 .t{font-weight:800;font-size:1.1rem}.what{margin:0;font-size:.95rem}.v{margin:0 0 6px;color:var(--muted);font-size:.9rem}
@@ -31,7 +40,8 @@ a.card.star{border:2px solid var(--accent)}
   <h1>AI team-activity playtests</h1>
   <p class="lead">17 single-file prototypes. Open one and click <b>▶ Simulate</b> to watch 7 synthetic players run a full session in about a minute, or click <b>🎤 Host mode</b> to click through it yourself. Every file works offline.</p>
   <div class="how"><b>Real AI images:</b> games tagged 🖼 can show real pictures. Open a game, then tap <b>🖼 Real images</b> in the top bar. It uses the free FLUX model via Pollinations: no key, no cost, a few seconds per image. This works when you open the downloaded file in your browser, but the claude.ai preview blocks outside images. Prompts are sent to pollinations.ai, so leave real names out.</div>
-  <div class="how"><b>Reading the cards:</b> ⏱ is the simulated session length (3 runs each, phase transitions included). 🛡 is the facilitator risk for a first meeting. Open any game’s <b>📝 Notes</b> for the full verdict, where time leaks, and the suggested cut.</div>
+  <div class="how"><b>Reading the cards:</b> ★ is your private rating (saved only in this browser). ⏱ is the simulated session length (3 runs each, phase transitions included). 🛡 is the facilitator risk for a first meeting. Open any game’s <b>📝 Notes</b> for the full verdict, where time leaks, and the suggested cut.</div>
+  <div class="ratebar"><span id="rated"></span><button class="sortbtn" id="sort" type="button">Sort by my rating</button></div>
   <div class="grid" id="grid"></div>
 </div>
 <script>
@@ -48,17 +58,40 @@ const G = [
   ['03', 'prompt-dj', '🎧', 'Prompt Roulette: DJ Edition', 'Like Exquisite Corpse, but one person is the “DJ” who arranges everyone’s words into the prompt live, in any order, while the room watches. Then everyone votes: funniest, most cursed or most beautiful. The DJ changes each round.', 'Brilliant with an outgoing DJ, awkward silence with a shy one.', '~16 min', 'good', 'low-med', 'warn', 1],
   ['10', 'recognition-songs', '🎤', 'AI Recognition Songs', 'A mock awards show. Each person gets a 30-second AI song about them in a different genre: sea shanty, opera, country… Play each one with the lyrics on screen, applaud, hear the nominee react, then vote for Track of the Night.', 'Delightful for 3–4 songs, then energy dips. Use 15-second clips.', '~14½ min', 'good', 'low-med', 'warn', 0],
   ['08', 'movie-mastermind', '🕵️', 'Movie Mastermind', 'Two teams decode cryptic clues about famous movies. Clues get easier every 30 seconds but are worth fewer points. A team can pay points to get the next clue early from the AI.', 'The point-spending decision works. 8 rounds is too short, so add more movies.', '~9 min', 'good', 'low', 'good', 0],
-  ['07', 'copilot-or-human', '🤖', 'Copilot or Human?', 'A 10-round quiz. Each round shows one movie quote: either a real line from a famous film or one the AI wrote. Everyone votes “real movie” or “AI”, then the answer and the film are revealed.', 'Smooth and fast, but it feels like trivia night. Best as an opener.', '~9 min', 'good', 'very low', 'good', 0],
+  ['07', 'copilot-or-human', '🤖', 'Copilot or Human? Clips', 'A 10-round quiz with real pictures and video. Each round shows a clip or still: a real old movie scene, a real home video, an AI-generated video, or an AI image made to imitate the real ones. Everyone votes on which it is, then the source is revealed.', 'Much better than the old quote version. “What gave it away?” gets people talking.', '~13 min', 'good', 'very low', 'good', 1],
   ['05', 'describe-your-angel', '🪞', 'Describe Your Angel', 'Each person secretly describes a teammate’s vibe (not their looks), like “golden retriever who brings cookies to every meeting”. The AI turns it into a portrait, and the room guesses who it is.', 'Strangers have little to go on, so descriptions drift to looks. Better from the second meeting on.', '~18 min', 'good', 'medium', 'bad', 1],
   ['14', 'ship-it-challenge', '🚢', 'Ship-it Challenge', 'A mini hackathon. Three teams get 20 minutes to make something with AI (a landing page, a mascot or a jingle) for a theme like “redesign our team as a product”. Then demo day and voting in three categories.', 'Needs the real build time, which doesn’t fit. Better as a 45-minute session.', '~29½ min', 'warn', 'low-med', 'warn', 1],
   ['06', 'lights-camera-ai', '🎬', 'Lights, Camera, AI!', 'Two teams each draw 3 random words and have 12 minutes to invent a movie: a title, a 100-word plot and an AI poster. Then each team pitches its movie and the room votes.', 'Really a 45-minute game. Writing as a group takes longer than planned.', '~30½ min', 'bad', 'low', 'good', 1],
   ['09', 'emotion-aware-santa', '🎅', 'Emotion-aware Secret Santa', 'A tool for the organizer, not a game. Enter 7 names and how each person is feeling this week. The app pairs gift-givers with recipients (nobody gets themselves) and writes a funny reason for each match.', 'Useful, with a fun 5-minute moment. Pair it with #2 or #4.', '~6 min (add-on)', 'good', 'low', 'good', 0],
   ['15', 'ai-roast-of-the-team', '🔥', 'AI Roast of the Team', 'Everyone anonymously writes one gentle joke about the team’s habits. The AI rewrites them as a corporate “About Us” page, and the host reads it aloud while the room rates each line from “mild” to “too far”.', 'Don’t run it at a first meeting. Fine from the third meeting on, if people joke about the team and not each other.', '~11 min', 'good', 'HIGH', 'bad', 0],
 ];
-document.getElementById('grid').innerHTML = G.map(([n, slug, e, t, what, verdict, time, tc, risk, rc, img, star]) =>
-  `<a class="card${star ? ' star' : ''}" href="${n}-${slug}.html"><div class="top"><span class="num">${n}</span>${star ? '<span class="tag star">★ frontrunner</span>' : ''}</div>
-   <div class="t">${e} ${t}</div><p class="what">${what}</p><p class="v"><b>Verdict:</b> ${verdict}</p>
-   <div class="tags"><span class="tag ${tc}">⏱ ${time}</span><span class="tag ${rc}">🛡 risk: ${risk}</span>${img ? '<span class="tag">🖼 AI images</span>' : ''}</div></a>`).join('');
+// Private 5-star ratings, saved only in this browser.
+const KEY = 'gameRatings';
+let R = {}, sortByStars = false;
+try { R = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { R = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(R)); } catch (e) { /* not saved: private window or blocked storage */ } };
+const LABEL = ['', 'Not for us', 'Meh', 'Maybe', 'Like it', 'Want to run it'];
+function stars(n) {
+  const r = R[n] || 0;
+  return `<div class="stars" role="group" aria-label="Your rating">${[1, 2, 3, 4, 5].map(k => `<button class="rstar${k <= r ? ' on' : ''}" data-n="${n}" data-k="${k}" aria-label="${k} of 5: ${LABEL[k]}" aria-pressed="${k <= r}">★</button>`).join('')}<span class="slabel">${r ? LABEL[r] : 'Rate it'}</span></div>`;
+}
+function render() {
+  const list = sortByStars ? G.slice().sort((a, b) => (R[b[0]] || 0) - (R[a[0]] || 0)) : G;
+  document.getElementById('grid').innerHTML = list.map(([n, slug, e, t, what, verdict, time, tc, risk, rc, img, star]) =>
+    `<div class="card${star ? ' star' : ''}"><a class="open" href="${n}-${slug}.html"><div class="top"><span class="num">${n}</span>${star ? '<span class="tag star">★ frontrunner</span>' : ''}</div>
+     <div class="t">${e} ${t}</div><p class="what">${what}</p><p class="v"><b>Verdict:</b> ${verdict}</p>
+     <div class="tags"><span class="tag ${tc}">⏱ ${time}</span><span class="tag ${rc}">🛡 risk: ${risk}</span>${img ? '<span class="tag">🖼 AI images</span>' : ''}</div></a>${stars(n)}</div>`).join('');
+  const rated = Object.values(R).filter(Boolean).length;
+  document.getElementById('rated').textContent = rated ? `You’ve rated ${rated} of ${G.length}.` : 'Tap the stars on any card to rate it.';
+  document.getElementById('sort').textContent = sortByStars ? 'Show in recommended order' : 'Sort by my rating';
+}
+document.getElementById('grid').addEventListener('click', e => {
+  const b = e.target.closest('.rstar[data-k]'); if (!b) return;
+  const n = b.dataset.n, k = +b.dataset.k;
+  R[n] = R[n] === k ? 0 : k; save(); render();
+});
+document.getElementById('sort').addEventListener('click', () => { sortByStars = !sortByStars; render(); });
+render();
 </script>
 </body>
 </html>

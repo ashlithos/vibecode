@@ -33,7 +33,7 @@ Tap **🖼 Real images** in a game's top bar to swap placeholder images for real
 | 04 | `04-secret-angel-gallery.html` | ~19½ min |
 | 05 | `05-describe-your-angel.html` | ~18 min |
 | 06 | `06-lights-camera-ai.html` | ~30½ min |
-| 07 | `07-copilot-or-human.html` | ~9 min |
+| 07 | `07-copilot-or-human.html` (real vs. AI clips) | ~13 min |
 | 08 | `08-movie-mastermind.html` | ~9 min |
 | 09 | `09-emotion-aware-santa.html` | ~6 min (a 10-min module) |
 | 10 | `10-recognition-songs.html` | ~14½ min |

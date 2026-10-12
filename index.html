@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parent-Approved</title>
+<meta name="description" content="Places, activities and events I've taken my parents to, rated for seniors, families, language and physical effort.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: short masthead + "who's visiting?" filter bar, then a grid of rated place cards. */
+:root {
+  --bg: #eef3f1;
+  --surface: #ffffff;
+  --ink: #15302d;
+  --muted: #566b67;
+  --line: #d3dedb;
+  --teal: #0e6b5e;
+  --teal-soft: #dcefe9;
+  --marigold: #d9930f;
+  --dot-off: #d9e2e0;
+  --sample: #8a5a00;
+  --sample-bg: #fdf1d6;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.6rem;
+  --step-4: clamp(2.4rem, 6vw, 3.6rem);
+  --radius: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1918; --surface: #162423; --ink: #e4eeec; --muted: #9bb0ac; --line: #2a3c3a;
+    --teal: #4cc3ad; --teal-soft: #1d3a36; --marigold: #f2b53a; --dot-off: #2f4341;
+    --sample: #f6cf7c; --sample-bg: #3a2e14; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1918; --surface: #162423; --ink: #e4eeec; --muted: #9bb0ac; --line: #2a3c3a;
+  --teal: #4cc3ad; --teal-soft: #1d3a36; --marigold: #f2b53a; --dot-off: #2f4341;
+  --sample: #f6cf7c; --sample-bg: #3a2e14; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.55;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; }
+@media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+a { color: var(--teal); }
+:focus-visible { outline: 3px solid var(--marigold); outline-offset: 2px; border-radius: 6px; }
+
+/* Masthead */
+.masthead { display: grid; gap: 14px; max-width: 46rem; }
+.eyebrow { font-size: var(--step--1); letter-spacing: .08em; text-transform: uppercase; color: var(--teal); font-weight: 700; }
+h1 { font-size: var(--step-4); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+h1 .tick { color: var(--marigold); }
+.lede { font-size: var(--step-1); color: var(--muted); margin: 0; max-width: 40rem; }
+
+/* How I rate */
+details.legend { margin-top: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+details.legend summary { cursor: pointer; padding-block: 12px; font-weight: 700; }
+.legend-grid { display: grid; gap: 16px 32px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); padding-bottom: 18px; color: var(--muted); }
+.legend-grid h3 { font-family: var(--font-body); font-size: var(--step-0); color: var(--ink); margin-bottom: 4px; }
+.legend-grid ol { margin: 0; padding-left: 1.2rem; }
+
+/* Filter bar */
+.controls { margin-top: 28px; display: grid; gap: 14px; }
+.controls-label { font-family: var(--font-display); font-size: var(--step-1); font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: var(--step--1); font-weight: 700;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+}
+.chip:hover { border-color: var(--teal); }
+.chip[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: var(--surface); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.search, .sort {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px;
+}
+.search { flex: 1 1 240px; min-width: 0; }
+.count { color: var(--muted); font-size: var(--step--1); }
+
+.sample-note {
+  margin-top: 22px; padding: 12px 16px; border-radius: 10px;
+  background: var(--sample-bg); color: var(--sample); font-size: var(--step--1);
+}
+
+/* Cards */
+.grid { margin-top: 20px; display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
+}
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.meta { font-size: var(--step--1); color: var(--muted); }
+.card h2 { font-size: var(--step-2); line-height: 1.15; font-weight: 700; margin-top: 2px; }
+.badge-sample { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--sample); background: var(--sample-bg); padding: 2px 8px; border-radius: 999px; }
+.overall { text-align: right; flex: none; }
+.overall b { font-family: var(--font-display); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.overall span { display: block; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+.scores { display: grid; gap: 8px; padding-block: 12px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.score { display: grid; grid-template-columns: 8.25rem 1fr; align-items: center; gap: 10px; font-size: var(--step--1); }
+.score > span:first-child { color: var(--muted); }
+.dots { display: flex; gap: 4px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--dot-off); }
+.dots i.on { background: var(--marigold); }
+.stairs { display: flex; align-items: flex-end; gap: 3px; height: 16px; }
+.stairs i { width: 8px; background: var(--dot-off); border-radius: 2px; }
+.stairs i.on { background: var(--teal); }
+.with-label { display: flex; align-items: center; gap: 10px; }
+.lang { display: inline-block; padding: 2px 10px; border-radius: 999px; font-weight: 700; background: var(--teal-soft); color: var(--teal); }
+.lang.l2 { background: var(--sample-bg); color: var(--sample); }
+
+.impression { margin: 0; }
+.tip { margin: 0; font-size: var(--step--1); color: var(--muted); }
+.tip strong { color: var(--ink); }
+.amen { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.amen li { font-size: .78rem; border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; color: var(--muted); }
+.card-foot { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; }
+.card-foot a { margin-left: auto; font-weight: 700; }
+
+.empty { margin-top: 24px; padding: 32px; text-align: center; color: var(--muted); border: 1.5px dashed var(--line); border-radius: var(--radius); }
+footer { margin-top: 48px; color: var(--muted); font-size: var(--step--1); }
+@media (prefers-reduced-motion: no-preference) { .chip { transition: background .15s, border-color .15s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">A field guide for visiting parents</div>
+    <h1>Parent-Approved<span class="tick">.</span></h1>
+    <p class="lede">Every place I've taken my parents, rated for what actually matters: how easy it is on the legs, how much English it takes, and whether the whole family can come along.</p>
+  </header>
+
+  <details class="legend">
+    <summary>How I rate each place</summary>
+    <div class="legend-grid" id="legend"></div>
+  </details>
+
+  <section class="controls" aria-label="Filter places">
+    <div class="controls-label">Who's visiting?</div>
+    <div class="chips" id="presets"></div>
+    <div class="row">
+      <input class="search" id="search" type="search" placeholder="Search by name, city or type" aria-label="Search places">
+      <select class="sort" id="sort" aria-label="Sort places">
+        <option value="overall">Top rated</option>
+        <option value="senior">Most senior-friendly</option>
+        <option value="effort">Easiest on the legs</option>
+        <option value="visited">Most recent visit</option>
+      </select>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <p class="sample-note" id="sampleNote" hidden>The entries tagged <strong>Sample</strong> are placeholders showing the format. Replace them with your own visits in <code>places.js</code>.</p>
+
+  <main class="grid" id="grid"></main>
+  <div class="empty" id="empty" hidden>No places match those filters yet. Try turning one off.</div>
+
+  <footer>Ratings are personal impressions from real visits with my parents. Hours, prices and access change, so check the link before you go.</footer>
+</div>
+
+<script src="places.js"></script>
+<script>
+(function () {
+  var R = window.RUBRIC, P = window.PLACES || [];
+
+  // "Who's visiting?" presets. Each one is a rule a place must pass.
+  var PRESETS = [
+    { id: "seniors", label: "Parents who tire easily", test: function (p) { return p.senior >= 4 && p.effort <= 2; } },
+    { id: "family", label: "Bringing kids too", test: function (p) { return p.family >= 4; } },
+    { id: "nolang", label: "Little or no English", test: function (p) { return p.language === 0; } },
+    { id: "wheel", label: "Wheelchair or walker", test: function (p) { return (p.amenities || []).indexOf("wheelchair") > -1; } },
+    { id: "free", label: "Free", test: function (p) { return p.cost === "Free"; } },
+  ];
+  var active = {};
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function dots(n) {
+    var out = "";
+    for (var i = 1; i <= 5; i++) out += '<i class="' + (i <= Math.round(n) ? "on" : "") + '"></i>';
+    return '<span class="dots" role="img" aria-label="' + n + ' out of 5">' + out + "</span>";
+  }
+  function stairs(n) {
+    var out = "";
+    for (var i = 1; i <= 5; i++) out += '<i class="' + (i <= n ? "on" : "") + '" style="height:' + (i * 20) + '%"></i>';
+    return '<span class="stairs" aria-hidden="true">' + out + "</span>";
+  }
+  function month(v) {
+    if (!v) return "";
+    var d = new Date(v + "-01T12:00:00");
+    return isNaN(d) ? v : d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  }
+
+  // Legend
+  document.getElementById("legend").innerHTML =
+    "<div><h3>" + R.senior + " &amp; " + R.family + "</h3>Scored 1 to 5. Five means I'd recommend it without hesitation for that group.</div>" +
+    "<div><h3>Physical effort</h3><ol>" + R.effort.map(function (e) { return "<li>" + e + "</li>"; }).join("") + "</ol></div>" +
+    "<div><h3>Language</h3><ol start='0'>" + R.language.map(function (e) { return "<li>" + e + "</li>"; }).join("") + "</ol></div>" +
+    "<div><h3>Overall</h3>My gut rating, 1 to 5, for a visit with parents. Half points allowed.</div>";
+
+  // Presets
+  var presetBox = document.getElementById("presets");
+  presetBox.innerHTML = PRESETS.map(function (p) {
+    return '<button class="chip" type="button" id="chip-' + p.id + '" data-id="' + p.id + '" aria-pressed="false">' + p.label + "</button>";
+  }).join("");
+  presetBox.addEventListener("click", function (e) {
+    var b = e.target.closest(".chip"); if (!b) return;
+    var id = b.getAttribute("data-id");
+    active[id] = !active[id];
+    b.setAttribute("aria-pressed", active[id] ? "true" : "false");
+    render();
+  });
+  document.getElementById("search").addEventListener("input", render);
+  document.getElementById("sort").addEventListener("change", render);
+
+  function card(p) {
+    var amen = (p.amenities || []).map(function (a) { return "<li>" + esc(R.amenities[a] || a) + "</li>"; }).join("");
+    var lang = p.language || 0;
+    return '<article class="card">' +
+      '<div class="card-top"><div>' +
+        '<div class="meta">' + esc(p.category) + " · " + esc(p.city) + (p.sample ? ' <span class="badge-sample">Sample</span>' : "") + "</div>" +
+        "<h2>" + esc(p.name) + "</h2></div>" +
+        '<div class="overall"><b>' + esc(p.overall) + "</b><span>of 5</span></div>" +
+      "</div>" +
+      '<div class="scores">' +
+        '<div class="score"><span>' + R.senior + "</span>" + dots(p.senior) + "</div>" +
+        '<div class="score"><span>' + R.family + "</span>" + dots(p.family) + "</div>" +
+        '<div class="score"><span>Physical effort</span><span class="with-label">' + stairs(p.effort) + esc(R.effort[p.effort - 1]) + "</span></div>" +
+        '<div class="score"><span>Language</span><span><span class="lang l' + lang + '">' + esc(R.language[lang]) + "</span></span></div>" +
+      "</div>" +
+      '<p class="impression">' + esc(p.impression) + "</p>" +
+      (p.tip ? '<p class="tip"><strong>Tip:</strong> ' + esc(p.tip) + "</p>" : "") +
+      (amen ? '<ul class="amen">' + amen + "</ul>" : "") +
+      '<div class="card-foot"><span>' + esc(p.cost) + "</span><span>" + esc(p.time) + "</span><span>Visited " + esc(month(p.visited)) + "</span>" +
+        (p.link ? '<a href="' + esc(p.link) + '" target="_blank" rel="noopener">Website ↗</a>' : "") +
+      "</div></article>";
+  }
+
+  function render() {
+    var q = document.getElementById("search").value.trim().toLowerCase();
+    var sort = document.getElementById("sort").value;
+    var list = P.filter(function (p) {
+      for (var i = 0; i < PRESETS.length; i++) if (active[PRESETS[i].id] && !PRESETS[i].test(p)) return false;
+      if (!q) return true;
+      return [p.name, p.city, p.category, p.impression].join(" ").toLowerCase().indexOf(q) > -1;
+    });
+    list.sort(function (a, b) {
+      if (sort === "effort") return a.effort - b.effort || b.overall - a.overall;
+      if (sort === "visited") return String(b.visited).localeCompare(String(a.visited));
+      return (b[sort] || 0) - (a[sort] || 0) || b.overall - a.overall;
+    });
+    document.getElementById("grid").innerHTML = list.map(card).join("");
+    document.getElementById("empty").hidden = list.length > 0;
+    document.getElementById("count").textContent = list.length + " of " + P.length + " places";
+    document.getElementById("sampleNote").hidden = !P.some(function (p) { return p.sample; });
+  }
+  render();
+})();
+</script>
+</body>
+</html>

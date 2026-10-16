@@ -62,7 +62,8 @@ top on a 1440×900 laptop"). Ship to a preview first; the owner approves before 
 - Text colors: one ink, one grey. Backgrounds: white plus at most one accent.
 - Type scale on a page: 4–5 sizes (e.g. 60 / 32 / 25 / 15 / 13).
 - Spacing scale: 8 · 16 · 24 · 40 · 64 · 96 (largest steps may grow fluidly on big screens).
-- Container max ~1080–1240px; side gutters ~60 / 40 / 20px for desktop / tablet / phone.
+- Container max ~1080–1440px (wider when the work is dense UI); side gutters ~60 / 40 / 20px for
+  desktop / tablet / phone. Text keeps its own `ch` max-width.
 - Running text 45–75 characters per line.
 - Motion in case studies: muted, looping, autoplaying MP4 (not GIF), cropped to one interaction;
   `scripts/camera.py` adds a smooth zoom-in / zoom-out camera for dense UI recordings.

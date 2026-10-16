@@ -29,7 +29,9 @@ typography and responsive-design practice. Each rule has a test you can actually
 - **Every project uses the same block:** title + meta line on the left half, description on the right
   half, media underneath, hairline divider. Repetition is what makes a page feel calm. The eye learns
   the pattern once.
-- **One content column with a ceiling** (~1080–1240px). On big monitors the extra width becomes margin.
+- **One content column with a ceiling** (~1080–1440px). On big monitors the extra width becomes margin.
+- **Wide media, narrow text.** Let screenshots and videos use the full container width, but cap running
+  text with its own `max-width` in `ch`. When work looks too small, widen the container, not the lines.
 - **Edges line up.** If two sections use different column splits, their left edges won't align. Pick one.
 - *Test:* draw vertical lines at the left edge of each text block in a screenshot; there should be ≤ 2.
 

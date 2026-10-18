@@ -72,10 +72,10 @@ typography and responsive-design practice. Each rule has a test you can actually
   several times smaller than GIF.
 - **Crop to one interaction.** Place an oversized recording inside a fixed card so only the relevant
   part of the UI shows, like a film close-up. 7–14 second loops.
-- **Readable beats symmetrical.** If UI text in a half-width clip is too small to read, give each clip
-  the full width (one per row, with a one-line caption) instead of shrinking it.
+- **Readable beats symmetrical.** Half-width clips work only with the zoom camera below; without it,
+  UI text is too small, so give each clip the full width instead.
 - **Camera moves for dense UI** (`scripts/camera.py`): start wide on the whole app so its header
-  shows it's a real product, zoom ~1.6× into the action and follow it, zoom back out before looping.
+  shows it's a real product, zoom ~1.8× into the action and follow it, zoom back out before looping.
 - **End on the payoff and hold it ~1.5s;** use that payoff frame as the poster.
 - **Cards keep their proportions** at every width; on phones, side-by-side media stacks.
 

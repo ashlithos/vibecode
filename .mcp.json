@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "supercut": {
+      "type": "http",
+      "url": "https://mcp.supercut.ai/mcp"
+    }
+  }
+}

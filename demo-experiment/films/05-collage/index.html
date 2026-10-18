@@ -1,0 +1,171 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>05 Collage — Data UX</title>
+<style>html,body{margin:0;background:#a87f52;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 05 · Collage / cut-out. Scraps of stock-table newsprint, graph paper, a ruler, a hand and an eye are slapped onto a
+// kraft page and paste together into a person reading a chart: the newsprint is the torso, a giant halftone eye the head,
+// the ruler the arm, the engraved hand points at a red marker chart on graph paper. The chart's legend is pasted up in
+// ransom-note letters: "Data UX". Stop-motion on 12 fps with ±2 px hand-placement jitter.
+import { FILM, RESOLVE, clamp, lerp, inv, K, E, hash, hr, step, canvas, loadImage, cssFont, grain, TAU } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM };
+const C = document.getElementById('c'), X = C.getContext('2d');
+const PAL = { red: '#d42a1c', black: '#161311', cream: '#efe6cf', news: '#e2dac4', kraft: '#c9a06a', white: '#faf7ef', yel: '#e8b52a' };
+const IMG = {};
+await Promise.all(['page_kraft.jpg', 'graph.png', 'torso.png', 'eye.png', 'ruler.png', 'manicule.png'].map(async (f) => { IMG[f.split('.')[0]] = await loadImage('assets/' + f); }));
+await Promise.all([cssFont('Playfair', '/dux/fonts/PlayfairDisplay-Black.ttf', '900'), cssFont('Anton', '/dux/fonts/Anton-Regular.ttf'),
+  cssFont('OldStd', '/dux/fonts/OldStandard-Regular.ttf'), cssFont('Poppins', '/dux/fonts/Poppins-Black.ttf', '900')]);
+const grainImg = await loadImage('/dux/shared/tex/grain.png');
+const CUE = await (await fetch('cues.json')).json();
+const FPS = 12;
+
+// ---------------------------------------------------------------- stop-motion helpers
+const HOLD = 4.25;                                   // after this, the page is pasted down: no more hand jitter
+function jit(id, tq, amp = 2) {
+  if (tq >= HOLD) return [0, 0, 0];
+  const f = Math.round(tq * FPS);
+  return [(hash(id, f, 1) - 0.5) * 2 * amp, (hash(id, f, 2) - 0.5) * 2 * amp, (hash(id, f, 3) - 0.5) * 0.006 * amp];
+}
+// a slap: one frame hovering big & rotated with a lifted shadow, then down
+function slapState(tq, t0) {
+  if (tq < t0 - 1 / FPS - 1e-6) return null;
+  if (tq < t0 - 1e-6) return { s: 1.14, r: 0.06, lift: 1 };
+  if (tq < t0 + 1 / FPS - 1e-6) return { s: 0.985, r: -0.008, lift: 0.15 };
+  return { s: 1, r: 0, lift: 0 };
+}
+function paste(img, id, x, y, rot, scale, tq, t0, opts = {}) {
+  const st = slapState(tq, t0); if (!st) return;
+  const [jx, jy, jr] = jit(id, tq, opts.jit ?? 2);
+  const w = img.width * scale, h = img.height * scale;
+  X.save(); X.translate(x + jx, y + jy); X.rotate(rot + st.r + jr); X.scale(st.s, st.s);
+  if (opts.flip) X.scale(-1, 1);
+  const ax = opts.ax ?? 0.5, ay = opts.ay ?? 0.5;
+  X.shadowColor = `rgba(40,22,8,${0.35 + 0.15 * st.lift})`; X.shadowBlur = 6 + 26 * st.lift; X.shadowOffsetX = 3 + 14 * st.lift; X.shadowOffsetY = 5 + 22 * st.lift;
+  if (img.draw) img.draw(X, -w * ax, -h * ay, w, h); else X.drawImage(img, -w * ax, -h * ay, w, h);
+  X.restore();
+}
+
+// ---------------------------------------------------------------- generated pieces: tape, legend label, ransom letters
+function scrap(w, h, seed, paint) {          // scissor-cut irregular quad with paper fill
+  const c = canvas(w + 20, h + 20), a = c.getContext('2d');
+  const j = (k) => hr(-7, 7, seed, k);
+  a.translate(10, 10);
+  a.beginPath(); a.moveTo(j(1), j(2)); a.lineTo(w + j(3), j(4)); a.lineTo(w + j(5), h + j(6)); a.lineTo(j(7), h + j(8)); a.closePath();
+  a.save(); a.clip(); paint(a, w, h); a.restore();
+  return c;
+}
+const TAPE = scrap(190, 52, 77, (a, w, h) => { a.fillStyle = 'rgba(236,224,190,0.82)'; a.fillRect(-10, -10, w + 20, h + 20); a.fillStyle = 'rgba(255,255,255,0.25)'; a.fillRect(-10, 8, w + 20, 6); });
+const LABEL_W = 960, LABEL_H = 236;
+const LABEL = scrap(LABEL_W, LABEL_H, 5, (a, w, h) => {
+  a.fillStyle = PAL.white; a.fillRect(-10, -10, w + 20, h + 20);
+  a.strokeStyle = PAL.black; a.lineWidth = 5; a.strokeRect(14, 14, w - 28, h - 28);
+  // printed newsprint texture showing through
+  a.fillStyle = 'rgba(0,0,0,0.035)'; for (let y = 22; y < h - 20; y += 7) a.fillRect(20, y, w - 40, 2);
+});
+const SWATCH = scrap(118, 118, 9, (a, w, h) => { a.fillStyle = PAL.red; a.fillRect(-10, -10, w + 20, h + 20); });
+// ransom letters: each cut from a different printed source
+const RANSOM = [
+  { ch: 'D', font: '900 150px Playfair', fg: PAL.black, bg: PAL.news, w: 128, rot: -0.06, dy: -4 },
+  { ch: 'a', font: '132px Anton', fg: PAL.white, bg: PAL.red, w: 94, rot: 0.07, dy: 8 },
+  { ch: 't', font: '160px OldStd', fg: PAL.black, bg: PAL.yel, w: 84, rot: -0.04, dy: -2 },
+  { ch: 'a', font: '900 136px Poppins', fg: PAL.red, bg: PAL.white, w: 108, rot: 0.05, dy: 6 },
+  { ch: 'U', font: '150px Anton', fg: PAL.white, bg: PAL.black, w: 106, rot: -0.05, dy: -6 },
+  { ch: 'X', font: '900 150px Playfair', fg: PAL.red, bg: PAL.cream, w: 124, rot: 0.08, dy: 2 },
+].map((L, i) => ({ ...L, img: scrap(L.w, 168, 30 + i, (a, w, h) => {
+  a.fillStyle = L.bg; a.fillRect(-10, -10, w + 20, h + 20);
+  if (L.bg === PAL.news) { a.fillStyle = 'rgba(0,0,0,0.07)'; for (let y = 4; y < h; y += 9) a.fillRect(0, y, w, 2); }
+  a.fillStyle = L.fg; a.font = L.font; a.textAlign = 'center'; a.textBaseline = 'alphabetic'; a.fillText(L.ch, w / 2, h - 30);
+}) }));
+
+// ---------------------------------------------------------------- layout
+const GP = { x: 1240, y: 452, rot: -0.022, s: 1 };
+const SH = { x: 548, y: 528 };                          // shoulder (ruler pivot)
+const AX = { x0: 860, y0: 610, x1: 1650, y1: 168 };    // chart plot area (page coords)
+const DATA = [0.12, 0.2, 0.16, 0.34, 0.3, 0.52, 0.47, 0.7, 0.92];
+const PTS = DATA.map((v, i) => [lerp(AX.x0 + 40, AX.x1 - 30, i / (DATA.length - 1)), lerp(AX.y0 - 10, AX.y1 + 20, v)]);
+const LEG = { x: 1262, y: 784, rot: 0.012 };
+
+// marker stroke (rough, slightly dry-brush): several jittered passes
+function marker(pts, frac, col, w, seed) {
+  if (frac <= 0) return;
+  const L = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); L.push(d); tot += d; }
+  let rem = tot * frac;
+  X.strokeStyle = col; X.lineCap = 'round'; X.lineJoin = 'round';
+  for (let pass = 0; pass < 3; pass++) {
+    X.lineWidth = w * (1 - pass * 0.22); X.globalAlpha = pass ? 0.55 : 0.95;
+    X.beginPath(); X.moveTo(pts[0][0] + hr(-2, 2, seed, pass), pts[0][1] + hr(-2, 2, seed, pass, 1));
+    let r = rem;
+    for (let i = 1; i < pts.length && r > 0; i++) {
+      const k = Math.min(1, r / L[i - 1]); r -= L[i - 1];
+      X.lineTo(lerp(pts[i - 1][0], pts[i][0], k) + hr(-2.5, 2.5, seed, pass, i), lerp(pts[i - 1][1], pts[i][1], k) + hr(-2.5, 2.5, seed, pass, i, 2));
+    }
+    X.stroke();
+  }
+  X.globalAlpha = 1;
+}
+function chartTip(frac) {
+  let tot = 0; const L = []; for (let i = 1; i < PTS.length; i++) { const d = Math.hypot(PTS[i][0] - PTS[i - 1][0], PTS[i][1] - PTS[i - 1][1]); L.push(d); tot += d; }
+  let r = tot * clamp(frac);
+  for (let i = 1; i < PTS.length; i++) { if (r <= L[i - 1]) { const k = r / L[i - 1]; return [lerp(PTS[i - 1][0], PTS[i][0], k), lerp(PTS[i - 1][1], PTS[i][1], k)]; } r -= L[i - 1]; }
+  return PTS[PTS.length - 1];
+}
+
+// ---------------------------------------------------------------- frame
+window.renderAt = (t) => {
+  const tq = step(t, FPS);
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.shadowColor = 'transparent'; X.globalCompositeOperation = 'source-over';
+  X.drawImage(IMG.page_kraft, 0, 0, 1920, 1080);
+
+  // constructivist red diagonal + a black rule, slid in on frame 1 (the hook)
+  const bandU = E.out2(inv(0, CUE.band, tq));
+  X.save(); X.translate(lerp(-900, 0, bandU), lerp(700, 0, bandU)); X.rotate(-0.62);
+  X.fillStyle = PAL.red; X.fillRect(-1400, 380, 3200, 210);
+  X.fillStyle = PAL.black; X.fillRect(-1400, 640, 3200, 26);
+  X.restore();
+
+  // graph paper + chart
+  paste(IMG.graph, 'graph', GP.x, GP.y, GP.rot, GP.s, tq, CUE.graph);
+  if (tq >= CUE.graph) {
+    const [jx, jy] = jit('graph', tq);
+    X.save(); X.translate(jx, jy);
+    const au = inv(CUE.axes[0], CUE.axes[1], tq);
+    marker([[AX.x0, AX.y1 - 20], [AX.x0, AX.y0], [AX.x1 + 10, AX.y0]], au, PAL.black, 7, 3);
+    const cu = inv(CUE.line[0], CUE.line[1], tq);
+    marker(PTS, cu, PAL.red, 12, 5);
+    PTS.forEach((p, i) => { const pu = (i / (PTS.length - 1)); if (cu >= pu - 1e-6 && cu > 0) { X.fillStyle = PAL.red; X.beginPath(); X.arc(p[0], p[1], 11, 0, TAU); X.fill(); } });
+    X.restore();
+  }
+
+  // the person: newsprint torso, tape neck, eye head
+  paste(IMG.torso, 'torso', 400, 838, 0.03, 0.98, tq, CUE.torso);
+  // ruler arm: slapped hanging down, then puppet-rotates up (12 fps) to point along the chart as the line rises
+  const tip = chartTip(inv(CUE.line[0], CUE.line[1], tq));
+  const aim = Math.atan2(tip[1] - 30 - SH.y, tip[0] - 300 - SH.x);
+  const armA = tq < CUE.armUp[0] ? 1.35 : tq < CUE.armUp[1] ? lerp(1.35, -0.16, E.io2(inv(CUE.armUp[0], CUE.armUp[1], tq))) : lerp(-0.16, Math.min(-0.16, aim), smooth(CUE.line[0], CUE.line[0] + 0.2, tq));
+  const RL = IMG.ruler.width * 0.9;
+  paste(IMG.ruler, 'ruler', SH.x, SH.y, armA, 0.9, tq, CUE.ruler, { ax: 0.02, ay: 0.5, jit: 1.5 });
+  const end = [SH.x + Math.cos(armA) * RL * 0.96, SH.y + Math.sin(armA) * RL * 0.96];
+  paste(IMG.manicule, 'hand', end[0], end[1], armA + 0.05, 0.44, tq, CUE.hand, { ax: 0.12, ay: 0.55 });
+  paste(IMG.eye, 'eye', 402, 338, -0.07 + 0.04 * smooth(CUE.line[0], CUE.line[1], tq), 0.84, tq, CUE.eye);
+  paste(TAPE, 'tape', 408, 498, 0.16, 1, tq, CUE.tape);
+
+  // the legend, pasted up last: label, red key swatch, then the ransom letters one by one (set 12 % larger: the hero)
+  X.save(); X.translate(LEG.x, LEG.y); X.scale(1.12, 1.12); X.translate(-LEG.x, -LEG.y);
+  paste(LABEL, 'label', LEG.x, LEG.y, LEG.rot, 1, tq, CUE.label);
+  paste(SWATCH, 'swatch', LEG.x - 392, LEG.y + 2, -0.05, 1, tq, CUE.label + 1 / FPS);
+  let lx = LEG.x - 302;
+  RANSOM.forEach((L, i) => {
+    if (i === 4) lx += 40;                             // word space
+    paste(L.img, 'L' + i, lx + L.w / 2, LEG.y + L.dy, L.rot, 1, tq, CUE.letters[i]);
+    lx += L.w + 10;
+  });
+  X.restore();
+
+  grain(X, grainImg, t, 0.09, FPS, 'overlay');
+  const v = X.createRadialGradient(960, 540, 560, 960, 540, 1200); v.addColorStop(0, 'rgba(40,20,5,0)'); v.addColorStop(1, 'rgba(40,20,5,0.28)');
+  X.fillStyle = v; X.fillRect(0, 0, 1920, 1080);
+};
+function smooth(a, b, x) { const k = inv(a, b, x); return k * k * (3 - 2 * k); }
+window.__ready = true;
+</script></body></html>

@@ -1,0 +1,214 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>07 Synthwave — Data UX</title>
+<style>html,body{margin:0;background:#12002b;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+// 07 · 80s synthwave / VHS. The neon grid horizon is a 3D data surface with rolling peaks (wireframe, double glow); the
+// sun is a striped pie chart whose slices part on the beat; chrome "DATA UX" rises from behind the horizon and lands with
+// a VHS tracking glitch, RGB split and a star glint. Everything sits under a VHS pass (scanlines, chroma bleed, 4:3-ish
+// rounded vignette).
+import { FILM, RESOLVE, clamp, lerp, inv, K, E, hash, hr, noise1, canvas, cssFont, TAU } from '/dux/shared/lib.js';
+
+window.DEMO = { ...FILM };
+const C = document.getElementById('c'), X = C.getContext('2d');
+await cssFont('DUXOrbit', '/dux/fonts/DUXOrbit-Black.ttf', '900');   // Orbitron (OFL), renamed: modified subset, Reserved Font Name
+const CUE = await (await fetch('cues.json')).json();
+const HZ = 640;                         // horizon line (px)
+
+// ---------------------------------------------------------------- static layers built once
+// sky + stars
+const SKY = canvas(), sx = SKY.getContext('2d');
+{ const g = sx.createLinearGradient(0, 0, 0, HZ); g.addColorStop(0, '#0d0022'); g.addColorStop(0.55, '#2a0552'); g.addColorStop(0.86, '#6a0a6e'); g.addColorStop(1, '#ff2f8f');
+  sx.fillStyle = g; sx.fillRect(0, 0, 1920, HZ);
+  for (let i = 0; i < 260; i++) { const x = hash(i, 1) * 1920, y = Math.pow(hash(i, 2), 1.6) * (HZ - 140), r = hash(i, 3) < 0.92 ? 1.1 : 2.2; sx.fillStyle = `rgba(255,240,255,${0.35 + 0.6 * hash(i, 4)})`; sx.beginPath(); sx.arc(x, y, r, 0, TAU); sx.fill(); } }
+// the sun as a striped PIE CHART: three slices (45 / 35 / 20 %) of one gradient disc, cut by the classic horizontal bands
+const SR = 270, SUN = canvas(SR * 2 + 140, SR * 2 + 140), SUNG = canvas(SUN.width / 4 + 60, SUN.height / 4 + 60);
+let sunKey = null;
+function drawSun(explode) {
+  const s = SUN.getContext('2d'); s.setTransform(1, 0, 0, 1, 0, 0); s.clearRect(0, 0, SUN.width, SUN.height); s.translate(SUN.width / 2, SUN.height / 2);
+  const g = s.createLinearGradient(0, -SR, 0, SR); g.addColorStop(0, '#ffe45c'); g.addColorStop(0.45, '#ff8a2a'); g.addColorStop(0.8, '#ff2f8f'); g.addColorStop(1, '#c41fb8');
+  const SL = [0.45, 0.35, 0.2]; let a0 = -Math.PI / 2 - 0.35;
+  SL.forEach((f, i) => {
+    const a1 = a0 + f * TAU, mid = (a0 + a1) / 2, off = i === 2 ? explode * 48 : explode * 12;
+    s.save(); s.translate(Math.cos(mid) * off, Math.sin(mid) * off);
+    s.beginPath(); s.moveTo(0, 0); s.arc(0, 0, SR, a0 + 0.02 * explode, a1 - 0.02 * explode); s.closePath(); s.fillStyle = g; s.fill();
+    if (i === 2) { s.globalCompositeOperation = 'source-atop'; s.fillStyle = `rgba(255,60,170,${0.35 * explode})`; s.fillRect(-SR, -SR, SR * 2, SR * 2); s.globalCompositeOperation = 'source-over'; }
+    s.restore(); a0 = a1;
+  });
+  // horizontal cut-out bands, thickening toward the bottom
+  s.globalCompositeOperation = 'destination-out';
+  for (let k = 0; k < 8; k++) { const y = SR * (0.12 + k * 0.115), h = 4 + k * 3.2; s.fillRect(-SR - 40, y, SR * 2 + 80, h); }
+  s.globalCompositeOperation = 'source-over';
+}
+// chrome title, rendered once (multi-stop metal, bevel, outline)
+const TW = 1640, TH = 360, TITLE = canvas(TW, TH);
+{
+  const t = TITLE.getContext('2d'); t.translate(TW / 2, TH * 0.72); t.transform(1, 0, -0.18, 1, 0, 0);
+  t.font = '900 236px DUXOrbit'; t.textAlign = 'center'; t.textBaseline = 'alphabetic';
+  const txt = 'DATA UX';
+  // extrude (deep magenta-to-black body)
+  for (let k = 12; k > 0; k--) { t.fillStyle = `rgb(${40 + k * 6},${8},${60 + k * 6})`; t.fillText(txt, k * 0.6, k * 1.6); }
+  // chrome face
+  const g = t.createLinearGradient(0, -170, 0, 10);
+  [[0, '#e9fbff'], [0.18, '#7fd7ff'], [0.46, '#1a3c8f'], [0.5, '#fff6f0'], [0.56, '#5a2a12'], [0.74, '#ff9b3d'], [0.9, '#ffe9b0'], [1, '#ffffff']].forEach(([o, c]) => g.addColorStop(o, c));
+  t.fillStyle = g; t.fillText(txt, 0, 0);
+  // bevel: light top-left edge, dark bottom-right edge, clipped inside the letters
+  t.lineWidth = 3; t.strokeStyle = 'rgba(255,255,255,0.95)'; t.strokeText(txt, -1, -1);
+  t.lineWidth = 2; t.strokeStyle = 'rgba(30,0,40,0.8)'; t.strokeText(txt, 1.5, 1.5);
+}
+const TMASK = canvas(TW, TH); { const m = TMASK.getContext('2d'); m.drawImage(TITLE, 0, 0); }
+const TGLOW = (() => { const c = canvas(TW + 200, TH + 200), a = c.getContext('2d'); a.filter = 'blur(26px)'; a.globalAlpha = 0.55; a.drawImage(TMASK, 100, 100); a.filter = 'blur(5px)'; a.globalAlpha = 0.4; a.drawImage(TMASK, 100, 100); return c; })();
+
+// ---------------------------------------------------------------- the data surface (wireframe terrain)
+const F = 760, CAMH = 120;              // focal length, camera height above the base plane
+const NX = 56, NZ = 46, XW = 2600, Z0 = 60, Z1 = 2600;
+function height(x, zw, t) {
+  // rolling data peaks: a field of gaussian "bars" that ride toward the camera, plus a long swell; a calm lane in the centre
+  let y = 0;
+  for (let i = 0; i < 14; i++) {
+    const px = hr(-1200, 1200, i, 1), period = 2400, pz = (hr(0, period, i, 2) - zw) % period;
+    const pzz = pz < 0 ? pz + period : pz;
+    const d2 = ((x - px) / 170) ** 2 + ((pzz - 1200) / 210) ** 2;
+    y += hr(70, 230, i, 3) * Math.exp(-d2);
+  }
+  y += 26 * Math.sin(x * 0.004 + zw * 0.003) + 18 * Math.sin(zw * 0.007 - x * 0.002);
+  const lane = Math.min(1, Math.abs(x) / 520);
+  return Math.max(0, y * (0.15 + 0.85 * lane * lane)) * CUE.amp;
+}
+function project(x, y, z) { return [960 + (x * F) / z, HZ + ((CAMH - y) * F) / z - (CAMH * F) / Z1 * 0]; }
+function scroll(t) {   // distance flown: fast cruise, eases to a slow drift for the hold
+  const v0 = 900, v1 = 110, tb = CUE.slow;
+  if (t < tb[0]) return v0 * t;
+  if (t < tb[1]) { const u = (t - tb[0]) / (tb[1] - tb[0]); return v0 * tb[0] + (tb[1] - tb[0]) * (v0 * (u - u * u / 2) + v1 * (u * u / 2)); }
+  return v0 * tb[0] + (tb[1] - tb[0]) * (v0 + v1) / 2 + v1 * (t - tb[1]);
+}
+const GRID = canvas(), gx = GRID.getContext('2d');
+const HALF = canvas(960, 540), hx = HALF.getContext('2d'), QW = canvas(480, 270), qx = QW.getContext('2d');
+function drawSurface(t) {
+  gx.setTransform(1, 0, 0, 1, 0, 0); gx.clearRect(0, 0, 1920, 1080);
+  const sc = scroll(t), dz = (Z1 - Z0) / NZ, zoff = sc % dz;
+  // rows of constant depth (scroll toward the camera) and columns of constant x
+  const P = [];
+  for (let j = 0; j <= NZ; j++) {
+    const z = Z1 - j * dz + zoff; if (z < Z0) continue;
+    const row = []; for (let i = 0; i <= NX; i++) { const x = -XW / 2 + (i / NX) * XW; const zw = z + sc; row.push([...project(x, height(x, zw, t), z), height(x, zw, t), z]); }
+    P.push(row);
+  }
+  const fadeZ = (z) => clamp(1 - (z - Z0) / (Z1 - Z0)) ** 0.7;
+  gx.lineCap = 'round';
+  for (let j = 0; j < P.length; j++) {
+    const row = P[j], a = fadeZ(row[0][3]);
+    for (let i = 0; i < row.length - 1; i++) {
+      const h = (row[i][2] + row[i + 1][2]) / 2, k = clamp(h / 200);
+      gx.strokeStyle = `rgba(${Math.round(lerp(255, 60, k))},${Math.round(lerp(43, 240, k))},${Math.round(lerp(214, 255, k))},${a})`;
+      gx.lineWidth = 1.2 + 1.8 * a;
+      gx.beginPath(); gx.moveTo(row[i][0], row[i][1]); gx.lineTo(row[i + 1][0], row[i + 1][1]); gx.stroke();
+      if (j < P.length - 1) {
+        const b = P[j + 1][i]; const hk = clamp(((row[i][2] + b[2]) / 2) / 200);
+        gx.strokeStyle = `rgba(${Math.round(lerp(255, 60, hk))},${Math.round(lerp(43, 240, hk))},${Math.round(lerp(214, 255, hk))},${a})`;
+        gx.beginPath(); gx.moveTo(row[i][0], row[i][1]); gx.lineTo(b[0], b[1]); gx.stroke();
+      }
+    }
+  }
+  return P;
+}
+
+// ---------------------------------------------------------------- frame
+window.renderAt = (t) => {
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; X.filter = 'none';
+  X.drawImage(SKY, 0, 0);
+  // sun rises, then its slices part on the beats
+  const sunY = K(t, [[0, HZ + 120], [CUE.sunUp, HZ - 150, 'out3']]);
+  const ex = K(t, CUE.explode.map(([a, b]) => [a, b, 'io2']));
+  const key = ex.toFixed(3);
+  if (key !== sunKey) {
+    drawSun(ex); sunKey = key;
+    const q = SUNG.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, SUNG.width, SUNG.height); q.filter = 'blur(10px)'; q.drawImage(SUN, 30, 30, SUN.width / 4, SUN.height / 4); q.filter = 'none';
+  }
+  X.save(); X.globalCompositeOperation = 'lighter'; X.globalAlpha = 0.35; X.drawImage(SUNG, 960 - SUN.width / 2 - 120, sunY - SUN.height / 2 - 120, SUNG.width * 4, SUNG.height * 4); X.restore();
+  X.save(); X.beginPath(); X.rect(0, 0, 1920, HZ); X.clip(); X.drawImage(SUN, 960 - SUN.width / 2, sunY - SUN.height / 2); X.restore();
+
+  // chrome title rises from behind the horizon (drawn before the ground, which hides it)
+  const rise = CUE.rise, ty = K(t, [[rise[0], HZ + 260], [rise[1] - 0.12, 452, 'out3'], [rise[1], 470, 'io2']]);
+  const hit = t - RESOLVE;
+  const tx = 960 - TW / 2, tyy = ty - TH * 0.72;
+  if (t >= rise[0]) {
+    X.save(); X.beginPath(); X.rect(0, 0, 1920, HZ); X.clip();
+    // neon double glow behind the chrome
+    X.globalCompositeOperation = 'lighter'; X.drawImage(TGLOW, tx - 100, tyy - 100);
+    X.filter = 'none'; X.globalAlpha = 1; X.globalCompositeOperation = 'source-over';
+    X.drawImage(TITLE, tx, tyy);
+    // star glint sweeping across the chrome after the hit
+    const gu = inv(RESOLVE + 0.08, RESOLVE + 0.75, t);
+    if (gu > 0 && gu < 1) {
+      const T2 = canvas(TW, TH), q = T2.getContext('2d'); q.drawImage(TMASK, 0, 0); q.globalCompositeOperation = 'source-in';
+      const gxp = lerp(-200, TW + 200, E.io2(gu)); const g = q.createLinearGradient(gxp - 90, 0, gxp + 90, 0);
+      g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,0.85)'); g.addColorStop(1, 'rgba(255,255,255,0)'); q.fillStyle = g; q.fillRect(0, 0, TW, TH);
+      X.globalCompositeOperation = 'lighter'; X.drawImage(T2, tx, tyy); X.globalCompositeOperation = 'source-over';
+    }
+    X.restore();
+  }
+  // ground: dark gradient, then the wireframe data surface with a double glow (tight + wide)
+  const gg = X.createLinearGradient(0, HZ, 0, 1080); gg.addColorStop(0, '#2b0638'); gg.addColorStop(1, '#07000f');
+  X.fillStyle = gg; X.fillRect(0, HZ, 1920, 1080 - HZ);
+  drawSurface(t);
+  hx.setTransform(1, 0, 0, 1, 0, 0); hx.clearRect(0, 0, 960, 540); hx.filter = 'blur(1px)'; hx.drawImage(GRID, 0, 0, 960, 540); hx.filter = 'none';
+  qx.setTransform(1, 0, 0, 1, 0, 0); qx.clearRect(0, 0, 480, 270); qx.filter = 'blur(3.5px)'; qx.drawImage(GRID, 0, 0, 480, 270); qx.filter = 'none';
+  X.save(); X.globalCompositeOperation = 'lighter';
+  X.globalAlpha = 0.85; X.drawImage(QW, 0, 0, 1920, 1080);       // wide glow (~30 px)
+  X.globalAlpha = 0.9; X.drawImage(HALF, 0, 0, 1920, 1080);      // tight glow (~4 px)
+  X.globalAlpha = 1; X.drawImage(GRID, 0, 0);
+  X.restore();
+  // horizon haze line
+  const hz = X.createLinearGradient(0, HZ - 18, 0, HZ + 30); hz.addColorStop(0, 'rgba(255,47,143,0)'); hz.addColorStop(0.4, 'rgba(255,90,170,0.55)'); hz.addColorStop(1, 'rgba(255,47,143,0)');
+  X.fillStyle = hz; X.fillRect(0, HZ - 18, 1920, 48);
+
+  // the hit: white flash (2 frames) + lens flare at the glint's start
+  if (hit >= 0 && hit < 0.07) { X.fillStyle = `rgba(255,230,255,${0.3 * (1 - hit / 0.07)})`; X.fillRect(0, 0, 1920, 1080); }
+  const fl = inv(RESOLVE, RESOLVE + 0.6, t);
+  if (fl > 0 && fl < 1) {
+    const a = Math.sin(Math.PI * fl) * 0.9, fx = 960 - TW / 2 + 150, fy = ty - 150;
+    X.save(); X.globalCompositeOperation = 'lighter';
+    const g = X.createRadialGradient(fx, fy, 0, fx, fy, 220); g.addColorStop(0, `rgba(255,255,255,${a})`); g.addColorStop(0.1, `rgba(180,240,255,${a * 0.6})`); g.addColorStop(1, 'rgba(120,80,255,0)');
+    X.fillStyle = g; X.fillRect(fx - 220, fy - 220, 440, 440);
+    X.fillStyle = `rgba(200,240,255,${a * 0.7})`; X.fillRect(fx - 420 * a, fy - 1.5, 840 * a, 3); X.fillRect(fx - 1.5, fy - 90 * a, 3, 180 * a);
+    X.restore();
+  }
+  vhs(t);
+};
+
+// ---------------------------------------------------------------- VHS pass: tracking noise (open + hit), RGB split, scanlines
+const BUF = canvas(), bx = BUF.getContext('2d');
+const CH = { '#ff0000': canvas(), '#00ff00': canvas(), '#0000ff': canvas() };
+function vhs(t) {
+  const open = 1 - inv(0, CUE.trackLock, t);                // tracking noise clears at the open
+  const hit = t - RESOLVE, gl = hit >= 0 && hit < CUE.glitchDur ? 1 - hit / CUE.glitchDur : 0;
+  const amt = Math.max(open, gl);
+  bx.setTransform(1, 0, 0, 1, 0, 0); bx.clearRect(0, 0, 1920, 1080); bx.drawImage(C, 0, 0);
+  // horizontal band displacement (tape tracking)
+  if (amt > 0) {
+    const f = Math.floor(t * 30);
+    const nb = Math.round(3 + 9 * amt);
+    for (let k = 0; k < nb; k++) {
+      const y = Math.floor(hash(f, k, 1) * 1080), h = Math.floor(6 + 70 * hash(f, k, 2) * amt), dx = (hash(f, k, 3) - 0.5) * 160 * amt;
+      X.drawImage(BUF, 0, y, 1920, h, dx, y, 1920, h);
+    }
+    // a bright noisy tracking bar rolling down
+    const by = ((t * 900) % 1300) - 100;
+    for (let i = 0; i < 70; i++) { X.fillStyle = `rgba(255,255,255,${0.5 * amt * hash(f, i, 9)})`; X.fillRect(hash(f, i, 7) * 1920, by + hash(f, i, 8) * 40, 30 + 120 * hash(f, i, 6), 2); }
+  }
+  // RGB split: red/blue channels offset 1–2 px always (chroma bleed), up to 12 px on the glitch
+  const sp = 1.5 + 10.5 * amt;
+  bx.setTransform(1, 0, 0, 1, 0, 0); bx.globalCompositeOperation = 'source-over'; bx.drawImage(C, 0, 0);
+  const ch = (col) => { const c = CH[col], a = c.getContext('2d'); a.globalCompositeOperation = 'source-over'; a.drawImage(BUF, 0, 0); a.globalCompositeOperation = 'multiply'; a.fillStyle = col; a.fillRect(0, 0, 1920, 1080); return c; };
+  X.save(); X.fillStyle = '#000'; X.fillRect(0, 0, 1920, 1080); X.globalCompositeOperation = 'lighter';
+  X.drawImage(ch('#ff0000'), sp, 0); X.drawImage(ch('#00ff00'), 0, 0); X.drawImage(ch('#0000ff'), -sp, 0);
+  X.restore();
+  // scanlines (2 px period, 10 % black) + soft rounded 4:3-ish vignette
+  X.fillStyle = SCAN; X.fillRect(0, 0, 1920, 1080);
+  X.fillStyle = VIG; X.fillRect(0, 0, 1920, 1080);
+}
+const SCAN = (() => { const c = canvas(4, 4), a = c.getContext('2d'); a.fillStyle = 'rgba(0,0,0,0.13)'; a.fillRect(0, 2, 4, 2); return X.createPattern(c, 'repeat'); })();
+const VIG = (() => { const g = X.createRadialGradient(960, 540, 640, 960, 540, 1180); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.55)'); return g; })();
+window.__ready = true;
+</script></body></html>

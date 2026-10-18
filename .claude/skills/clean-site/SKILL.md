@@ -66,4 +66,4 @@ top on a 1440×900 laptop"). Ship to a preview first; the owner approves before 
   desktop / tablet / phone. Text keeps its own `ch` max-width.
 - Running text 45–75 characters per line.
 - Motion in case studies: muted, looping, autoplaying MP4 (not GIF), cropped to one interaction;
-  `scripts/camera.py` adds a smooth zoom-in / zoom-out camera for dense UI recordings.
+  for the camera, easing and editing, use the `product-video` skill.

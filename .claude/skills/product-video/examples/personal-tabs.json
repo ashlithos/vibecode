@@ -1,0 +1,29 @@
+{
+  "source": "source-media/personal-tabs-original.mp4",
+  "out": "public/videos/personal-tabs.mp4",
+  "size": [1600, 1014],
+  "fps": 30,
+  "clean_corners": 12,
+  "frames": {
+    "WIDE": [1, 899, 570],
+    "HERO": [2.4, 900, 1000],
+    "MENU": [2.0, 450, 860]
+  },
+  "takes": [
+    {
+      "start": 2.2, "dur": 4.7, "frame": "WIDE",
+      "moves": [{ "to": "HERO", "at": 2.55, "dur": 0.8, "curve": "emphasized" }],
+      "spotlight": { "box": [0, 0, 1600, 780], "at": 3.45, "dur": 0.45, "alpha": 0.6, "curve": "decelerate" },
+      "hold": 0.6
+    },
+    {
+      "start": 9.4, "dur": 5.2, "frame": "HERO", "length": 7.0,
+      "moves": [
+        { "to": "MENU", "at": 0.5, "dur": 0.9, "curve": "emphasized" },
+        { "to": "WIDE", "at": 5.8, "dur": 0.9, "curve": "emphasized" }
+      ]
+    }
+  ],
+  "dissolve": 0.4,
+  "crf": 20
+}

@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Pattern Clipper for Notion",
+  "version": "0.1.0",
+  "description": "Screenshot the current tab and save it to a Notion database with notes and tags.",
+  "action": {
+    "default_title": "Save this pattern to Notion",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.imgur.com/*",
+    "https://api.notion.com/*"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+P",
+        "mac": "Alt+Shift+P"
+      }
+    }
+  }
+}

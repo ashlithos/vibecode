@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Pattern Clipper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="popup" data-state="idle">
+    <header class="header">
+      <span class="dot" aria-hidden="true"></span>
+      <h1>Save pattern</h1>
+    </header>
+
+    <!-- Form: shown while idle, loading, or after an error -->
+    <form id="clip-form" class="form" novalidate>
+      <label class="field">
+        <span class="label">Title</span>
+        <input id="title" name="title" type="text" placeholder="e.g. Stripe onboarding checklist" autocomplete="off" required />
+      </label>
+
+      <label class="field">
+        <span class="label">Notes</span>
+        <textarea id="notes" name="notes" rows="5" placeholder="What's good about this? What would you steal?"></textarea>
+      </label>
+
+      <label class="field">
+        <span class="label">Tags</span>
+        <input id="tags" name="tags" type="text" placeholder="onboarding, empty state, mobile" autocomplete="off" />
+        <span class="hint">Separate with commas</span>
+      </label>
+
+      <p id="error" class="error" role="alert" hidden></p>
+
+      <button id="save" type="submit" class="button">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="save-label">Save Pattern</span>
+      </button>
+      <p class="shortcut">⌘/Ctrl + Enter to save</p>
+    </form>
+
+    <!-- Success state -->
+    <section id="success" class="success" hidden>
+      <div class="check" aria-hidden="true">✓</div>
+      <p class="success-title">Saved to Notion</p>
+      <p id="success-name" class="success-name"></p>
+      <a id="open-link" class="button button--outline" href="#" target="_blank" rel="noopener">Open in Notion</a>
+      <button id="another" type="button" class="link-button">Save another</button>
+    </section>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

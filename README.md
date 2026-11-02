@@ -10,3 +10,9 @@ installable as Claude Code plugins:
 /plugin install clean-site@ux-skills
 /plugin install product-video@ux-skills
 ```
+
+## Projects
+
+- [`ai-vibe/`](ai-vibe/): **What's Your AI Vibe?** A mobile-first, 12-question quiz about how people relate to AI,
+  with friend comparison links and optional group "circles". It's plain HTML/CSS/JS with no build step:
+  open `ai-vibe/index.html`, or see [`ai-vibe/README.md`](ai-vibe/README.md) to publish it.

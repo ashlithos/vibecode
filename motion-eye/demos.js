@@ -114,7 +114,12 @@
 
   /* ---------------- Drawer (side panel) ---------------- */
   D.drawer = (root, p, ctx) => {
-    root.innerHTML = win(`${skLines([62, 88, 74, 50, 80])}<button class="ui-btn ui-btn-primary dr-open">Open details</button>`,
+    root.innerHTML = p.variant === 'whatsnew'
+      ? win(`${skLines([62, 88, 74, 50, 80])}<button class="ui-btn ui-btn-primary dr-open">What’s new</button>`,
+      `<div class="scrim"></div><aside class="dr-panel"><span class="dr-badge">v4.0</span><div class="ui-strong">What’s new</div><div class="ui-muted">Shown once after the update.</div>
+       <div class="dr-rows"><div><span>⌘K command menu</span></div><div><span>Dark mode for reports</span></div><div><span>Faster CSV export</span></div></div>
+       <button class="ui-btn ui-btn-primary dr-pay">Got it, don’t show again</button></aside>`)
+      : win(`${skLines([62, 88, 74, 50, 80])}<button class="ui-btn ui-btn-primary dr-open">Open details</button>`,
       `<div class="scrim"></div><aside class="dr-panel"><div class="ui-strong">Invoice #1042</div><div class="ui-muted">Due Nov 30 · Acme Inc.</div>
        <div class="dr-rows"><div><span>Design retainer</span><b>$4,200</b></div><div><span>Prototype sprint</span><b>$2,800</b></div><div><span>Tax</span><b>$560</b></div></div>
        <button class="ui-btn ui-btn-primary dr-pay">Pay $7,560</button></aside>`);
@@ -133,6 +138,7 @@
     };
     ctx.on(btn, 'click', () => (open ? doClose() : doOpen()));
     ctx.on(scrim, 'click', () => open && doClose());
+    ctx.on($(root, '.dr-pay'), 'click', () => open && doClose());
     return { play() { ctx.after(350, () => { pulse(ctx, btn); doOpen(); if (p.close) ctx.after(1300, doClose); }); } };
   };
 
@@ -284,7 +290,7 @@
       ctx.anim(chev, [{ transform: `rotate(${s.open ? 0 : 180}deg)` }, { transform: `rotate(${s.open ? 180 : 0}deg)` }], { dur: p.anim === false ? 0 : p.dur, ease: p.ease });
       ctx.anim(pn, [{ height: from + 'px' }, { height: to + 'px' }], { dur: p.anim === false ? 0 : p.dur, ease: p.ease });
       if (overflow) inner.style.opacity = s.open ? '1' : '0';
-      else if (s.open && p.anim !== false && p.content === 'fade') ctx.anim(inner, [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { dur: p.dur, ease: 'ease-out', delay: p.dur * 0.35 });
+      else if (s.open && p.anim !== false && p.content === 'fade') ctx.anim(inner, [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { dur: p.dur, ease: 'ease-out', delay: p.dur * (p.cdelay == null ? 0.35 : p.cdelay) });
     };
     items.forEach((it, i) => ctx.on($(it, '.ac-head'), 'click', () => toggle(i)));
     return { play() { ctx.after(400, () => toggle(0)); ctx.after(2000, () => toggle(0)); } };
@@ -722,6 +728,132 @@
           ctx.after(120, () => ctx.tween({ dur: 600, ease: 'ease-in-out',
             update: k => { cur.set(start.x + dx * k, start.y + dy * k); move(dx * k, dy * k); },
             done: () => ctx.after(250, () => { cur.up(); release(); ctx.after(500, () => cur.hide()); }) }));
+        }));
+      }
+    };
+  };
+
+  /* ---------------- Tooltips across a toolbar: delay + warm-up ---------------- */
+  D.tooltip = (root, p, ctx) => {
+    const items = [['B', 'Bold', '⌘B'], ['I', 'Italic', '⌘I'], ['U', 'Underline', '⌘U'], ['S', 'Strikethrough', '⇧⌘X']];
+    root.innerHTML = `<div class="tt"><div class="tt-bar">${items.map(it => `<div class="tt-slot"><button class="tt-btn tt-${it[0]}">${it[0]}</button><div class="tt-tip">${it[1]}<kbd>${it[2]}</kbd></div></div>`).join('')}</div>
+      <div class="tt-doc">${skLines([92, 80, 86, 60])}</div></div>`;
+    const slots = $$(root, '.tt-slot'), tips = slots.map(s => $(s, '.tt-tip'));
+    const hid = { opacity: 0, transform: 'translateY(3px) scale(.97)' }, vis = { opacity: 1, transform: 'none' };
+    tips.forEach(t => ctx.anim(t, [hid, hid], { dur: 0 }));
+    let warm = false, shown = -1, showT = 0, coolT = 0;
+    const show = i => { const instant = p.warm && warm; shown = i; warm = true; ctx.anim(tips[i], [hid, vis], { dur: instant ? 0 : p.dur, ease: 'ease-out' }); };
+    const hide = i => ctx.anim(tips[i], [vis, hid], { dur: p.warm ? 0 : 90, ease: 'ease-out' });
+    const enter = i => { clearTimeout(coolT); clearTimeout(showT); if (p.warm && warm) show(i); else showT = ctx.after(p.delay || 0, () => show(i)); };
+    const leave = i => { clearTimeout(showT); if (shown === i) { hide(i); shown = -1; } coolT = ctx.after(400, () => { warm = false; }); };
+    slots.forEach((s, i) => { const b = $(s, '.tt-btn'); ctx.on(b, 'mouseenter', () => enter(i)); ctx.on(b, 'mouseleave', () => leave(i)); });
+    return {
+      play() {
+        const cur = E.cursor(root, ctx);
+        const btns = slots.map(s => $(s, '.tt-btn'));
+        const hop = (i, stay) => new Promise(res => { cur.to(btns[i], i ? 160 : 500, () => { if (i > 0) leave(i - 1); enter(i); ctx.after(stay, res); }); });
+        ctx.after(250, async () => {
+          await hop(0, 1000); await hop(1, 450); await hop(2, 450); await hop(3, 450);
+          leave(3); cur.to({ x: root.clientWidth * 0.8, y: root.clientHeight * 0.85 }, 400, () => cur.hide());
+        });
+      }
+    };
+  };
+
+  /* ---------------- Shared element: card grows into its detail view ---------------- */
+  D.morph = (root, p, ctx) => {
+    const cards = [['Brand refresh', '12 files', 220], ['Q4 roadmap', '4 files', 30], ['Hiring plan', '7 files', 150]];
+    root.innerHTML = win(`<div class="mp-grid">${cards.map(c => `<button class="ui-card mp-card"><span class="hv-thumb" style="--h:${c[2]}"></span><span class="ui-strong">${c[0]}</span><span class="ui-muted">${c[1]}</span></button>`).join('')}</div>`,
+      `<div class="ui-card mp-detail"><span class="hv-thumb mp-hero" style="--h:30"></span><div class="mp-txt"><div class="ui-strong">Q4 roadmap</div><div class="ui-muted">4 files · Ava, Sam and 2 others</div>${skLines([90, 76, 84])}</div></div>`);
+    const det = $(root, '.mp-detail'), txt = $(root, '.mp-txt'), src = $$(root, '.mp-card')[1];
+    const shared = p.mode !== 'fade';
+    ctx.anim(det, [{ opacity: 0 }, { opacity: 0 }], { dur: 0 });
+    det.style.pointerEvents = 'none';
+    let open = false;
+    const delta = () => {
+      const r = root.getBoundingClientRect(), a = src.getBoundingClientRect(), b = det.getBoundingClientRect();
+      void r;
+      return `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width}, ${a.height / b.height})`;
+    };
+    const go = () => {
+      open = !open;
+      det.style.pointerEvents = open ? 'auto' : 'none';
+      if (shared) {
+        const from = { opacity: 1, transform: delta(), borderRadius: '.9em' }, to = { opacity: 1, transform: 'none', borderRadius: '.9em' };
+        src.style.visibility = 'hidden';
+        const a = ctx.anim(det, open ? [from, to] : [to, from], { dur: p.dur, ease: p.ease });
+        ctx.anim(txt, open ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }], { dur: p.dur * 0.5, ease: 'ease-out', delay: open ? p.dur * 0.5 : 0 });
+        if (!open) a.finished.then(() => { src.style.visibility = ''; ctx.anim(det, [{ opacity: 0 }, { opacity: 0 }], { dur: 0 }); }, () => {});
+      } else {
+        const h = { opacity: 0, transform: 'scale(.97)' }, v = { opacity: 1, transform: 'none' };
+        ctx.anim(det, open ? [h, v] : [v, h], { dur: 220, ease: 'ease-out' });
+        ctx.anim(txt, [{ opacity: 1 }, { opacity: 1 }], { dur: 0 });
+      }
+    };
+    det.style.transformOrigin = '0 0';
+    ctx.on(src, 'click', () => !open && go());
+    ctx.on(det, 'click', () => open && go());
+    return { play() { ctx.after(400, () => { pulse(ctx, src); go(); }); ctx.after(2300, go); } };
+  };
+
+  /* ---------------- Icon swap in place (copy -> check) ---------------- */
+  D.iconSwap = (root, p, ctx) => {
+    const copy = '<svg viewBox="0 0 16 16" class="ic"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 3.5V3A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+    root.innerHTML = `<div class="ui-card is-wrap"><div class="ui-muted">Install</div><div class="is-code"><code>npm i motion-eye</code><button class="is-btn" aria-label="Copy"><span class="is-ic is-copy">${copy}</span><span class="is-ic is-check">${I.check}</span></button></div></div>`;
+    const a = $(root, '.is-copy'), b = $(root, '.is-check'), btn = $(root, '.is-btn');
+    const blur = p.blur ? 'blur(2px)' : 'blur(0px)';
+    const out = { opacity: 0, transform: 'scale(.4)', filter: blur }, inn = { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' };
+    ctx.anim(b, [out, out], { dur: 0 }); ctx.anim(a, [inn, inn], { dur: 0 });
+    let on = false;
+    const swap = () => {
+      on = !on;
+      const [x, y] = on ? [a, b] : [b, a];
+      if (p.mode === 'cut') { ctx.anim(x, [out, out], { dur: 0 }); ctx.anim(y, [inn, inn], { dur: 0 }); return; }
+      ctx.anim(x, [inn, out], { dur: p.dur, ease: 'out-quint' });
+      ctx.anim(y, [out, inn], { dur: p.dur, ease: 'out-quint' });
+    };
+    ctx.on(btn, 'click', () => { pulse(ctx, btn); swap(); if (on) ctx.after(1400, () => on && swap()); });
+    return { play() { ctx.after(500, () => { pulse(ctx, btn); swap(); }); ctx.after(1900, () => on && swap()); ctx.after(2500, () => { pulse(ctx, btn); swap(); }); } };
+  };
+
+  /* ---------------- Flick a sheet: velocity -> intent, velocity -> spring ---------------- */
+  D.flick = (root, p, ctx) => {
+    root.innerHTML = `<div class="win dg-win"><div class="win-body">${skLines([66, 88, 50, 72])}</div><div class="scrim"></div><div class="dg-sheet fk-sheet"><span class="dg-handle"></span><div class="ui-strong">Share “Q4 plan”</div>${PEOPLE.slice(0, 3).map(pp => `<div class="dg-row">${avatar(pp)}<span>${pp[0]}</span><span class="ui-muted">Can edit</span></div>`).join('')}</div><div class="fk-done ui-muted">Dismissed</div></div>`;
+    const sheet = $(root, '.fk-sheet'), scrim = $(root, '.scrim'), done = $(root, '.fk-done');
+    sheet.style.touchAction = 'none';
+    ctx.anim(done, [{ opacity: 0 }, { opacity: 0 }], { dur: 0 });
+    let y = 0, sim = null;
+    const H = () => sheet.offsetHeight;
+    const set = ny => { y = ny; sheet.style.transform = `translateY(${y}px)`; scrim.style.opacity = String(Math.max(0, 1 - y / H())); };
+    set(0);
+    const projection = v => (v / 1000) * 0.995 / (1 - 0.995); // UIScrollView-style deceleration projection
+    const release = v => {
+      const h = H();
+      const dismiss = p.decide === 'distance' ? y > h * 0.5 : y + projection(v) > h * 0.5;
+      const to = dismiss ? h + 24 : 0;
+      if (sim) sim.stop();
+      sim = ctx.physics({ from: y, to, v0: p.carry === false ? 0 : v, response: dismiss ? 0.32 : 0.38, damping: dismiss ? 1 : 0.86,
+        update: set,
+        done: () => { if (dismiss) { ctx.anim(done, [{ opacity: 0 }, { opacity: 1 }], { dur: 150 }); ctx.after(1000, () => { ctx.anim(done, [{ opacity: 1 }, { opacity: 0 }], { dur: 150 }); sim = ctx.physics({ from: y, to: 0, response: 0.4, damping: 1, update: set }); }); } } });
+    };
+    let drag = false, sy = 0, y0 = 0, hist = [];
+    ctx.on(sheet, 'pointerdown', e => { drag = true; sy = e.clientY; y0 = y; hist = [[e.clientY, performance.now()]]; if (sim) sim.stop(); sheet.setPointerCapture(e.pointerId); });
+    ctx.on(sheet, 'pointermove', e => { if (!drag) return; const d = e.clientY - sy + y0; set(d < 0 ? d * 0.25 : d); hist.push([e.clientY, performance.now()]); if (hist.length > 5) hist.shift(); });
+    const end = () => {
+      if (!drag) return; drag = false;
+      const a = hist[0], b = hist[hist.length - 1], dt = (b[1] - a[1]) / 1000;
+      release(dt > 0 ? (b[0] - a[0]) / dt * E.speed : 0);
+    };
+    ctx.on(sheet, 'pointerup', end); ctx.on(sheet, 'pointercancel', end);
+    return {
+      play() {
+        const cur = E.cursor(root, ctx);
+        ctx.after(250, () => cur.to($(root, '.dg-handle'), 450, () => {
+          cur.down();
+          const sx = cur.x, sy0 = cur.y, dist = H() * 0.24, T = 130; // a quick flick: 24% in 130ms
+          ctx.after(100, () => ctx.tween({ dur: T, ease: 'ease-in',
+            update: k => { cur.set(sx, sy0 + dist * k); set(dist * k); },
+            done: () => { cur.up(); release(dist / (T / 1000) * 1.6); ctx.after(500, () => cur.hide()); } }));
         }));
       }
     };

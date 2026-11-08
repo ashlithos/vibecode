@@ -62,18 +62,21 @@
 
   const DEF = {
     'linear':        { bez: [0, 0, 1, 1], label: 'linear' },
-    'ease':          { bez: [.25, .1, .25, 1], label: 'ease（CSS 默认）' },
+    'ease':          { bez: [.25, .1, .25, 1], label: 'ease（CSS 默认）', en: 'ease (CSS default)' },
     'ease-in':       { bez: [.42, 0, 1, 1], label: 'ease-in' },
     'ease-out':      { bez: [0, 0, .58, 1], label: 'ease-out' },
     'ease-in-out':   { bez: [.42, 0, .58, 1], label: 'ease-in-out' },
-    'out-quint':     { bez: [.23, 1, .32, 1], label: 'ease-out · 强' },
-    'in-quart':      { bez: [.5, 0, .75, 0], label: 'ease-in · 强' },
-    'in-out-quart':  { bez: [.77, 0, .175, 1], label: 'ease-in-out · 强' },
-    'out-back':      { bez: [.34, 1.56, .64, 1], label: 'ease-out-back · 回弹' },
+    'out-quint':     { bez: [.23, 1, .32, 1], label: 'ease-out · 强', en: 'ease-out · strong' },
+    'in-quart':      { bez: [.5, 0, .75, 0], label: 'ease-in · 强', en: 'ease-in · strong' },
+    'in-out-quart':  { bez: [.77, 0, .175, 1], label: 'ease-in-out · 强', en: 'ease-in-out · strong' },
+    'out-back':      { bez: [.34, 1.56, .64, 1], label: 'ease-out-back · 回弹', en: 'ease-out-back · overshoot' },
+    'm3-standard':   { bez: [.2, 0, 0, 1], label: 'M3 standard' },
+    'm3-decel':      { bez: [.05, .7, .1, 1], label: 'M3 emphasized decelerate' },
+    'm3-accel':      { bez: [.3, 0, .8, .15], label: 'M3 emphasized accelerate' },
     'steps-12':      { css: 'steps(12, end)', fn: p => Math.floor(p * 12) / 12, label: 'steps(12)' },
-    'spring-smooth': { spring: [170, 26], fallback: [.23, 1, .32, 1], label: 'spring · 无回弹' },
-    'spring-snappy': { spring: [380, 26], fallback: [.3, 1.25, .5, 1], label: 'spring · 轻回弹' },
-    'spring-bouncy': { spring: [200, 9], fallback: [.34, 1.9, .64, 1], label: 'spring · 大回弹' }
+    'spring-smooth': { spring: [170, 26], fallback: [.23, 1, .32, 1], label: 'spring · 无回弹', en: 'spring · no bounce' },
+    'spring-snappy': { spring: [380, 26], fallback: [.3, 1.25, .5, 1], label: 'spring · 轻回弹', en: 'spring · light bounce' },
+    'spring-bouncy': { spring: [200, 9], fallback: [.34, 1.9, .64, 1], label: 'spring · 大回弹', en: 'spring · big bounce' }
   };
   const cache = {};
   M.EASE_KEYS = Object.keys(DEF);
@@ -93,7 +96,7 @@
     out.name = name;
     return (cache[name] = out);
   };
-  M.easeLabel = name => (DEF[name] ? DEF[name].label : name);
+  M.easeLabel = (name, lang) => (DEF[name] ? (lang === 'en' && DEF[name].en) || DEF[name].label : name);
 
   /* ---------- per-stage context: every timer/animation is owned and killable ---------- */
   const DEAD_ANIM = { finished: Promise.resolve(), cancel() {}, effect: null };
@@ -137,6 +140,23 @@
           o.update(E.fn(p), p);
           if (p < 1) frames.add(requestAnimationFrame(step));
           else if (o.done) o.done();
+        };
+        frames.add(requestAnimationFrame(step));
+        return { stop() { stopped = true; } };
+      },
+      /* Real spring with initial velocity, parameterised like SwiftUI/UIKit:
+         response (s, how quick) + damping ratio (1 = no overshoot). Units: px, px/s. */
+      physics(o) {
+        const resp = o.response || 0.4, zeta = o.damping == null ? 0.85 : o.damping;
+        const k = Math.pow(2 * Math.PI / resp, 2), c = 4 * Math.PI * zeta / resp;
+        let x = o.from, v = o.v0 || 0, last = performance.now(), stopped = false;
+        const step = now => {
+          if (dead || stopped) return;
+          const dt = Math.min(0.032, (now - last) / 1000) / M.speed; last = now;
+          for (let i = 0; i < 6; i++) { const a = -k * (x - o.to) - c * v; v += a * dt / 6; x += v * dt / 6; }
+          if (Math.abs(x - o.to) < 0.3 && Math.abs(v) < 6) { o.update(o.to, 0); if (o.done) o.done(); return; }
+          o.update(x, v);
+          frames.add(requestAnimationFrame(step));
         };
         frames.add(requestAnimationFrame(step));
         return { stop() { stopped = true; } };

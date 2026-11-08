@@ -65,11 +65,11 @@
       why: '回弹（overshoot）自带"看我！"的表演性格。偶尔一次很可爱；高频出现就显得轻浮、拖沓，界面也显得不稳。',
       rule: '回弹留给低频、有情绪价值或手势驱动的时刻。', knobs: ['ease', 'dur', 'scale'] },
     { id: 'ease-in-exit', ch: 'easing', title: '永久离场可以加速',
-      q: '抽屉关闭、离开屏幕时，哪个更干脆？', demo: 'drawer',
-      base: { dur: 320, ease: 'out-quint', mode: 'slide', close: true, exitDur: 240 },
-      good: { exitEase: 'ease-in' }, bad: { exitEase: 'out-quint' }, gl: '离场 ease-in', bl: '离场 ease-out',
-      why: '永久离开屏幕的元素可以用 ease-in：起步慢、加速飞出，像被扔出去。强 ease-out 会在快到边缘时减速，留下一条细边磨蹭不走。注意 ease-in 起步慢，所以离场要短（≤250ms）。这是 Material Design 的做法，不是铁律。',
-      rule: '永久离场：短而加速。进场：减速落定。', knobs: ['exitEase', 'exitDur'] },
+      q: '"更新说明"看完就不会再出现。它关闭离开屏幕时，哪个更干脆？', demo: 'drawer',
+      base: { variant: 'whatsnew', dur: 400, ease: 'm3-decel', mode: 'slide', close: true, exitDur: 200 },
+      good: { exitEase: 'm3-accel' }, bad: { exitEase: 'out-quint' }, gl: '离场：加速（M3 accelerate）', bl: '离场：减速（ease-out）',
+      why: 'Material 3 区分了两种离场：永久离开（不会再回来）用加速曲线，以最高速度冲出画面，暗示"拿不回来了"；暂时离开（比如还能再打开的侧边栏）用 emphasized，在屏幕外轻轻停下。减速离场会在快到边缘时磨蹭，留下一条细边。注意分歧：Emil Kowalski 主张进出都用 ease-out，NN/g 说 ease-in 有时用于离场。这一课是 Material 的观点。',
+      rule: '永久离场：短而加速（200ms）。暂时离场：减速停在屏幕外。', knobs: ['exitEase', 'exitDur'] },
 
     /* ---------------- 2 · Duration ---------------- */
     { id: 'menu-180', ch: 'duration', title: '小弹层 150–250ms',
@@ -96,9 +96,9 @@
       rule: '小元素约 150ms，大面板 300–400ms。', knobs: ['dur', 'ease'] },
     { id: 'frequency', ch: 'duration', title: '越常用，越少动',
       q: '假设你每天按 ⌘K 一百次，哪个更好？', demo: 'palette',
-      base: {}, good: { dur: 110, scale: .98, ease: 'out-quint' }, bad: { dur: 380, scale: .85, ease: 'out-back' },
-      gl: '110ms · 几乎不动', bl: '380ms · 缩放回弹',
-      why: '动效的价值随使用频率衰减：第一次看觉得精致，第一百次就是在挡路。键盘触发的高频操作应该近乎瞬间出现。',
+      base: {}, good: { dur: 0, scale: 1, ease: 'out-quint' }, bad: { dur: 380, scale: .85, ease: 'out-back' },
+      gl: '不做动画 · 瞬间出现', bl: '380ms · 缩放回弹',
+      why: '动效的价值随使用频率衰减：第一次看觉得精致，第一百次就是在挡路。Emil Kowalski 的建议更直接：键盘触发的操作永远不要做动画，他举的例子是 Raycast 完全没有动画，"而且感觉是对的"。Apple HIG 也说，频繁发生的交互一般不要加动效。',
       rule: '使用越频繁，动画越少。键盘操作尤其如此。', knobs: ['dur', 'scale', 'ease'] },
     { id: 'page-speed', ch: 'duration', title: '页面切换别拖',
       q: '切换标签页内容时，哪个不拖沓？', demo: 'tabs',
@@ -117,9 +117,9 @@
     { id: 'no-scale-zero', ch: 'space', title: '不要从 scale(0) 开始',
       q: '哪个弹出更自然？', demo: 'dropdown',
       base: { variant: 'crypto', dur: 260, ease: 'out-quint', dist: 0, origin: 'trigger' },
-      good: { scale: .95 }, bad: { scale: 0 }, gl: 'scale(0.95) → 1', bl: 'scale(0) → 1',
+      good: { scale: .93 }, bad: { scale: 0 }, gl: 'scale(0.93) → 1', bl: 'scale(0) → 1',
       why: '现实中没有东西是从"无"长出来的。从 0 缩放意味着元素要经历一段极小、看不清的状态，动作也显得夸张。从 0.9–0.97 开始，配合透明度，只是轻轻浮现。',
-      rule: '永远不要从 scale(0) 开始。', knobs: ['scale', 'dur'] },
+      rule: '永远不要从 scale(0) 开始，从 0.9 以上开始。', knobs: ['scale', 'dur'] },
     { id: 'subtle-distance', ch: 'space', title: '位移要小',
       q: '对话框出现时，哪个更稳重？', demo: 'modal',
       base: { dur: 300, ease: 'out-quint', scale: 1, seq: 'overlap', origin: 'center' },
@@ -215,7 +215,7 @@
       rule: '低风险操作：先反馈，后确认。', knobs: ['latency'] },
     { id: 'toggle-slide', ch: 'feedback', title: '开关要"拨"过去',
       q: '开关切换时，哪个更像真实的开关？', demo: 'toggle',
-      base: { ease: 'out-quint', dur: 200 }, good: { mode: 'slide' }, bad: { mode: 'teleport' }, gl: '滑动 200ms', bl: '瞬移',
+      base: { ease: 'm3-standard', dur: 200 }, good: { mode: 'slide' }, bad: { mode: 'teleport' }, gl: '滑动 200ms', bl: '瞬移',
       why: '开关是物理隐喻：一个滑块从一端拨到另一端。瞬移打破了这个隐喻，用户也更难察觉状态已经改变。',
       rule: '有物理隐喻的控件，动效要符合隐喻。', knobs: ['mode', 'dur', 'ease'] },
     { id: 'check-draw', ch: 'feedback', title: '完成值得一个小奖励',
@@ -285,9 +285,9 @@
       rule: '等待动画：慢、低对比。', knobs: ['style', 'speed'] },
     { id: 'progress-accel', ch: 'waiting', title: '进度条让结尾加速',
       q: '总时长完全相同，哪个进度条感觉更快？', demo: 'progress',
-      base: { total: 3200 }, good: { curve: 'accel' }, bad: { curve: 'decel' }, gl: '先慢后快', bl: '先快后慢（卡在 90%）',
-      why: 'Harrison 等人 2007 年的研究《Rethinking the Progress Bar》发现：同样的时长，结尾加速的进度条被感觉更短。冲到 90% 然后卡住最让人焦躁。人对结尾的印象最深（峰终定律）。',
-      rule: '进度条别前快后慢，让结尾加速。', knobs: ['curve', 'total'] },
+      base: { total: 5500 }, good: { curve: 'accel' }, bad: { curve: 'decel' }, gl: '先慢后快（加速）', bl: '先快后慢（减速）',
+      why: 'Harrison 等人在 UIST 2007 的实验里，让 22 人两两比较 5.5 秒的进度条。唯一被感觉"比匀速更快"的两种，都是结尾加速的；结尾附近有停顿的被感觉更慢。直接对比时，"快速加速"显著胜过"快速减速"。论文用峰终定律解释：人对结尾的印象最深。',
+      rule: '慢的部分放在前面，让结尾加速；结尾不要停顿。', knobs: ['curve', 'total'] },
     { id: 'skeleton-vs-spinner', ch: 'waiting', title: '骨架屏胜过 spinner',
       q: '加载一个列表时，哪个让等待显得更短？', demo: 'loader',
       base: { latency: 1800 }, good: { style: 'skeleton' }, bad: { style: 'spinner' }, gl: '骨架屏', bl: '居中 spinner',
@@ -358,6 +358,94 @@
       rule: 'spring 默认低回弹，弹跳留给游戏化场景。', knobs: ['ease'] }
   ];
 
+  /* ---------------- 进阶 · advanced techniques ---------------- */
+  L.push(
+    { id: 'tooltip-warm', ch: 'duration', level: 'adv', title: 'tooltip 预热',
+      q: '鼠标扫过工具栏找按钮时，哪个 tooltip 更聪明？', demo: 'tooltip',
+      base: { dur: 125, delay: 500 }, good: { warm: true }, bad: { warm: false }, gl: '首个延迟，之后瞬间出现', bl: '每个都重新等 500ms',
+      why: '第一次悬停时等一会儿，免得鼠标路过就弹出来。可一旦有 tooltip 打开了，说明用户正在"找东西"，后面的 tooltip 应该立刻出现，而且不做动画。这是一个状态（预热），不是每次独立计算。Radix、Base UI 这类组件库都内置了这个行为。',
+      rule: 'tooltip：首次延迟；预热后瞬间显示、无动画。', knobs: ['warm', 'delay'] },
+    { id: 'icon-swap', ch: 'feedback', level: 'adv', title: '图标原地变形',
+      q: '点击复制后，哪个图标切换更顺？', demo: 'iconSwap',
+      base: { dur: 200 }, good: { mode: 'crossfade', blur: true }, bad: { mode: 'cut' }, gl: '缩放 + 透明度 + 2px 模糊', bl: '硬切',
+      why: '图标在同一个位置切换时，硬切会"闪"一下。让旧图标缩小淡出、新图标从小放大淡入，再加一点模糊遮住中间几帧，切换读起来就像变形。',
+      rule: '同位置的图标切换：缩放 + 透明度 + 轻微模糊。', knobs: ['mode', 'blur', 'dur'] },
+    { id: 'shared-element', ch: 'continuity', level: 'adv', title: '卡片长成详情页',
+      q: '点开卡片看详情时，哪个更清楚"这是同一个东西"？', demo: 'morph',
+      base: { dur: 480, ease: 'm3-standard' }, good: { mode: 'shared' }, bad: { mode: 'fade' }, gl: '共享元素过渡', bl: '详情凭空淡入',
+      why: '让卡片"长"成详情页，眼睛就知道两者是同一个对象；关闭时它缩回原位，用户知道自己回到了哪里。这叫共享元素过渡。Material 3 的卡片展开到全屏用的是 500ms 的长时长：变化的面积大，就需要更多时间。',
+      rule: '同一个对象出现在两个视图里，用变形连接。', knobs: ['mode', 'dur'] },
+    { id: 'flick-intent', ch: 'physics', level: 'adv', title: '用速度判断意图',
+      q: '快速往下一甩（只拖了 24%），哪个面板读懂了你的意思？', demo: 'flick',
+      base: { carry: true }, good: { decide: 'project' }, bad: { decide: 'distance' }, gl: '按速度预测落点', bl: '只看拖动距离',
+      why: '快速一甩，虽然只拖了一小段，意图很明显是"关掉"。WWDC18 讲到：用松手速度加上减速率，算出物体"会滑到哪"（projecting momentum），再决定它去哪。只看距离的实现会无视这个意图，把面板弹回去。',
+      rule: '手势结束时，用速度预测落点，而不是只看位置。', knobs: ['decide'] },
+    { id: 'carry-velocity', ch: 'physics', level: 'adv', title: '继承松手的速度',
+      q: '甩开面板的那一刻，哪个衔接更连贯？（开慢放看松手那一帧）', demo: 'flick',
+      base: { decide: 'project' }, good: { carry: true }, bad: { carry: false }, gl: '继承手指速度', bl: '从静止重新开始',
+      why: '松手的那一刻，面板本来就带着手指的速度。如果动画从速度 0 开始，面板会先停一下再加速，像断了线。WWDC18 的 PiP 示例正是把"被扔出时的速度"交给动画。',
+      rule: 'spring 的初速度 = 手指松开时的速度。', knobs: ['carry'] }
+  );
+
+  /* order: chapter, then basic → advanced → subtle */
+  const RANK = { basic: 0, adv: 1 };
+  L.forEach((l, i) => { l.level = l.level || 'basic'; l._i = i; });
+  L.sort((a, b) => CHAPTERS.findIndex(c => c.id === a.ch) - CHAPTERS.findIndex(c => c.id === b.ch) || RANK[a.level] - RANK[b.level] || a._i - b._i);
+
+  /* ---------------- sources, checked against the original pages on 2026-11-08 ----------------
+     q = verbatim quote; p = paraphrase (Chinese gist, when the source wording was not captured verbatim) */
+  const SOURCES = {
+    emil7: { name: 'Emil Kowalski · 7 Practical Animation Tips', url: 'https://emilkowal.ski/ui/7-practical-animation-tips' },
+    emilGreat: { name: 'Emil Kowalski · Great Animations', url: 'https://emilkowal.ski/ui/great-animations' },
+    m3: { name: 'Material 3 · Applying easing and duration', url: 'https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration' },
+    m3tok: { name: 'Material 3 · Easing and duration tokens', url: 'https://m3.material.io/styles/motion/easing-and-duration/tokens-specs' },
+    hig: { name: 'Apple HIG · Motion', url: 'https://developer.apple.com/design/human-interface-guidelines/motion' },
+    wwdc: { name: 'WWDC18 · Designing Fluid Interfaces', url: 'https://developer.apple.com/videos/play/wwdc2018/803/' },
+    nng: { name: 'NN/g · Executing UX Animations: Duration', url: 'https://www.nngroup.com/articles/animation-duration/' },
+    nngRT: { name: 'NN/g · Response Time Limits (Nielsen 1993)', url: 'https://www.nngroup.com/articles/response-times-3-important-limits/' },
+    harrison: { name: 'Harrison et al. · Rethinking the Progress Bar (UIST 2007)', url: 'https://www.chrisharrison.net/index.php/Research/ProgressBars' }
+  };
+  const SRC = {
+    'ease-out-enter': [['emil7', 'q', 'If you are animating something that is entering or exiting the screen, use ease-out.'], ['nng', 'q', "Most frequently, you'll want to use an ease-out animation."]],
+    'custom-curve': [['emil7', 'q', 'The built-in easing curves in CSS are usually not strong enough, which is why I almost never use them.']],
+    'in-out-move': [['m3', 'q', 'Transitions without easing look stiff and mechanical, while a transition with easing appears more natural.']],
+    'no-bounce-menu': [['wwdc', 'p', '调 spring 时建议从 100% 阻尼（无回弹）开始；回弹必须有目的。']],
+    'ease-in-exit': [['m3', 'q', 'By ending at peak velocity, it gives the impression the exiting component cannot be retrieved.'], ['nng', 'q', 'Ease-in and ease-in-out are sometimes used for elements leaving the screen.']],
+    'menu-180': [['emil7', 'q', 'As a rule of thumb, UI animations should generally stay under 300ms.'], ['emil7', 'p', '原文的例子正是：180ms 的 select 比 400ms 的更跟手。']],
+    'exit-faster': [['m3', 'q', "Exit transitions are faster because they require less attention than the user's next task."]],
+    'hover-speed': [['nng', 'q', 'should be roughly 100 ms (0.10 seconds) in total duration.'], ['nngRT', 'q', '0.1 second is about the limit for having the user feel that the system is reacting instantaneously']],
+    'distance-scales': [['m3', 'q', 'Scaling duration with the size of a transition area gives a consistent sense of speed.']],
+    'frequency': [['emilGreat', 'q', 'A good tip here is to never animate keyboard initiated actions.'], ['hig', 'q', 'In apps, generally avoid adding motion to UI interactions that occur frequently.']],
+    'page-speed': [['nng', 'q', 'a duration of 200–300 ms can be appropriate.']],
+    'origin-trigger': [['emil7', 'p', '弹层应该从触发器处缩放出来，默认的 center 原点"在大多数情况下是错的"。']],
+    'no-scale-zero': [['emil7', 'q', 'Try animating from a higher initial scale instead (0.9+).']],
+    'toast-edge': [['hig', 'q', "if someone reveals a view by sliding it down from the top, they don't expect to dismiss the view by sliding it to the side."]],
+    'tab-direction': [['hig', 'q', 'Strive for realistic feedback motion that follows people’s gestures and expectations.']],
+    'exit-together': [['m3', 'q', "Exit transitions are faster because they require less attention than the user's next task."]],
+    'press-scale': [['emil7', 'q', 'A scale of 0.97 on the :active pseudo-class should do the job.'], ['wwdc', 'p', '按钮应在手指按下的瞬间高亮，表示系统已经响应。']],
+    'press-subtle': [['emil7', 'q', 'A scale of 0.97 on the :active pseudo-class should do the job.']],
+    'optimistic': [['nngRT', 'q', '0.1 second: Limit for users feeling that they are directly manipulating objects in the UI.']],
+    'toggle-slide': [['m3tok', 'q', 'Selection controls have a short duration of 200ms with Standard easing']],
+    'check-draw': [['hig', 'q', 'Aim for brevity and precision in feedback animations.']],
+    'shake-subtle': [['hig', 'q', 'Aim for brevity and precision in feedback animations.']],
+    'progress-accel': [['harrison', 'p', '9 种进度函数中，只有两种结尾加速的被感觉比匀速快；结尾附近有停顿的被感觉更慢。']],
+    'pageload-quiet': [['hig', 'q', 'Don’t add motion for the sake of adding motion.']],
+    'no-ambient': [['hig', 'q', 'Gratuitous or excessive animation can distract people and may make them feel disconnected or physically uncomfortable.']],
+    'fewer-props': [['emilGreat', 'p', '优先只动 transform 和 opacity，其他属性会触发布局或重绘。']],
+    'reduced-motion': [['hig', 'q', 'Make motion optional.']],
+    'search-calm': [['hig', 'q', 'In apps, generally avoid adding motion to UI interactions that occur frequently.']],
+    'interruptible': [['hig', 'q', 'Let people cancel motion.'], ['wwdc', 'q', "we want to allow for constant redirection and interruption. This one's big."], ['emilGreat', 'p', 'CSS transition 可以在中途被打断，平滑地转向新值。']],
+    'drag-spring': [['wwdc', 'q', "We actually like to avoid using duration when we're describing elastic behaviors"]],
+    'rubber-band': [['wwdc', 'q', "It means we're softly indicating boundaries of the interface."]],
+    'spring-damping': [['wwdc', 'q', 'The first is damping, which controls how much or little overshoot there is'], ['wwdc', 'p', '建议从 100% 阻尼开始调；带有方向动量的关闭手势（如 Now Playing）才用约 80% 阻尼。']],
+    'tooltip-warm': [['emil7', 'q', 'Once a tooltip is open, hovering over other tooltips should open them with no delay and no animation.']],
+    'icon-swap': [['emil7', 'p', '用一点 filter: blur() 掩盖过渡里的瑕疵，他的 demo 用 2px。']],
+    'shared-element': [['m3tok', 'q', 'A Card expanding to full screen uses a long 500ms duration with Emphasized easing']],
+    'flick-intent': [['wwdc', 'p', '用速度和减速率"投射"出终点，作为动态行为的落点（projecting momentum）。']],
+    'carry-velocity': [['wwdc', 'p', 'PiP 示例：把被扔出时的速度交给动画，而不是忽略动量。']],
+  };
+  L.forEach(l => { l.src = (SRC[l.id] || []).map(s => ({ src: SOURCES[s[0]], kind: s[1], text: s[2] })); });
+
   /* knob definitions: range | ease | choice | bool */
   const KNOBS = {
     dur: { label: '时长', en: 'duration', type: 'range', min: 0, max: 1000, step: 10, unit: 'ms' },
@@ -377,7 +465,7 @@
     cycles: { label: '抖动次数', en: 'cycles', type: 'range', min: 1, max: 10, step: 1, unit: ' 次' },
     showAfter: { label: '出现延迟', en: 'show after', type: 'range', min: 0, max: 800, step: 20, unit: 'ms' },
     minShow: { label: '最短停留', en: 'min show', type: 'range', min: 0, max: 1000, step: 20, unit: 'ms' },
-    total: { label: '总时长', en: 'total', type: 'range', min: 1000, max: 6000, step: 100, unit: 'ms' },
+    total: { label: '总时长', en: 'total', type: 'range', min: 1000, max: 8000, step: 100, unit: 'ms' },
     speed: { label: '周期', en: 'period', type: 'range', min: 300, max: 3000, step: 50, unit: 'ms' },
     origin: { label: '变换原点', en: 'transform-origin', type: 'choice', options: ['trigger', 'center', 'top', 'bottom'] },
     mode: { label: '方式', en: 'mode', type: 'choice' },
@@ -396,7 +484,14 @@
     match: { label: '骨架尺寸一致', en: 'match size', type: 'bool' },
     ambient: { label: '持续晃动', en: 'ambient', type: 'bool' },
     rubber: { label: '橡皮筋阻尼', en: 'rubber band', type: 'bool' },
-    restagger: { label: '每次重播动画', en: 'replay on input', type: 'bool' }
+    restagger: { label: '每次重播动画', en: 'replay on input', type: 'bool' },
+    warm: { label: '预热后瞬间显示', en: 'warm-up', type: 'bool' },
+    delay: { label: '首次延迟', en: 'delay', type: 'range', min: 0, max: 1000, step: 25, unit: 'ms' },
+    blur: { label: '模糊遮罩', en: 'blur', type: 'bool' },
+    carry: { label: '继承松手速度', en: 'carry velocity', type: 'bool' },
+    decide: { label: '去向判断', en: 'decide by', type: 'choice' },
+    cdelay: { label: '内容延迟（占时长比例）', en: 'content delay', type: 'range', min: 0, max: 1, step: .05, unit: '' },
+    cdur: { label: '内容过渡时长', en: 'content duration', type: 'range', min: 0, max: 800, step: 10, unit: 'ms' }
   };
 
   const WORDS = {
@@ -404,8 +499,8 @@
     stable: '固定宽度', swap: '直接替换', subtle: '克制', all: '全部飞入', few: '少量属性', many: '多种属性', fade: '淡入',
     'slide-big': '大幅滑入', retarget: '转向', restart: '重播', release: '回弹', overlap: '重叠', sequential: '串行', cut: '硬切',
     overflow: '溢出', skeleton: '骨架屏', spinner: 'spinner', steps: '分步说明', accel: '先慢后快', decel: '先快后慢',
-    linear: '匀速', smooth: '平滑', directional: '跟随方向', fixed: '固定从右', pulse: '闪烁', shimmer: '扫光'
+    linear: '匀速', smooth: '平滑', crossfade: '交叉缩放', shared: '共享元素', project: '按速度预测', distance: '只看距离', whatsnew: '更新说明', directional: '跟随方向', fixed: '固定从右', pulse: '闪烁', shimmer: '扫光'
   };
 
-  global.Curriculum = { CHAPTERS, LESSONS: L, KNOBS, WORDS };
+  global.Curriculum = { CHAPTERS, LESSONS: L, KNOBS, WORDS, SOURCES };
 })(window);

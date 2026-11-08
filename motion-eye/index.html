@@ -1,6 +1,6 @@
 <title>Motion Eye</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="动效眼力训练：56 组 Web/SaaS 交互动效 A/B 对比，猜、慢放、看曲线、亲手调参。">
+<meta name="description" content="动效眼力训练 · Train your eye for motion: 61 Web/SaaS A/B comparisons.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -246,7 +246,7 @@ blockquote cite{display:block; font-style:normal; font-size:12px; color:var(--in
   .topbar{display:flex; position:sticky; top:env(safe-area-inset-top,0px); z-index:20; align-items:center; gap:12px; padding-block:10px; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); background:var(--panel); border-bottom:1px solid var(--rule)}
   .topbar a{display:flex; align-items:center; gap:8px; text-decoration:none; font:700 16px var(--f-display)}
   .topbar .brand-mark{width:22px; height:22px}
-  .topbar span{margin-left:auto; font:500 12px var(--f-mono); color:var(--ink-3)}
+  .topbar > span{font:500 12px var(--f-mono); color:var(--ink-3)}
   .rail{position:fixed; z-index:40; top:0; left:0; bottom:0; height:auto; width:min(86vw,320px); padding-top:calc(20px + env(safe-area-inset-top,0px)); padding-left:env(safe-area-inset-left,0px); transform:translateX(-102%); transition:transform .3s cubic-bezier(.23,1,.32,1); box-shadow:none}
   body.rail-open .rail{transform:none; box-shadow:0 0 40px rgba(0,0,0,.25)}
   .rail-scrim{display:block; position:fixed; inset:0; z-index:35; background:var(--scrim); opacity:0; pointer-events:none; transition:opacity .25s ease-out}
@@ -267,7 +267,7 @@ blockquote cite{display:block; font-style:normal; font-size:12px; color:var(--in
 /* =================================================================
    Demo UI kit — sized in em so it scales with each stage (container query)
    ================================================================= */
-.demo{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--f-ui); color:var(--ui-text); font-size:clamp(8.5px,3.3cqi,13.5px); line-height:1.35; -webkit-user-select:none; user-select:none}
+.demo{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--f-ui); color:var(--ui-text); font-size:clamp(9px,3.3cqi,13.5px); line-height:1.35; -webkit-user-select:none; user-select:none}
 .demo button{font:inherit; color:inherit}
 .demo .ui-card{background:var(--ui-surface); border:1px solid var(--ui-border); border-radius:.9em; box-shadow:var(--ui-shadow)}
 .demo .ui-btn{font-weight:500; background:var(--ui-surface); border:1px solid var(--ui-border); border-radius:999px; padding:.55em 1.3em; cursor:pointer; line-height:1.2; white-space:nowrap}
@@ -542,9 +542,75 @@ blockquote cite{display:block; font-style:normal; font-size:12px; color:var(--in
 .dg-handle{width:2.8em; height:.38em; border-radius:.2em; background:var(--ui-track); align-self:center; margin:.2em 0 .3em; cursor:grab}
 .dg-row{display:flex; align-items:center; gap:.6em}
 .dg-row span:nth-child(2){flex:1}
+
+/* levels + sources */
+.lvl{display:inline-flex; align-items:center; font:600 10.5px/1 var(--f-body); letter-spacing:.04em; padding:3px 6px; border-radius:5px; margin-left:auto; flex:none; text-transform:none}
+.lvl-adv{background:var(--accent-soft); color:var(--accent)}
+.eyebrow .num{display:inline-flex; gap:8px; align-items:center}
+.eyebrow .num .lvl{margin:0}
+.rail li a.is-on .lvl{background:var(--bg)}
+.chap-list .lvl{margin-left:auto}
+.levels{display:flex; flex-wrap:wrap; gap:8px 22px; margin-bottom:6px}
+.levels div{display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink-2)}
+.levels .lvl{margin:0}
+.levels b{color:var(--ink)}
+.srcs{display:flex; flex-direction:column; gap:8px; padding-top:4px}
+.srcs-h{font:500 11px var(--f-mono); color:var(--ink-3); letter-spacing:.06em; text-transform:uppercase}
+.src{display:flex; flex-direction:column; gap:2px; font-size:13.5px; padding-left:10px; border-left:2px solid var(--rule)}
+.src a{font-weight:600; text-underline-offset:3px}
+.src q{color:var(--ink-2); font-style:italic}
+.src-p,.src-none{color:var(--ink-2); margin:0; font-size:13.5px}
+.note{font-size:13.5px; color:var(--ink-2); max-width:70ch; margin:6px 0 0}
+
+/* tooltip */
+.tt{position:absolute; top:2.4em; left:0; right:0; margin:auto; width:min(18em,90%); display:flex; flex-direction:column; gap:1.2em}
+.tt-bar{display:flex; gap:.3em; padding:.35em; background:var(--ui-surface); border:1px solid var(--ui-border); border-radius:.7em; box-shadow:var(--ui-shadow); width:max-content}
+.tt-slot{position:relative}
+.tt-btn{width:2.3em; height:2.3em; border-radius:.45em; border:0; background:none; font-weight:700; cursor:pointer}
+.tt-btn:hover{background:var(--ui-sub)}
+.tt-I{font-style:italic; font-weight:500!important} .tt-U{text-decoration:underline} .tt-S{text-decoration:line-through}
+.tt-tip{position:absolute; top:calc(100% + .5em); left:50%; margin-left:-4em; width:8em; display:flex; justify-content:center; gap:.5em; padding:.4em .6em; border-radius:.45em; background:var(--ui-text); color:var(--ui-surface); font-size:.85em; white-space:nowrap; z-index:3; pointer-events:none}
+.tt-tip kbd{font:inherit; opacity:.6}
+.tt-doc{padding:0 .2em}
+
+/* morph */
+.mp-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.6em; width:100%}
+.mp-card{display:flex; flex-direction:column; gap:.15em; padding:.5em; text-align:left; cursor:pointer; min-width:0}
+.mp-card .hv-thumb{height:3.4em}
+.mp-card span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.mp-detail{position:absolute; top:3em; left:.8em; right:.8em; bottom:.8em; padding:.7em; display:flex; flex-direction:column; gap:.6em; cursor:pointer; overflow:hidden}
+.mp-hero{height:42%; flex:none; margin:0}
+.mp-txt{display:flex; flex-direction:column; gap:.3em}
+.mp-txt .sk-lines{margin-top:.4em}
+
+/* icon swap */
+.is-wrap{width:min(17em,90%); padding:1em; display:flex; flex-direction:column; gap:.5em}
+.is-code{display:flex; align-items:center; justify-content:space-between; gap:.6em; padding:.55em .6em .55em .9em; border-radius:.6em; background:var(--ui-sub)}
+.is-code code{font-size:.92em}
+.is-btn{position:relative; width:2.1em; height:2.1em; border-radius:.45em; border:1px solid var(--ui-border); background:var(--ui-surface); cursor:pointer; flex:none}
+.is-ic{position:absolute; inset:0; display:grid; place-items:center}
+.is-check{color:#22A85A}
+
+/* flick */
+.fk-done{position:absolute; left:0; right:0; bottom:1.4em; text-align:center; font-weight:500}
+.dr-badge{align-self:flex-start; font-size:.75em; font-weight:600; padding:.15em .5em; border-radius:999px; background:var(--ui-sub); color:var(--ui-accent)}
+
+/* language switch, hint, sequential play */
+.rail-top{display:flex; align-items:center; justify-content:space-between; gap:8px; padding-right:16px}
+.rail-top .rail-brand{padding-right:0}
+.lang{display:inline-flex; padding:2px; border-radius:8px; background:var(--bg); border:1px solid var(--rule); flex:none}
+.lang button{border:0; background:none; color:var(--ink-3); font:600 12px var(--f-body); padding:4px 8px; border-radius:6px; cursor:pointer}
+.lang button.is-on{background:var(--stage); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.look{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-top:-6px}
+.look .link{font-weight:600; color:var(--accent)}
+.look-txt{font-size:14.5px; font-weight:600; padding:6px 12px; border-radius:8px; background:var(--accent-soft)}
+.stage .stage-box{transition:box-shadow .2s}
+.stage.is-active .stage-box{box-shadow:inset 0 0 0 2px var(--accent)}
+.stage.is-active .stage-tag{color:var(--accent)}
+@media (max-width:880px){ .topbar #top-lang{margin-left:auto} .topbar .top-score{margin-left:0!important} }
 </style>
 
-<header class="topbar"><button class="btn-ghost" id="rail-toggle" aria-label="打开大纲">大纲</button><a href="#outline"><span class="brand-mark" aria-hidden="true"></span>Motion Eye</a><span>答对 <b id="top-score">0/0</b></span></header>
+<header class="topbar"><button class="btn-ghost" id="rail-toggle" aria-label="打开大纲">大纲</button><a href="#outline"><span class="brand-mark" aria-hidden="true"></span>Motion Eye</a><span id="top-lang"></span><span class="top-score"><b id="top-score">0/0</b></span></header>
 <div class="app">
   <nav class="rail" id="rail" aria-label="课程大纲"></nav>
   <main id="main"></main>
@@ -554,4 +620,5 @@ blockquote cite{display:block; font-style:normal; font-size:12px; color:var(--in
 <script src="engine.js"></script>
 <script src="demos.js"></script>
 <script src="lessons.js"></script>
+<script src="lessons-i18n.js"></script>
 <script src="app.js"></script>

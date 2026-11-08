@@ -1,0 +1,789 @@
+<title>Growth Pattern Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a field guide. A 9-step attention ladder is the spine; the picker sets a ceiling on it, the atlas files every pattern by rung. */
+:root{
+  --bg:#F1F4F2; --surface:#FFFFFF; --ink:#14201D; --muted:#56655F; --line:#D6DEDA;
+  --accent:#0E5A52; --accent-ink:#FFFFFF; --soft:#E4ECE8;
+  --frame:#FBFCFB; --frame-nav:#EAF0ED; --skel:#D3DCD8; --dim:rgba(20,32,29,.38);
+  --h1:#1E8676; --h2:#38946A; --h3:#6A9A3A; --h4:#9C9024; --h5:#BF7F14; --h6:#CF6A1C; --h7:#CC5227; --h8:#BC3B2E; --h9:#9E2438;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1412; --surface:#16201D; --ink:#E5EDEA; --muted:#93A49E; --line:#2A3733;
+  --accent:#6CD0C0; --accent-ink:#0B1513; --soft:#1D2925;
+  --frame:#121A18; --frame-nav:#1A2522; --skel:#2D3B37; --dim:rgba(0,0,0,.5);
+  --h1:#4CC1AE; --h2:#62C492; --h3:#96C662; --h4:#CEC257; --h5:#EFB04A; --h6:#F4984D; --h7:#F3815A; --h8:#EC6A5E; --h9:#E05672;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#16201D; --ink:#E5EDEA; --muted:#93A49E; --line:#2A3733;
+  --accent:#6CD0C0; --accent-ink:#0B1513; --soft:#1D2925;
+  --frame:#121A18; --frame-nav:#1A2522; --skel:#2D3B37; --dim:rgba(0,0,0,.5);
+  --h1:#4CC1AE; --h2:#62C492; --h3:#96C662; --h4:#CEC257; --h5:#EFB04A; --h6:#F4984D; --h7:#F3815A; --h8:#EC6A5E; --h9:#E05672;
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 64px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(34px,5vw,54px);line-height:1.05}
+h2{font-size:clamp(24px,3vw,32px);line-height:1.15}
+h3{font-size:19px;line-height:1.25}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:62ch;font-size:16.5px}
+.lv1{--hc:var(--h1)}.lv2{--hc:var(--h2)}.lv3{--hc:var(--h3)}.lv4{--hc:var(--h4)}.lv5{--hc:var(--h5)}.lv6{--hc:var(--h6)}.lv7{--hc:var(--h7)}.lv8{--hc:var(--h8)}.lv9{--hc:var(--h9)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- Hero + ladder ---------- */
+header{display:flex;flex-direction:column;gap:22px}
+.hero-top{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:flex-end;justify-content:space-between}
+.hero-top > div{min-width:0;display:flex;flex-direction:column;gap:12px}
+.rule{font-family:var(--f-mono);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;max-width:360px}
+.rule b{font-weight:600;color:var(--accent)}
+.ladder{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
+.rung{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rung .bar{height:10px;border-radius:3px;background:var(--hc)}
+.rung .n{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.rung .t{font-size:12.5px;font-weight:600;line-height:1.2}
+.rung .e{font-size:11.5px;color:var(--muted);line-height:1.3}
+.ladder-ends{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+@media (max-width:720px){ .rung .e{display:none} .rung .t{font-size:10.5px;writing-mode:vertical-rl;transform:rotate(180deg);height:92px} }
+
+/* ---------- Principles ---------- */
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pr{background:var(--surface);padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pr .k{font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.pr h3{font-size:17px}
+.pr p{font-size:13.5px;color:var(--muted)}
+
+/* ---------- Section heads ---------- */
+.sec-head{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+
+/* ---------- Picker ---------- */
+.picker{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:start}
+@media (max-width:900px){.picker{grid-template-columns:1fr}}
+.qs{display:flex;flex-direction:column;gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.q{display:flex;flex-direction:column;gap:8px;border:0;margin:0;padding:0;min-width:0}
+.q legend{font-weight:600;font-size:14.5px;padding:0;margin-bottom:8px}
+.q .hint{font-size:12.5px;color:var(--muted);margin-top:-4px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg span{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:13.5px;background:var(--bg);cursor:pointer;transition:background .15s,border-color .15s}
+.seg input:checked + span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+.result{display:flex;flex-direction:column;gap:14px;min-width:0}
+.math{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.math b{color:var(--ink);font-weight:600}
+.cap-ladder{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}
+.cap-ladder div{height:8px;border-radius:2px;background:var(--hc);transition:opacity .25s}
+.cap-ladder div.off{opacity:.16}
+.rec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.rec-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.rec-head h3{font-size:22px}
+.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 14px;font-size:14px}
+.kv dt{font-family:var(--f-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:2px}
+.kv dd{margin:0}
+.alts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.alts .lab{font-size:12.5px;color:var(--muted);margin-right:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:13px;cursor:pointer}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--hc)}
+.chip.loud{opacity:.6;text-decoration:line-through;text-decoration-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--hc) 16%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--hc) 55%,transparent);white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hc)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer}
+.btn:hover{background:var(--accent);color:var(--accent-ink)}
+
+/* ---------- Mock app frame ---------- */
+.frame{position:relative;width:100%;aspect-ratio:16/10;max-width:100%;background:var(--frame);border:1px solid var(--line);border-radius:10px;overflow:hidden;container-type:inline-size}
+.f-nav{position:absolute;left:0;top:0;bottom:0;width:15%;background:var(--frame-nav);border-right:1px solid var(--line)}
+.f-top{position:absolute;left:15%;right:0;top:0;height:9%;border-bottom:1px solid var(--line)}
+.f-main{position:absolute;left:15%;right:28%;top:9%;bottom:0}
+.f-agent{position:absolute;right:0;top:9%;bottom:0;width:28%;border-left:1px solid var(--line);background:var(--frame-nav)}
+.sk{position:absolute;background:var(--skel);border-radius:2px}
+.f-input{position:absolute;left:4%;right:4%;bottom:4%;height:9%;border:1px solid var(--skel);border-radius:6px;background:var(--frame)}
+.f-label{position:absolute;font-family:var(--f-mono);font-size:max(7px,1.6cqw);color:var(--muted);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.hl{position:absolute;border:1.5px solid var(--hc);background:color-mix(in srgb,var(--hc) 16%,var(--frame));border-radius:5px;z-index:3}
+.hl.solid{background:color-mix(in srgb,var(--hc) 22%,var(--frame))}
+.hl.dash{border-style:dashed;background:color-mix(in srgb,var(--hc) 8%,var(--frame))}
+.hl.dot{border-radius:50%;background:var(--hc)}
+.hl.pulse{animation:pulse 1.8s ease-out infinite}
+.dimmer{position:absolute;inset:0;background:var(--dim);z-index:2}
+.hl .sk{background:color-mix(in srgb,var(--hc) 45%,var(--skel))}
+.tag{position:absolute;z-index:4;font-family:var(--f-mono);font-size:max(8px,1.7cqw);line-height:1;padding:.5em .7em;border-radius:4px;background:var(--hc);color:var(--surface);white-space:nowrap;font-weight:600}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--hc) 60%,transparent)}100%{box-shadow:0 0 0 1.4cqw transparent}}
+@media (prefers-reduced-motion:reduce){.hl.pulse{animation:none}}
+
+/* ---------- Atlas ---------- */
+.filters{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.frow .lab{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);width:64px}
+.fbtn{padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:13px;cursor:pointer}
+.fbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 12px 14px;text-align:left;cursor:pointer;transition:border-color .15s, transform .15s;min-width:0}
+.card:hover{border-color:var(--muted);transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.card:hover{transform:none}}
+.card .meta{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.card .stage{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.card h3{font-size:17px}
+.card p{font-size:13.5px;color:var(--muted)}
+.count{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.empty{padding:28px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+
+/* ---------- Detail dialog ---------- */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(880px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog::backdrop{background:var(--dim)}
+.dlg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;padding:22px}
+@media (max-width:760px){.dlg{grid-template-columns:1fr}}
+.dlg-head{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dlg-head > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dlg-head h2{font-size:28px}
+.x{border:1px solid var(--line);background:var(--bg);border-radius:8px;width:34px;height:34px;cursor:pointer;flex:none;font-size:18px;line-height:1}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.blk{display:flex;flex-direction:column;gap:6px}
+.blk h4{margin:0;font-family:var(--f-mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.blk p,.blk li{font-size:14px}
+.blk ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.dd{grid-template-columns:1fr}}
+.do,.dont{border-radius:10px;padding:12px;font-size:13.5px}
+.do{background:color-mix(in srgb,var(--h2) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--h2) 40%,transparent)}
+.dont{background:color-mix(in srgb,var(--h8) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--h8) 38%,transparent)}
+.do b,.dont b{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.do ul,.dont ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.metric .eyebrow{display:block;margin-bottom:4px}
+.dlg-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px}
+.toast-msg{font-size:13px;color:var(--muted)}
+
+/* ---------- House rules + ritual ---------- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.rules li{display:grid;grid-template-columns:auto 1fr;gap:12px;font-size:14px}
+.rules .num{font-family:var(--f-mono);font-size:12px;color:var(--accent);padding-top:2px}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.steps li{display:grid;grid-template-columns:72px 1fr;gap:12px;font-size:14px}
+.steps .when{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding-top:2px}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:6px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="hero-top">
+    <div>
+      <span class="eyebrow">Field guide · Growth UX for AI agents &amp; data tools</span>
+      <h1>Growth Pattern Atlas</h1>
+      <p class="lede">Where should the banner go, and when should it show up? Every growth surface costs the user some attention. This guide helps you spend as little of it as possible to get the result you want.</p>
+    </div>
+    <p class="rule">Loudness allowed ≤ <b>Urgency</b> × <b>Relevance to the task in hand</b><br>Pick the quietest surface that will still get noticed.</p>
+  </div>
+  <div class="ladder" id="ladder" aria-label="Attention ladder, level 1 quietest to level 9 loudest"></div>
+  <div class="ladder-ends"><span>← Quiet · user pulls</span><span>Loud · product pushes →</span></div>
+</header>
+
+<section aria-labelledby="pr-h">
+  <div class="sec-head">
+    <span class="eyebrow">Five principles</span>
+    <h2 id="pr-h">What good taste in growth UX comes from</h2>
+  </div>
+  <div class="principles">
+    <div class="pr"><span class="k">Why people act</span><h3>Motivation × Ability × Prompt</h3><p>BJ Fogg: a behavior happens only when all three meet. Most nudges fail because they only add a prompt. Make the action easier first.</p></div>
+    <div class="pr"><span class="k">When to show it</span><h3>Trigger on behavior, not on login</h3><p>Show a nudge right after something the user did, such as a third manual export or a first successful run. Never just because the page loaded.</p></div>
+    <div class="pr"><span class="k">What to show first</span><h3>Value before asks</h3><p>Show results on sample data before asking for a connection. Let them share a result before asking them to invite teammates.</p></div>
+    <div class="pr"><span class="k">Who's the hero</span><h3>Make the user feel capable</h3><p>Kathy Sierra: people don't love a product for being impressive. They love it because it makes them better at their job. Nudges should teach, not advertise.</p></div>
+    <div class="pr"><span class="k">How you'll know</span><h3>A metric and a guardrail</h3><p>Every pattern ships with a number it should move and a number it must not hurt, such as dismiss rate or task completion.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="pk-h">
+  <div class="sec-head">
+    <span class="eyebrow">Part 1 · Surface Picker</span>
+    <h2 id="pk-h">Describe the moment. Get the surface, placement and timing.</h2>
+    <p class="lede">Answer four questions about the message you want to show. The picker sets a loudness ceiling, then suggests patterns from the atlas that fit under it.</p>
+  </div>
+  <div class="picker">
+    <form class="qs" id="qs" onsubmit="return false">
+      <fieldset class="q"><legend>1 · Where is the user in their journey?</legend>
+        <div class="seg" id="q-stage"></div>
+      </fieldset>
+      <fieldset class="q"><legend>2 · How urgent is the message?</legend>
+        <p class="hint">What happens if they never see it?</p>
+        <div class="seg" id="q-urg"></div>
+      </fieldset>
+      <fieldset class="q"><legend>3 · How related is it to what they are doing right now?</legend>
+        <div class="seg" id="q-rel"></div>
+      </fieldset>
+      <fieldset class="q"><legend>4 · Can it wait for a natural pause?</legend>
+        <p class="hint">For example, after the current query finishes.</p>
+        <div class="seg" id="q-wait"></div>
+      </fieldset>
+    </form>
+    <div class="result" aria-live="polite">
+      <div class="math" id="math"></div>
+      <div class="cap-ladder" id="capLadder" aria-hidden="true"></div>
+      <div id="recFrame"></div>
+      <div class="rec" id="rec"></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="at-h">
+  <div class="sec-head">
+    <span class="eyebrow">Part 2 · The Atlas</span>
+    <h2 id="at-h">25 patterns, each placed in an AI agent workspace</h2>
+    <p class="lede">Each thumbnail is the same mock product: navigation on the left, the data workspace in the middle and the agent panel on the right. The colored shape shows where the pattern lives, and its color shows how loud it is. Open a card for timing, do's and don'ts, and metrics.</p>
+  </div>
+  <div class="filters">
+    <div class="frow" id="f-stage"><span class="lab">Stage</span></div>
+    <div class="frow" id="f-level"><span class="lab">Loudness</span></div>
+  </div>
+  <p class="count" id="count" style="margin-bottom:12px"></p>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section aria-labelledby="hr-h">
+  <div class="sec-head">
+    <span class="eyebrow">Part 3 · Team guidance</span>
+    <h2 id="hr-h">House rules and a weekly ritual</h2>
+  </div>
+  <div class="two">
+    <div class="panel">
+      <h3>Attention budget</h3>
+      <ul class="rules">
+        <li><span class="num">01</span><span><b>One push per session.</b> At most one level-5-or-higher surface per session, across every team. Growth, product and marketing share this budget.</span></li>
+        <li><span class="num">02</span><span><b>Never interrupt a running task.</b> Nothing above level 4 appears while a query or agent run is in progress or the user is typing.</span></li>
+        <li><span class="num">03</span><span><b>Dismissed means no.</b> After a dismissal, the same nudge stays away for at least 14 days. Two dismissals retire it for that user.</span></li>
+        <li><span class="num">04</span><span><b>A quieter fallback for every push.</b> If a modal is dismissed, the message lives on as a badge or a changelog entry.</span></li>
+        <li><span class="num">05</span><span><b>Respect the expert.</b> Power users get fewer nudges. Hide coaching once someone has used the feature 3 times.</span></li>
+        <li><span class="num">06</span><span><b>Ship with a kill switch.</b> Every nudge sits behind a flag and has a named owner and an end date.</span></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Growth crit: 30 minutes, weekly</h3>
+      <ul class="steps">
+        <li><span class="when">5 min</span><span>One person brings two screenshots from another product: one good nudge and one bad one.</span></li>
+        <li><span class="when">10 min</span><span>Run each through the Surface Picker. Was its loudness within the ceiling? Was the trigger based on behavior?</span></li>
+        <li><span class="when">10 min</span><span>Apply the lesson to one of our flows. Sketch the quieter version.</span></li>
+        <li><span class="when">5 min</span><span>Add the example to the atlas, or change a rule if we've learned something new.</span></li>
+      </ul>
+      <p style="font-size:13.5px;color:var(--muted)">Good places to collect examples: Mobbin and Page Flows for real product flows, Growth.Design for illustrated case studies, Shape of AI for AI-specific patterns.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Growth Pattern Atlas, v0. A living guide for an AI agent and data tooling team on a self-serve (PLG) growth model.</span>
+  <span>Levels, ceilings and rules are starting points. Adjust them when your own experiments show something different.</span>
+</footer>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-title"></dialog>
+
+<script>
+const LEVELS = [
+  null,
+  {t:"Ambient", e:"Empty states, ghost text, templates"},
+  {t:"Inline", e:"Hints and chips inside the flow"},
+  {t:"Signal", e:"Badge or dot, no words"},
+  {t:"Pointer", e:"Hotspot, tooltip, short tour"},
+  {t:"Contextual", e:"Inline banner, agent suggestion, popover"},
+  {t:"Transient", e:"Toast that fades away"},
+  {t:"Persistent", e:"Top banner, side panel, checklist"},
+  {t:"Blocking", e:"Modal dialog"},
+  {t:"Takeover", e:"Full-screen interstitial"}
+];
+const STAGES = {
+  activation:{n:"Activation", d:"From sign-up to the first aha moment"},
+  discovery:{n:"Discovery", d:"Finding capabilities they don't know about"},
+  habit:{n:"Habit", d:"Coming back and trusting the agent"},
+  expansion:{n:"Expansion", d:"More people, more usage, upgrades"},
+  system:{n:"System notice", d:"Account, billing, launches, outages"}
+};
+
+/* Placement drawings: positions in % of the mock frame */
+function hl(cls, l, t, w, h, inner=""){ return `<div class="hl ${cls}" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%">${inner}</div>`; }
+function sk(l,t,w,h,extra=""){ return `<div class="sk" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%;${extra}"></div>`; }
+function tagAt(l,t,txt){ return `<span class="tag" style="left:${l}%;top:${t}%">${txt}</span>`; }
+
+const PLACE = {
+  "prompt-chips": ()=> hl("solid",73.5,70,25,9,
+      `<div class="sk" style="left:5%;top:20%;width:40%;height:22%"></div><div class="sk" style="left:50%;top:20%;width:42%;height:22%"></div><div class="sk" style="left:5%;top:60%;width:58%;height:22%"></div>`),
+  "empty-sample": ()=> hl("solid",25,26,38,40,
+      sk(10,12,40,8)+sk(10,26,70,5)+
+      `<div class="sk" style="left:10%;top:44%;width:80%;height:30%;opacity:.7"></div><div class="sk" style="left:10%;top:80%;width:30%;height:10%;border-radius:4px"></div>`),
+  "empty-connect": ()=> hl("dash",25,26,38,40,
+      `<div class="sk" style="left:40%;top:14%;width:20%;height:22%;border-radius:50%"></div>`+sk(22,48,56,7)+sk(30,62,40,5)+
+      `<div class="sk" style="left:34%;top:76%;width:32%;height:12%;border-radius:4px"></div>`),
+  "checklist": ()=> hl("solid",1.5,55,26,42,
+      sk(8,8,60,7)+sk(8,20,84,3,"opacity:.8")+
+      [0,1,2,3].map(i=>`<div class="sk" style="left:8%;top:${32+i*15}%;width:8%;height:9%;border-radius:50%"></div><div class="sk" style="left:22%;top:${34+i*15}%;width:${60-i*8}%;height:5%"></div>`).join("")),
+  "tour": ()=> hl("dot pulse",16.5,10.5,2.4,3.8,"")+tagAt(16,15,"1")+
+      hl("dot pulse",44,40,2.4,3.8,"")+tagAt(43.5,44.5,"2")+
+      hl("dot pulse",85,87,2.4,3.8,"")+tagAt(81,80,"3"),
+  "welcome-modal": ()=> `<div class="dimmer"></div>`+hl("solid",30,22,40,56,
+      sk(10,10,50,8)+sk(10,24,76,4)+
+      [0,1,2].map(i=>`<div class="sk" style="left:10%;top:${36+i*16}%;width:80%;height:11%;border-radius:4px;opacity:.8"></div>`).join("")+
+      `<div class="sk" style="left:60%;top:86%;width:30%;height:8%;border-radius:4px"></div>`),
+  "agent-msg": ()=> hl("solid",73.5,28,25,22,
+      sk(8,12,80,9)+sk(8,30,64,9)+`<div class="sk" style="left:8%;top:58%;width:40%;height:22%;border-radius:4px"></div><div class="sk" style="left:54%;top:58%;width:30%;height:22%;border-radius:4px;opacity:.6"></div>`),
+  "hotspot": ()=> hl("dot pulse",58,15.5,2.4,3.8,"")+hl("solid",50,22,24,16,sk(8,16,70,12)+sk(8,40,84,9)+sk(8,62,40,14,"border-radius:4px")),
+  "badge": ()=> hl("solid",2,32.5,11,5.5,`<span class="tag" style="right:6%;top:18%;font-size:max(6px,1.2cqw);padding:.3em .5em">NEW</span>`),
+  "ghost-text": ()=> hl("dash",73.5,86,25,9.5,sk(6,36,30,28)+`<div class="sk" style="left:40%;top:36%;width:46%;height:28%;opacity:.45"></div>`),
+  "gallery": ()=> [0,1,2].map(c=>[0,1].map(r=>hl("solid",19+c*17.5,24+r*29,15.5,25,sk(10,12,60,10)+sk(10,30,80,6,"opacity:.7")+sk(10,66,30,14,"border-radius:3px"))).join("")).join(""),
+  "palette": ()=> hl("solid",27,14,42,46,
+      `<div class="sk" style="left:6%;top:8%;width:88%;height:14%;border-radius:4px"></div>`+[0,1,2,3].map(i=>sk(6,32+i*16,i===0?70:55-i*6,6)).join("")),
+  "inline-banner": ()=> hl("solid",17,47,53,9,sk(3,32,4,36,"border-radius:50%")+sk(10,40,46,22)+`<div class="sk" style="left:74%;top:24%;width:20%;height:52%;border-radius:4px"></div>`),
+  "plan-preview": ()=> hl("solid",73.5,22,25,44,
+      sk(8,6,50,6)+[0,1,2,3].map(i=>`<div class="sk" style="left:8%;top:${18+i*15}%;width:6%;height:6%;border-radius:50%"></div><div class="sk" style="left:20%;top:${19+i*15}%;width:${66-i*7}%;height:4%"></div>`).join("")+
+      `<div class="sk" style="left:8%;top:82%;width:38%;height:11%;border-radius:4px"></div><div class="sk" style="left:52%;top:82%;width:30%;height:11%;border-radius:4px;opacity:.6"></div>`),
+  "toast": ()=> hl("solid",47,85,23,10,sk(6,30,8,40,"border-radius:50%")+sk(20,28,46,18)+sk(20,58,30,14,"opacity:.7")+sk(76,30,16,40,"border-radius:4px")),
+  "continue": ()=> hl("solid",17,13,53,18,sk(3,14,26,12)+[0,1,2].map(i=>`<div class="sk" style="left:${3+i*32}%;top:40%;width:29%;height:46%;border-radius:4px;opacity:.75"></div>`).join("")),
+  "share-pop": ()=> hl("solid",61,1.8,8,5.4,"")+hl("solid",50,9.5,24,26,sk(8,10,60,10)+`<div class="sk" style="left:8%;top:34%;width:84%;height:16%;border-radius:3px;opacity:.7"></div>`+sk(8,64,40,8)+`<div class="sk" style="left:62%;top:62%;width:30%;height:16%;border-radius:4px"></div>`),
+  "mention-invite": ()=> hl("dash",73.5,62,25,15,sk(6,18,60,16)+sk(6,48,80,12,"opacity:.6")+`<div class="sk" style="left:6%;top:72%;width:34%;height:16%;border-radius:3px"></div>`),
+  "meter": ()=> hl("solid",1.5,84,12,12,sk(10,18,60,14)+`<div class="sk" style="left:10%;top:52%;width:80%;height:16%;border-radius:8px;opacity:.6"></div><div class="sk" style="left:10%;top:52%;width:58%;height:16%;border-radius:8px"></div>`),
+  "limit-modal": ()=> `<div class="dimmer"></div>`+hl("solid",32,26,36,46,`<div class="sk" style="left:40%;top:10%;width:20%;height:18%;border-radius:50%"></div>`+sk(14,38,72,8)+sk(20,52,60,5)+
+      `<div class="sk" style="left:12%;top:72%;width:36%;height:14%;border-radius:4px;opacity:.6"></div><div class="sk" style="left:52%;top:72%;width:36%;height:14%;border-radius:4px"></div>`),
+  "inbox": ()=> hl("dot",88.6,2.4,1.6,2.6,"")+hl("solid",72,9.5,26,34,[0,1,2].map(i=>sk(8,10+i*30,10,14,"border-radius:50%")+sk(24,12+i*30,60,8)+sk(24,24+i*30,40,6,"opacity:.7")).join("")),
+  "top-banner": ()=> hl("solid",0,0,100,7,sk(30,30,32,36)+`<div class="sk" style="left:66%;top:20%;width:9%;height:58%;border-radius:4px"></div>`),
+  "launch-modal": ()=> `<div class="dimmer"></div>`+hl("solid",26,16,48,66,`<div class="sk" style="left:6%;top:6%;width:88%;height:42%;border-radius:4px;opacity:.75"></div>`+sk(6,54,50,7)+sk(6,66,82,4)+sk(6,74,70,4)+
+      `<div class="sk" style="left:64%;top:85%;width:30%;height:9%;border-radius:4px"></div>`),
+  "takeover": ()=> hl("solid",0,0,100,100,sk(30,26,40,8)+sk(24,40,52,3.5)+sk(28,47,44,3.5)+`<div class="sk" style="left:40%;top:60%;width:20%;height:8%;border-radius:4px"></div>`),
+  "side-panel": ()=> hl("solid",72,9,28,91,sk(8,4,50,3)+[0,1,2,3,4].map(i=>`<div class="sk" style="left:8%;top:${12+i*14}%;width:84%;height:10%;border-radius:4px;opacity:.75"></div>`).join(""))
+};
+
+function frameHTML(p, big=false){
+  const base = `
+    <div class="f-nav">${sk(12,3.5,50,3)}${[0,1,2,3,4].map(i=>sk(12,14+i*9,i===2?66:56,3,"opacity:.8")).join("")}</div>
+    <div class="f-top">${sk(3,32,22,32)}<div class="sk" style="left:68%;top:22%;width:10%;height:52%;border-radius:4px;opacity:.7"></div><div class="sk" style="left:86%;top:28%;width:4%;height:44%;border-radius:50%;opacity:.7"></div></div>
+    <div class="f-main">${sk(4,6,30,4)}${sk(4,14,60,2.5,"opacity:.6")}
+      ${[0,1,2,3,4,5,6].map(r=>[0,1,2,3].map(c=>sk(4+c*23,26+r*9,c===0?14:18,3,"opacity:"+(r===0?1:.55))).join("")).join("")}
+    </div>
+    <div class="f-agent">${sk(8,4,40,2.6)}${sk(8,12,76,4,"border-radius:4px;opacity:.6")}${sk(30,22,62,4,"border-radius:4px;opacity:.45")}<div class="f-input"></div></div>`;
+  const labels = big ? `<span class="f-label" style="left:2%;bottom:1.5%">Nav</span><span class="f-label" style="left:17%;bottom:1.5%">Data workspace</span><span class="f-label" style="right:2%;top:10.5%">Agent</span>` : "";
+  return `<div class="frame lv${p.level}" role="img" aria-label="${p.name} placement: ${p.where}">${base}${labels}${(PLACE[p.place]||(()=>""))()}</div>`;
+}
+
+const P = [
+/* ---------------- Activation ---------------- */
+{id:"starter-prompts", stage:"activation", level:2, place:"prompt-chips", name:"Starter prompts",
+ job:"Solve the blank-input problem by showing three real things the agent can do.",
+ where:"Chips just above the agent input, only while the conversation is empty.",
+ when:"On the first visit, and on any new empty thread. Swap them for follow-up suggestions after the first answer.",
+ use:"Any open-ended input: chat with an agent, natural-language queries, search.",
+ avoid:"When the user is already typing. Chips that move or reflow under the cursor make people misclick.",
+ dos:["Write them in the user's language, tied to their role or data, such as 'Find churn drivers in last quarter's accounts'.","Show 3 or 4 at most; more than that becomes a menu.","Fill in the input on click so the user can edit before sending."],
+ donts:["Generic samples such as 'Tell me a joke'.","Showing them again on every turn of a conversation.","Showing a prompt that only works with data the user hasn't connected."],
+ metric:"% of new users who send a first prompt within 2 minutes", guard:"Share of prompts sent unedited that end in an error",
+ seen:"ChatGPT, Claude and Perplexity on an empty chat."},
+{id:"sample-data", stage:"activation", level:1, place:"empty-sample", name:"Sample data sandbox",
+ job:"Let people experience the aha moment before connecting their own data.",
+ where:"The empty workspace on first run, with a preloaded demo dataset and one suggested question.",
+ when:"Immediately after sign-up, before asking for any credentials.",
+ use:"Any product where connecting data is a slow or permission-heavy step.",
+ avoid:"Demo data that looks so real that people mistake it for their own.",
+ dos:["Clearly label it 'Sample data'.","Pick a dataset close to their domain, such as SaaS revenue or support tickets.","After the first result, offer to 'Run this on your data'."],
+ donts:["Mixing sample rows into real workspaces.","Requiring a sign-up form before showing anything useful."],
+ metric:"Time to first successful query or agent run", guard:"Drop-off at the data-connection step afterwards",
+ seen:"Metabase ships a sample database. Tableau ships Sample Superstore."},
+{id:"empty-connect", stage:"activation", level:1, place:"empty-connect", name:"Single next-step empty state",
+ job:"Turn an empty screen into the one action that unlocks value.",
+ where:"In the middle of the empty workspace: an illustration, one sentence and one primary button.",
+ when:"Whenever a view has no content yet, such as no connected sources, no agents or no saved queries.",
+ use:"First run, and empty lists and dashboards.",
+ avoid:"Three equally weighted buttons. People choose none of them.",
+ dos:["Say what the user gets, not what the system needs: 'See your pipeline in 2 minutes' rather than 'Configure connector'.","Put a secondary 'Try sample data' link next to the button.","Show how long it will take."],
+ donts:["Leaving it blank or showing only 'No data'.","Asking for admin rights before explaining why."],
+ metric:"Empty-state CTA click → completion rate", guard:"Support tickets about the setup step",
+ seen:""},
+{id:"setup-checklist", stage:"activation", level:7, place:"checklist", name:"Setup checklist",
+ job:"Make a multi-step setup visible and resumable, and give a sense of progress.",
+ where:"A small widget at the bottom of the navigation that expands to 3–5 steps.",
+ when:"From the first session until the steps are done. It then celebrates once and disappears.",
+ use:"Setups that take several sessions: connect data, invite the team, create the first agent.",
+ avoid:"Fewer than 3 steps (just do them inline), or steps that only help the business, such as 'Rate us'.",
+ dos:["Start it already partly done ('1 of 4 done'). Progress pulls people forward.","Link each step to the exact place where it gets done.","Let people hide it, and remember that they did."],
+ donts:["Steps with no visible benefit to the user.","Keeping it on screen after setup is finished."],
+ metric:"Checklist completion and the activation rate of users who finish it", guard:"Hide rate within the first session",
+ seen:"Stripe's dashboard setup guide."},
+{id:"short-tour", stage:"activation", level:4, place:"tour", name:"Short guided tour (3 steps max)",
+ job:"Point out the three areas that matter: workspace, agent and where results appear.",
+ where:"Numbered hotspots on the real interface. No full-screen overlay.",
+ when:"Only when the user starts it ('Show me around') or right after the first empty-state action.",
+ use:"Products with an unusual layout that a new user can't read at a glance.",
+ avoid:"As an automatic eight-step slideshow on login. People skip it and remember nothing.",
+ dos:["Keep it to three steps or fewer, each tied to an action ('Click here to run it').","Make it easy to replay from Help.","Let people learn by doing, not by reading."],
+ donts:["Blocking the interface until the tour ends.","Touring features the user can't use yet."],
+ metric:"Activation for users who toured vs. a holdout group", guard:"Skip rate at step 1",
+ seen:"Usually built with onboarding tools such as Appcues or Pendo."},
+{id:"welcome-modal", stage:"activation", level:8, place:"welcome-modal", name:"Welcome and intent picker",
+ job:"Ask one question ('What do you want to do first?') and personalize the first run around the answer.",
+ where:"A centered modal on the very first session only.",
+ when:"Once, at first load, before the user has started any task. This is the one moment a modal interrupts nothing.",
+ use:"When the answer actually changes what the user sees next, such as different templates or sample data.",
+ avoid:"Collecting marketing data you won't use in the product.",
+ dos:["One or two questions, with tappable options.","Show the answer at work right away: 'Here are 3 agents for RevOps'.","Always offer 'Skip'."],
+ donts:["Long forms or more than two screens.","Asking for information you could infer, such as company from email domain."],
+ metric:"First-week activation, personalized vs. a holdout group", guard:"Abandonment on the modal itself",
+ seen:""},
+
+/* ---------------- Discovery ---------------- */
+{id:"agent-suggestion", stage:"discovery", level:5, place:"agent-msg", name:"Contextual agent suggestion",
+ job:"Notice that the user is doing something manually and offer to do it for them.",
+ where:"A message card in the agent panel with one action and a dismiss link.",
+ when:"After a repeated behavior, such as the third time the same CSV is exported or the same filter is applied, and only when nothing is running.",
+ use:"An AI-native way to surface capabilities at the exact moment they matter.",
+ avoid:"Guessing without a clear signal. A wrong suggestion costs trust.",
+ dos:["Say why you're suggesting it: 'You've exported this table 3 times this week'.","Offer a preview of what it would do.","Respect dismissals, and learn from them."],
+ donts:["Interrupting while the user is typing or reading results.","Using suggestions as advertising for paid features."],
+ metric:"Suggestion acceptance rate → feature retained at 4 weeks", guard:"Dismiss rate, and later suggestions being ignored",
+ seen:""},
+{id:"hotspot", stage:"discovery", level:4, place:"hotspot", name:"Hotspot with tooltip",
+ job:"Draw attention to one new or underused control in place.",
+ where:"A pulsing dot on the control. A tooltip opens on hover or click.",
+ when:"The first time the user is on the screen where that control is useful.",
+ use:"A single control the user would benefit from now: a new 'Explain this chart' button, a filter, a shortcut.",
+ avoid:"Several hotspots on the same screen. It looks like a Christmas tree.",
+ dos:["One per screen, one per session.","In the tooltip, show the benefit in under 15 words, with a 'Try it' button.","Remove it once the user has used the control once."],
+ donts:["Opening the tooltip automatically over content the user is working on.","Pulsing forever. Stop after a few seconds."],
+ metric:"Feature adoption among users who saw it", guard:"Task-completion time on that screen",
+ seen:""},
+{id:"new-badge", stage:"discovery", level:3, place:"badge", name:"“New” badge",
+ job:"Quietly mark where something has changed, without words or interruption.",
+ where:"A small pill or dot on a navigation item or menu entry.",
+ when:"From launch until the user visits that area, or 30 days at most.",
+ use:"Mid-sized updates that deserve a look but not an interruption.",
+ avoid:"Badges on everything. If five things are new, nothing is.",
+ dos:["Clear it once it's been seen.","Pair it with a short changelog entry for users who want details."],
+ donts:["Using it as a permanent marketing tag.","Badges that come back after being cleared."],
+ metric:"Visits to the badged area vs. before launch", guard:"None needed; the cost is very low",
+ seen:""},
+{id:"ghost-text", stage:"discovery", level:1, place:"ghost-text", name:"Ghost text and inline completion",
+ job:"Teach what the input can do through grayed-out suggestions inside it.",
+ where:"Placeholder or completion text inside the agent or query input.",
+ when:"While the input is empty, or as the user types, in real time.",
+ use:"Inputs with powerful syntax: slash commands, @-mentions of tables, query language.",
+ avoid:"Placeholder text that disappears and leaves the user without help.",
+ dos:["Rotate real examples that use the user's own table names.","Accept with Tab; let people ignore it without any cost."],
+ donts:["Low-contrast text as the only instruction.","Completions that shift the cursor or override typing."],
+ metric:"Use of advanced syntax among new users", guard:"Accept-then-undo rate",
+ seen:"GitHub Copilot's inline completions. Gmail Smart Compose."},
+{id:"template-gallery", stage:"discovery", level:1, place:"gallery", name:"Template gallery",
+ job:"Show the range of what's possible as ready-to-run starting points.",
+ where:"A grid of cards in the workspace, on the home page or the 'New' screen.",
+ when:"When the user creates something new, and on the empty home screen.",
+ use:"Agents, dashboards, workflows: anything that is quicker to adapt than to build from scratch.",
+ avoid:"Galleries that no one curates. Twelve good templates beat two hundred random ones.",
+ dos:["Group by job to be done ('Weekly pipeline report'), not by feature.","Show a preview of the output on each card.","Mark which ones work with data the user has already connected."],
+ donts:["Templates that fail on first run.","Hiding 'Start from blank' for experts."],
+ metric:"Template → successful first run rate", guard:"Abandoned template drafts",
+ seen:"Notion and Zapier template galleries."},
+{id:"command-palette", stage:"discovery", level:2, place:"palette", name:"Command palette (⌘K)",
+ job:"Make every action findable by name. Each search teaches users what exists.",
+ where:"A centered search box called up with ⌘K, plus a small '⌘K' hint in the interface.",
+ when:"Whenever the user calls it. Mention the shortcut in tooltips and menus.",
+ use:"Products with many actions and expert users.",
+ avoid:"Using it as the only way into a key feature. New users don't know it's there.",
+ dos:["Match synonyms and plain-language intent ('share', 'invite', 'send').","Show the keyboard shortcut next to each result, so people can graduate to it."],
+ donts:["Opening it automatically.","Putting ads or upsells in the results."],
+ metric:"Share of weekly active users who use the palette; actions per palette session", guard:"Searches that return no result",
+ seen:"Linear, Raycast, Superhuman. Notion's slash menu works the same way."},
+
+/* ---------------- Habit ---------------- */
+{id:"make-recurring", stage:"habit", level:5, place:"inline-banner", name:"“Make it recurring” banner",
+ job:"Turn a one-time success into a scheduled habit.",
+ where:"An inline banner directly under a successful result, inside the workspace.",
+ when:"Right after the second or third successful run of the same query or agent, while the value is fresh.",
+ use:"Reports, monitors and agents that would be just as useful every week.",
+ avoid:"After a failed or partial result.",
+ dos:["Pre-fill the schedule from their behavior ('Every Monday 9am?').","Show where the result will go: Slack, email or a dashboard."],
+ donts:["Asking after the very first run.","Banners that push the result down the page."],
+ metric:"Scheduled runs created; week-4 retention of users who scheduled one", guard:"Schedules turned off within 2 weeks",
+ seen:""},
+{id:"agent-done-toast", stage:"habit", level:6, place:"toast", name:"“Agent finished” toast",
+ job:"Close the loop on long-running work so the user trusts that they can look away.",
+ where:"Bottom-right toast with 'View result'. It fades after about 6 seconds.",
+ when:"When a background run finishes and the user is elsewhere in the app.",
+ use:"Agent runs or queries that take more than about 10 seconds.",
+ avoid:"Toasts for things the user is already looking at.",
+ dos:["Show the result status: 'Found 12 at-risk accounts'.","Keep it in an activity list after it fades, so it can't be missed for good."],
+ donts:["Stacking several toasts.","Using toasts for errors that need action; use an inline message for those."],
+ metric:"Clicks on 'View result'; runs started per week", guard:"Users turning notifications off",
+ seen:""},
+{id:"continue", stage:"habit", level:1, place:"continue", name:"Pick up where you left off",
+ job:"Make coming back effortless by putting recent work first.",
+ where:"A row of cards at the top of home: last queries, agents and drafts.",
+ when:"On every return visit after the first session.",
+ use:"Any product where work spans several sessions.",
+ avoid:"Showing it to first-time users (an empty row looks broken).",
+ dos:["Show live status, such as 'Last run 2h ago, 3 new rows'.","Let people pin items."],
+ donts:["Filling it with things the user didn't create."],
+ metric:"Return-visit → action rate", guard:"Time to the first action on return",
+ seen:"Figma, Google Docs and Notion recents."},
+{id:"plan-preview", stage:"habit", level:2, place:"plan-preview", name:"Plan preview and undo",
+ job:"Build trust: show what the agent is about to do, and make it easy to reverse.",
+ where:"Inline in the agent panel: a numbered plan with Run and Edit buttons, then Undo after it runs.",
+ when:"Before any agent action that changes data, sends messages or costs money.",
+ use:"Write actions such as updating records, sending emails or running large queries. Trust is what drives repeat use.",
+ avoid:"Asking for confirmation on read-only or trivial steps (approval fatigue).",
+ dos:["Show the sources and rows that will be affected, in numbers.","Offer to 'Always allow this kind of step' once trust is earned."],
+ donts:["Hiding what the agent did after the fact.","Undo that only partly reverses an action."],
+ metric:"Repeat agent runs per user each week", guard:"Plans abandoned without running",
+ seen:""},
+
+/* ---------------- Expansion ---------------- */
+{id:"share-moment", stage:"expansion", level:5, place:"share-pop", name:"Share at the moment of value",
+ job:"Turn a great result into the way new users find the product.",
+ where:"Highlight the Share button and show a short popover with a pre-made link or Slack preview.",
+ when:"Right after a result the user acts on, such as copying it, saving it or spending a long time on it.",
+ use:"Results that look good to people who don't use the product: charts, summaries, reports.",
+ avoid:"Before the result is good, or on sensitive data. Respect permissions.",
+ dos:["Make the shared view work for people without an account.","Credit the sender in the shared view ('Prepared by Maya').","Show who can see it before sending."],
+ donts:["Forcing a share to continue.","Sharing raw data where a summary will do."],
+ metric:"Shares per active user; sign-ups from viewers of shared links", guard:"Permission errors or links that were shared and later revoked",
+ seen:"Loom's instant share link after recording."},
+{id:"mention-invite", stage:"expansion", level:2, place:"mention-invite", name:"Invite with an @mention",
+ job:"Add teammates as a natural part of the work, not through a separate 'Invite' form.",
+ where:"In comments or the agent panel: typing @name for someone who isn't a member offers an invite.",
+ when:"When the user tries to involve a person: an @mention, assigning a task, asking for review.",
+ use:"Collaboration moments such as reviews, handoffs and approvals.",
+ avoid:"Generic 'Invite your team' banners shown to people who work alone.",
+ dos:["Suggest names from the user's email domain.","Explain what the invitee will see."],
+ donts:["Sending invitations without an explicit confirmation.","Rewarding invites with features (it feels spammy in enterprise)."],
+ metric:"Invites sent per collaboration moment; invite → active member rate", guard:"Invites that go unaccepted",
+ seen:"Figma and Google Docs comment @mentions."},
+{id:"usage-meter", stage:"expansion", level:3, place:"meter", name:"Usage meter with a soft upgrade",
+ job:"Make limits visible long before they're hit, so an upgrade feels planned rather than forced.",
+ where:"A small meter at the bottom of the navigation ('7 of 10 agent runs').",
+ when:"Always visible on plans with limits. Its color warms at 80%.",
+ use:"Plans limited by usage: runs, credits, seats or rows.",
+ avoid:"Hiding the meter until a hard stop.",
+ dos:["Show the reset date.","Link to a page that explains what happens at the limit."],
+ donts:["Fear-based copy.","Counting things the user doesn't understand, such as tokens."],
+ metric:"Self-serve upgrades before hitting the limit", guard:"Churn after hitting the limit",
+ seen:"Vercel and Supabase usage pages."},
+{id:"limit-modal", stage:"expansion", level:8, place:"limit-modal", name:"Limit-reached modal",
+ job:"Explain a hard stop and offer the way forward without losing the user's work.",
+ where:"A centered modal at the moment an action is blocked.",
+ when:"Only when the user tries an action that the plan cannot allow. Never ahead of time.",
+ use:"A hard limit where continuing is impossible.",
+ avoid:"Soft limits that could be a meter or an inline notice.",
+ dos:["Save the user's work and say so: 'Your query is saved'.","Offer a free option too (wait until the reset, ask an admin).","Show the price and what changes."],
+ donts:["Losing work behind the paywall.","Showing it repeatedly in the same session."],
+ metric:"Upgrade conversion from the modal", guard:"Sessions that end right after it",
+ seen:""},
+
+/* ---------------- System ---------------- */
+{id:"inbox", stage:"system", level:3, place:"inbox", name:"Activity inbox and changelog",
+ job:"Give non-urgent updates a calm home that people check on their own schedule.",
+ where:"A bell icon in the top bar with a dot, which opens a list.",
+ when:"Always available. The dot appears when there is something unread.",
+ use:"Minor launches, agent run history, mentions, tips. The fallback for anything that loses a fight for louder surfaces.",
+ avoid:"Using the dot for marketing; people will stop checking.",
+ dos:["Group by type: mentions, runs, product updates.","Link each item to where it happens."],
+ donts:["A permanent unread count no one can clear."],
+ metric:"Inbox open rate; clicks through from items", guard:"Time until unread items get cleared",
+ seen:""},
+{id:"top-banner", stage:"system", level:7, place:"top-banner", name:"Top system banner",
+ job:"State a condition that affects the whole account until it's resolved.",
+ where:"A full-width strip above the top bar.",
+ when:"From the moment the condition starts until it's fixed: trial ending in 3 days, degraded service, payment failed.",
+ use:"Account-wide states with a clear resolution action.",
+ avoid:"Promotions and feature launches. The banner trains people to ignore it.",
+ dos:["One banner at a time, colored by severity.","One clear action ('Update payment').","Dismissible unless it's blocking."],
+ donts:["Stacking several banners.","Banners that stay after the issue is fixed."],
+ metric:"Time to resolve the condition", guard:"Banner blindness: the same banner shown for over 7 days",
+ seen:""},
+{id:"launch-modal", stage:"system", level:8, place:"launch-modal", name:"Major launch announcement",
+ job:"Introduce a change big enough that it alters how people use the product.",
+ where:"A centered modal with a short visual or video and one action: 'Try it'.",
+ when:"Once, at the start of a session, never in the middle of work. At most a few times a year.",
+ use:"Major launches or changes to the interface that people would otherwise find confusing.",
+ avoid:"Small features. Use a badge or the changelog for those.",
+ dos:["Show it to the segment it's relevant to.","Let the action take people directly into the feature.","Leave an entry in the changelog afterwards."],
+ donts:["Several screens of slides.","Showing it to users who joined after the launch."],
+ metric:"Feature adoption within 7 days", guard:"Instant-dismiss rate (under 2 seconds)",
+ seen:""},
+{id:"takeover", stage:"system", level:9, place:"takeover", name:"Full-screen takeover",
+ job:"Stop everything for something that legally or technically can't wait.",
+ where:"Covers the whole application.",
+ when:"Required terms acceptance, a forced migration, or a security re-authentication.",
+ use:"Almost never. This is the emergency brake.",
+ avoid:"Any growth goal. Using it for marketing breaks trust.",
+ dos:["Explain why in one sentence.","Make the way out obvious and quick."],
+ donts:["Upsells, surveys or launches."],
+ metric:"Completion of the required step", guard:"Support tickets and churn in the following week",
+ seen:""},
+{id:"onboarding-panel", stage:"activation", level:7, place:"side-panel", name:"Learning side panel",
+ job:"Offer help next to the work instead of on top of it.",
+ where:"A side panel that docks on the right and can be opened or closed, with short how-to cards.",
+ when:"Opened by the user from Help, or offered once after the user gets stuck (for example, an error happens twice).",
+ use:"Complex tasks where people want to read and do at the same time.",
+ avoid:"Opening it automatically on every visit.",
+ dos:["Make each card actionable ('Do it for me' or 'Show me').","Remember whether it was open or closed."],
+ donts:["Covering the agent panel without a way to switch back."],
+ metric:"Task success after opening the panel", guard:"Closes within 5 seconds",
+ seen:""}
+];
+
+/* ---------- Ladder ---------- */
+document.getElementById("ladder").innerHTML = LEVELS.slice(1).map((l,i)=>
+  `<div class="rung lv${i+1}"><div class="bar"></div><span class="n">L${i+1}</span><span class="t">${l.t}</span><span class="e">${l.e}</span></div>`).join("");
+
+/* ---------- Picker ---------- */
+const Q = {
+  stage: {el:"q-stage", opts:Object.entries(STAGES).map(([k,v])=>[k,v.n]), val:"discovery"},
+  urg:   {el:"q-urg", opts:[["1","Low: nice to know"],["2","Medium: matters soon"],["3","High: blocks work or costs money"]], val:"2"},
+  rel:   {el:"q-rel", opts:[["1","Unrelated"],["2","Adjacent"],["3","Needed for this task"]], val:"3"},
+  wait:  {el:"q-wait", opts:[["yes","Yes, it can wait"],["no","No, it's needed now"]], val:"no"}
+};
+for (const [key,q] of Object.entries(Q)){
+  document.getElementById(q.el).innerHTML = q.opts.map(([v,l])=>
+    `<label><input type="radio" id="${key}-${v}" name="${key}" value="${v}" ${v===q.val?"checked":""}><span>${l}</span></label>`).join("");
+}
+document.getElementById("qs").addEventListener("change", e=>{ if(e.target.name){ Q[e.target.name].val = e.target.value; selected=null; renderPick(); }});
+
+const CAP = {1:2, 2:3, 3:5, 4:6, 6:7, 9:8};
+let selected = null;
+function compute(){
+  const u=+Q.urg.val, r=+Q.rel.val, score=u*r;
+  let cap = CAP[score];
+  const waits = Q.wait.val==="yes";
+  if (waits) cap = Math.max(1, cap-1);
+  const inStage = P.filter(p=>p.stage===Q.stage.val);
+  let fit = inStage.filter(p=>p.level<=cap).sort((a,b)=>b.level-a.level);
+  const loud = inStage.filter(p=>p.level>cap).sort((a,b)=>a.level-b.level);
+  let fallback = false;
+  if (!fit.length){ fit = [inStage.slice().sort((a,b)=>a.level-b.level)[0]]; fallback = true; }
+  return {u,r,score,cap,waits,fit,loud,fallback};
+}
+function renderPick(){
+  const c = compute();
+  const primary = selected ? P.find(p=>p.id===selected) : c.fit[0];
+  document.getElementById("math").innerHTML =
+    `<span>Urgency <b>${c.u}</b> × Relevance <b>${c.r}</b> = <b>${c.score}</b></span>`+
+    `<span>${c.waits?"Can wait, so one step quieter → ":""}Ceiling <b>L${c.cap} · ${LEVELS[c.cap].t}</b></span>`;
+  document.getElementById("capLadder").innerHTML = [1,2,3,4,5,6,7,8,9].map(i=>`<div class="lv${i} ${i>c.cap?"off":""}"></div>`).join("");
+  document.getElementById("recFrame").innerHTML = frameHTML(primary,true);
+  const timing = c.waits
+    ? "Hold it for a natural pause, such as after the current run or query finishes. Never mid-flow."
+    : "Show it now, in the place where the user is working.";
+  const freq = primary.level>=5
+    ? "Counts against the one-push-per-session budget. After a dismissal, wait 14 days."
+    : "Can stay until it's used or dismissed once.";
+  const chips = (list, cls)=> list.map(p=>`<button type="button" class="chip lv${p.level} ${cls}" data-pick="${p.id}" aria-pressed="${p.id===primary.id}">${p.name} · L${p.level}</button>`).join("");
+  document.getElementById("rec").innerHTML = `
+    <div class="rec-head"><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span class="eyebrow">${selected?"Selected":"Recommended"} · ${STAGES[primary.stage].n}</span><h3>${primary.name}</h3></div>
+    <span class="pill lv${primary.level}">L${primary.level} · ${LEVELS[primary.level].t}</span></div>
+    ${c.fallback?`<p style="font-size:13.5px;color:var(--muted)">Nothing in this stage is quiet enough for a ceiling of L${c.cap}. This is the quietest option available; consider delaying it, or putting it in the activity inbox instead.</p>`:""}
+    ${primary.level>c.cap && !c.fallback?`<p style="font-size:13.5px;color:var(--h8)">This pattern is louder than the ceiling for this moment.</p>`:""}
+    <dl class="kv">
+      <dt>Job</dt><dd>${primary.job}</dd>
+      <dt>Where</dt><dd>${primary.where}</dd>
+      <dt>When</dt><dd>${primary.when} <span style="color:var(--muted)">${timing}</span></dd>
+      <dt>Frequency</dt><dd>${freq}</dd>
+      <dt>Measure</dt><dd>${primary.metric}. <span style="color:var(--muted)">Guardrail: ${primary.guard.toLowerCase()}.</span></dd>
+    </dl>
+    <div class="alts"><span class="lab">Fits:</span>${chips(c.fit,"")}</div>
+    ${c.loud.length?`<div class="alts"><span class="lab">Too loud here:</span>${chips(c.loud,"loud")}</div>`:""}
+    <div><button type="button" class="btn" data-open="${primary.id}">Open full pattern card →</button></div>`;
+}
+document.getElementById("rec").addEventListener("click", e=>{
+  const pick = e.target.closest("[data-pick]"); if (pick){ selected = pick.dataset.pick; renderPick(); return; }
+  const open = e.target.closest("[data-open]"); if (open) openCard(open.dataset.open);
+});
+renderPick();
+
+/* ---------- Atlas ---------- */
+const F = {stage:"all", band:"all"};
+const BANDS = {all:["All",1,9], quiet:["Quiet L1–2",1,2], signal:["Signal L3–4",3,4], context:["Contextual L5–6",5,6], loud:["Loud L7–9",7,9]};
+document.getElementById("f-stage").insertAdjacentHTML("beforeend",
+  [["all","All"],...Object.entries(STAGES).map(([k,v])=>[k,v.n])].map(([k,n])=>`<button type="button" class="fbtn" data-fs="${k}" aria-pressed="${k==="all"}">${n}</button>`).join(""));
+document.getElementById("f-level").insertAdjacentHTML("beforeend",
+  Object.entries(BANDS).map(([k,[n]])=>`<button type="button" class="fbtn" data-fb="${k}" aria-pressed="${k==="all"}">${n}</button>`).join(""));
+document.querySelector(".filters").addEventListener("click", e=>{
+  const b = e.target.closest(".fbtn"); if(!b) return;
+  if (b.dataset.fs){ F.stage=b.dataset.fs; document.querySelectorAll("[data-fs]").forEach(x=>x.setAttribute("aria-pressed", x===b)); }
+  if (b.dataset.fb){ F.band=b.dataset.fb; document.querySelectorAll("[data-fb]").forEach(x=>x.setAttribute("aria-pressed", x===b)); }
+  renderGrid();
+});
+const ORDER = Object.keys(STAGES);
+function renderGrid(){
+  const [,lo,hi] = BANDS[F.band];
+  const list = P.filter(p=>(F.stage==="all"||p.stage===F.stage) && p.level>=lo && p.level<=hi)
+    .sort((a,b)=> ORDER.indexOf(a.stage)-ORDER.indexOf(b.stage) || a.level-b.level);
+  document.getElementById("count").textContent = `${list.length} of ${P.length} patterns`;
+  document.getElementById("grid").innerHTML = list.length ? list.map(p=>`
+    <button type="button" class="card" data-open="${p.id}">
+      ${frameHTML(p)}
+      <div class="meta"><span class="stage">${STAGES[p.stage].n}</span><span class="pill lv${p.level}">L${p.level} · ${LEVELS[p.level].t}</span></div>
+      <h3>${p.name}</h3>
+      <p>${p.job}</p>
+    </button>`).join("") : `<div class="empty">No patterns match these filters. Try another stage or loudness.</div>`;
+}
+document.getElementById("grid").addEventListener("click", e=>{ const c=e.target.closest("[data-open]"); if(c) openCard(c.dataset.open); });
+renderGrid();
+
+/* ---------- Detail dialog ---------- */
+const dlg = document.getElementById("dlg");
+function specText(p){
+  return `${p.name} (L${p.level} ${LEVELS[p.level].t}, ${STAGES[p.stage].n})
+Job: ${p.job}
+Where: ${p.where}
+When: ${p.when}
+Use when: ${p.use}
+Avoid when: ${p.avoid}
+Do: ${p.dos.join(" / ")}
+Don't: ${p.donts.join(" / ")}
+Metric: ${p.metric}
+Guardrail: ${p.guard}`;
+}
+function openCard(id){
+  const p = P.find(x=>x.id===id);
+  dlg.innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><span class="eyebrow">${STAGES[p.stage].n} · ${STAGES[p.stage].d}</span><h2 id="dlg-title">${p.name}</h2>
+      <span class="pill lv${p.level}" style="align-self:flex-start">L${p.level} · ${LEVELS[p.level].t}</span></div>
+      <button type="button" class="x" aria-label="Close" data-close>×</button></div>
+    <div class="col">
+      ${frameHTML(p,true)}
+      <div class="blk"><h4>Job</h4><p>${p.job}</p></div>
+      <div class="blk"><h4>Where</h4><p>${p.where}</p></div>
+      <div class="blk"><h4>When it appears</h4><p>${p.when}</p></div>
+    </div>
+    <div class="col">
+      <div class="blk"><h4>Use when</h4><p>${p.use}</p></div>
+      <div class="blk"><h4>Avoid when</h4><p>${p.avoid}</p></div>
+      <div class="dd">
+        <div class="do"><b>Do</b><ul>${p.dos.map(d=>`<li>${d}</li>`).join("")}</ul></div>
+        <div class="dont"><b>Don't</b><ul>${p.donts.map(d=>`<li>${d}</li>`).join("")}</ul></div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span class="eyebrow">Moves</span>${p.metric}</div>
+        <div class="metric"><span class="eyebrow">Must not hurt</span>${p.guard}</div>
+      </div>
+      ${p.seen?`<div class="blk"><h4>Seen in</h4><p>${p.seen}</p></div>`:""}
+    </div>
+    <div class="dlg-foot"><span class="toast-msg" id="copyMsg">Copy this card into a PRD, Figma comment or ticket.</span>
+      <button type="button" class="btn" data-copy>Copy as spec</button></div>
+  </div>`;
+  dlg.querySelector("[data-copy]").addEventListener("click", ()=>{
+    const msg = dlg.querySelector("#copyMsg");
+    navigator.clipboard.writeText(specText(p)).then(()=>{ msg.textContent="Copied to clipboard."; })
+      .catch(()=>{ msg.innerHTML = `<textarea readonly style="width:100%;height:120px;font:12px var(--f-mono);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px">${specText(p)}</textarea>`; msg.querySelector("textarea").select(); });
+  });
+  dlg.showModal();
+}
+dlg.addEventListener("click", e=>{ if (e.target===dlg || e.target.closest("[data-close]")) dlg.close(); });
+</script>

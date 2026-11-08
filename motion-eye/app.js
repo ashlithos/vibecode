@@ -27,7 +27,7 @@
   const T = {
     zh: {
       brand: '动效眼力', answered: (h, a, n) => `/ ${a} 答对 · 共 ${n} 组`, home: '大纲与方法', outline: '大纲',
-      ch: n => `第 ${n} 章`, adv: '进阶', replay: '重播', slow: '慢放 ×4', seq: '轮流播放 A → B', look: '看哪里？',
+      ch: n => `第 ${n} 章`, adv: '进阶', replay: '重播', slow: '慢放 ×4', seq: '轮流播放 A → B', look: '看哪里？', exag: '夸张模式 ×2', exagOn: '夸张模式开着：差的那一版被放大了两倍。看出来以后，关掉再练一遍。', exagBoth: '夸张模式开着：这一组的差别在"方式"上，所以两边的动作都被放慢、放大了，差别会更明显。', exagNone: '这一组没有可以放大的数值（差别在逻辑或节奏上）。试试轮流播放（Q）和慢放（S）。', exagCap: '已放大',
       tryIt: '两边都可以直接点、拖、hover 试试。', reduced: '你开启了"减弱动态效果"，demo 不会自动播放，点"重播"观看。',
       ask: '哪个更好？先凭直觉选，再看原因。', pickA: 'A 更好', pickB: 'B 更好', skip: '直接看答案',
       answer: s => `答案：${s} 更好`, hit: s => `眼光不错，${s} 更好`, miss: s => `这次看走眼了：${s} 更好`,
@@ -40,7 +40,7 @@
     },
     en: {
       brand: 'Motion Eye', answered: (h, a, n) => `/ ${a} correct · ${n} pairs`, home: 'Outline & method', outline: 'Outline',
-      ch: n => `Chapter ${n}`, adv: 'Advanced', replay: 'Replay', slow: 'Slow-mo ×4', seq: 'Play A, then B', look: 'Where to look?',
+      ch: n => `Chapter ${n}`, adv: 'Advanced', replay: 'Replay', slow: 'Slow-mo ×4', seq: 'Play A, then B', look: 'Where to look?', exag: 'Exaggerate ×2', exagOn: 'Exaggerate is on: the weaker version is pushed twice as far. Once you can see it, turn it off and try again.', exagBoth: 'Exaggerate is on: this pair differs in kind, so both sides are slowed down and enlarged to make the difference easier to see.', exagNone: 'There is no number to enlarge here (the difference is in logic or rhythm). Try Play A, then B (Q) and slow-mo (S).', exagCap: 'exaggerated',
       tryIt: 'Both sides are live: click, drag or hover.', reduced: 'Reduce Motion is on, so demos don\'t autoplay. Press Replay to watch.',
       ask: 'Which is better? Go with your gut first, then read why.', pickA: 'A is better', pickB: 'B is better', skip: 'Just show me',
       answer: s => `Answer: ${s} is better`, hit: s => `Good eye, ${s} is better`, miss: s => `Missed this one: ${s} is better`,
@@ -72,7 +72,47 @@
 
   const sides = {};
   const goodSide = id => sides[id] || (sides[id] = Math.random() < 0.5 ? 'A' : 'B');
-  const S = { lesson: null, guessed: false, choice: null, lab: false, labParams: null, showRef: false, slow: false, look: false, stages: {}, seqT: 0 };
+  const S = { lesson: null, guessed: false, choice: null, lab: false, labParams: null, showRef: false, slow: false, look: false, stages: {}, seqT: 0, exag: false };
+  try { S.exag = localStorage.getItem('motion-eye:exag') === '1'; } catch (e) {}
+
+  /* exaggerate: push every numeric difference twice as far from the good value; swap curves for stronger versions */
+  const EXAG_EASE = { 'ease-in': 'in-quart', 'ease': 'ease-in-out', 'ease-in-out': 'in-out-quart', 'out-back': 'spring-bouncy', 'out-quint': 'm3-decel', 'spring-smooth': 'spring-smooth' };
+  function exaggerate(bad, good) {
+    const out = Object.assign({}, bad);
+    let changed = false;
+    Object.keys(bad).forEach(k => {
+      const b = bad[k], g = good[k];
+      if (b === g || g === undefined) return;
+      if ((k === 'ease' || k === 'exitEase') && EXAG_EASE[b] && EXAG_EASE[b] !== b) { out[k] = EXAG_EASE[b]; changed = true; return; }
+      if (typeof b !== 'number' || typeof g !== 'number') return;
+      const kd = KNOBS[k] || {};
+      let v = g + (b - g) * 2;
+      const lo = k === 'pressScale' ? 0.6 : (kd.min != null ? kd.min : 0), hi = k === 'pressScale' || k === 'scale' ? 1 : k === 'cap' ? 14 : (kd.max != null ? Math.max(kd.max, b) : Infinity);
+      v = Math.min(hi, Math.max(lo, v));
+      if (kd.step >= 1) v = Math.round(v);
+      if (v !== b) { out[k] = v; changed = true; }
+    });
+    return changed ? out : null;
+  }
+  /* when the pair differs in kind, not in a number: slow down and enlarge BOTH sides so the difference is easier to see */
+  function amplify(p) {
+    const out = Object.assign({}, p);
+    let changed = false;
+    ['dur', 'exitDur', 'cdur', 'bdur'].forEach(k => { if (typeof p[k] === 'number' && p[k] > 0) { out[k] = Math.round(p[k] * 1.8); changed = true; } });
+    ['dist', 'cdist'].forEach(k => { if (typeof p[k] === 'number' && p[k] > 0) { out[k] = Math.min(150, p[k] * 2); changed = true; } });
+    if (typeof p.stagger === 'number' && p.stagger > 0) { out.stagger = p.stagger * 1.8; changed = true; }
+    return changed ? out : null;
+  }
+  /* returns { mode: 'bad' | 'both' | 'none', good, bad } */
+  function exagInfo(l) {
+    const g = params(l, true), b = params(l, false);
+    const x = exaggerate(b, g);
+    if (x) return { mode: 'bad', good: g, bad: x };
+    const ag = amplify(g), ab = amplify(b);
+    if (ag || ab) return { mode: 'both', good: ag || g, bad: ab || b };
+    return { mode: 'none', good: g, bad: b };
+  }
+  const exagParams = l => exagInfo(l).mode !== 'none';
 
   function fmt(k, v) {
     const kd = KNOBS[k];
@@ -126,6 +166,7 @@
   function sideParams(side) {
     const l = S.lesson, isGood = goodSide(l.id) === side;
     if (!isGood && S.lab && S.labParams) return S.labParams;
+    if (S.exag && !S.lab) { const x = exagInfo(l); if (x.mode !== 'none') return isGood ? x.good : x.bad; }
     return params(l, isGood);
   }
   function mount(side, play) {
@@ -146,7 +187,8 @@
   function playSeq() {
     clearTimeout(S.seqT);
     mount('A', true); mount('B', false); setActive('A');
-    S.seqT = setTimeout(() => { mount('B', true); setActive('B'); S.seqT = setTimeout(() => setActive(null), seqGap(S.lesson) * E.speed); }, seqGap(S.lesson) * E.speed);
+    const gap = seqGap(S.lesson) * E.speed * (S.exag ? 1.8 : 1);
+    S.seqT = setTimeout(() => { mount('B', true); setActive('B'); S.seqT = setTimeout(() => setActive(null), gap); }, gap);
   }
 
   /* ---------- timing visualisation ---------- */
@@ -257,7 +299,9 @@
       const cap = $(`.stage[data-side="${side}"] .cap`), tag = $(`.stage[data-side="${side}"] .stage-tag`);
       if (!S.guessed) { cap.innerHTML = ''; tag.textContent = side; return; }
       const good = side === gs;
-      cap.innerHTML = `<span class="mark ${good ? 'good' : 'bad'}">${good ? '✓' : '×'}</span><code>${esc(lt(l, good ? 'gl' : 'bl'))}</code>`;
+      const xm = S.exag && !S.lab ? exagInfo(l).mode : 'none';
+      const ex = (xm === 'bad' && !good) || xm === 'both' ? `<span class="exag-tag">${t('exagCap')}</span>` : '';
+      cap.innerHTML = `<span class="mark ${good ? 'good' : 'bad'}">${good ? '✓' : '×'}</span><code>${esc(lt(l, good ? 'gl' : 'bl'))}</code>${ex}`;
       tag.textContent = !good && S.lab ? side + ' · ' + t('yours') : side;
     });
   }
@@ -281,8 +325,10 @@
         <button class="btn" id="replay"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.5M13 2.5V5h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>${t('replay')}<kbd>R</kbd></button>
         <button class="btn" id="seq">${t('seq')}<kbd>Q</kbd></button>
         <button class="btn${S.slow ? ' is-on' : ''}" id="slow" aria-pressed="${S.slow}">${t('slow')}<kbd>S</kbd></button>
+        <button class="btn${S.exag ? ' is-on' : ''}" id="exag" aria-pressed="${S.exag}">${t('exag')}<kbd>X</kbd></button>
         <span class="hint">${INTERACTIVE.has(l.demo) ? t('tryIt') : ''}${REDUCED ? ' ' + t('reduced') : ''}</span>
       </div>
+      <p class="exag-note" id="exag-note"${S.exag ? '' : ' hidden'}>${t({ bad: 'exagOn', both: 'exagBoth', none: 'exagNone' }[exagInfo(l).mode])}</p>
       ${lookHTML(l)}
       <div id="guess-slot"></div>
       <nav class="lv-nav">${prev ? `<a href="#${prev.id}"><span>${t('prev')}</span>${esc(lt(prev, 't'))}</a>` : '<span></span>'}${next ? `<a href="#${next.id}" class="next"><span>${t('next')}</span>${esc(lt(next, 't'))}</a>` : `<a href="#outline" class="next"><span>${t('done')}</span>${t('backHome')}</a>`}</nav>
@@ -290,6 +336,7 @@
     $('#replay').addEventListener('click', playBoth);
     $('#seq').addEventListener('click', playSeq);
     $('#slow').addEventListener('click', toggleSlow);
+    $('#exag').addEventListener('click', toggleExag);
     const lb = $('#look-btn');
     if (lb) lb.addEventListener('click', () => { S.look = !S.look; lb.setAttribute('aria-expanded', S.look); $('.look-txt').hidden = !S.look; $('.look').classList.toggle('is-open', S.look); });
     renderGuess();
@@ -334,6 +381,13 @@
     renderGuess();
     renderRail();
   }
+  function toggleExag() {
+    S.exag = !S.exag;
+    try { localStorage.setItem('motion-eye:exag', S.exag ? '1' : '0'); } catch (e) {}
+    const b = $('#exag'); if (b) { b.classList.toggle('is-on', S.exag); b.setAttribute('aria-pressed', S.exag); }
+    const n = $('#exag-note'); if (n) n.hidden = !S.exag;
+    if (S.lesson) { captions(); playBoth(); }
+  }
   function toggleSlow() {
     S.slow = !S.slow; E.speed = S.slow ? 4 : 1;
     const b = $('#slow'); if (b) { b.classList.toggle('is-on', S.slow); b.setAttribute('aria-pressed', S.slow); }
@@ -348,7 +402,7 @@
       lede: '每一组都是同一个组件的两个版本，只差一两个参数。先凭直觉选，再看原因、看曲线，最后亲手把差的那一版调好。',
       cta: a => (a ? '继续训练' : '开始第一组'), ctaSub: (a, h) => (a ? `已完成 ${a} 组，答对 ${h} 组` : '大约 2 分钟一组，每次练一章最合适'),
       howH: '怎么练', howSub: '眼光是练出来的。认知心理学叫它"知觉学习"：专家和新手的区别，是专家知道该看哪里。每一组都按这个循环走。',
-      steps: [['猜', '先凭第一感觉选。看不出来很正常，选错也有用。'], ['看哪里', '点"看哪里？"，知道该盯住哪一刻。'], ['轮流 + 慢放', '按 Q 先看 A 再看 B，按 S 用 ×4 慢放。'], ['修好它', '用一句话说出原因，再在调参台把差的一版调好。']],
+      steps: [['猜', '先凭第一感觉选。看不出来很正常，选错也有用。'], ['看哪里', '点"看哪里？"，知道该盯住哪一刻。'], ['轮流 + 慢放 + 夸张', '按 Q 先看 A 再看 B，按 S 用 ×4 慢放。还看不出来，按 X 打开夸张模式。'], ['修好它', '用一句话说出原因，再在调参台把差的一版调好。']],
       qsH: '看任何动效的 6 个问题', qsSub: '在产品里、在别人的作品里，遇到任何动效都可以用这 6 个问题过一遍。它们对应下面的章节。',
       qs: [['目的', '它在解释什么？位置、关系、状态变化？还是纯装饰？', '克制'], ['曲线', '进场在减速吗？屏幕内移动有加速和减速吗？', '缓动'], ['时长', '和移动距离、元素大小、使用频率相称吗？', '时长'], ['空间', '它从原因处出现吗？方向符合布局吗？', '空间'], ['顺序', '眼睛知道先看哪里吗？有没有人在排队？', '编排'], ['手感', '按下有反应吗？可以打断吗？松手后像物理世界吗？', '反馈 · 物理']],
       olH: '大纲', olSub: (b, a) => `九章，由浅入深：前三章是"参数"，中间三章是"关系"，最后三章是"判断"。${b} 组基础 + ${a} 组进阶技法。`,
@@ -366,7 +420,7 @@
       lede: 'Each pair is the same component twice, one or two parameters apart. Pick on instinct, read why, study the curve, then fix the weaker version yourself.',
       cta: a => (a ? 'Continue' : 'Start the first pair'), ctaSub: (a, h) => (a ? `${a} done, ${h} correct` : 'About 2 minutes per pair; one chapter per session works well'),
       howH: 'How to train', howSub: 'A good eye is trained, not born. Cognitive psychology calls it perceptual learning: experts differ from beginners mainly in knowing where to look. Each pair runs this loop.',
-      steps: [['Guess', 'Pick on first instinct. Not seeing a difference is normal, and wrong guesses still teach.'], ['Where to look', 'Tap "Where to look?" to learn which moment to watch.'], ['Take turns + slow-mo', 'Press Q to watch A, then B. Press S for ×4 slow motion.'], ['Fix it', 'Say the reason in one sentence, then tune the weaker version in the lab.']],
+      steps: [['Guess', 'Pick on first instinct. Not seeing a difference is normal, and wrong guesses still teach.'], ['Where to look', 'Tap "Where to look?" to learn which moment to watch.'], ['Take turns, slow down, exaggerate', 'Press Q to watch A, then B. Press S for ×4 slow motion. Still can\'t see it? Press X to exaggerate.'], ['Fix it', 'Say the reason in one sentence, then tune the weaker version in the lab.']],
       qsH: '6 questions for any animation', qsSub: 'Use these six questions on any motion you meet, in products or other people\'s work. They map to the chapters below.',
       qs: [['Purpose', 'What is it explaining: position, relationship, change of state? Or is it decoration?', 'Restraint'], ['Curve', 'Do entrances decelerate? Do on-screen moves speed up and slow down?', 'Easing'], ['Duration', 'Does it fit the distance, size and frequency?', 'Duration'], ['Space', 'Does it come from its cause? Does direction match the layout?', 'Space'], ['Order', 'Does the eye know where to look first? Is anything queuing?', 'Choreography'], ['Feel', 'Does a press respond? Can it be interrupted? Does release feel physical?', 'Feedback · Physics']],
       olH: 'Outline', olSub: (b, a) => `Nine chapters, easy to hard: the first three are parameters, the middle three relationships, the last three judgement. ${b} core pairs + ${a} advanced techniques.`,
@@ -459,6 +513,7 @@
     if (k === 'r') playBoth();
     else if (k === 'q') playSeq();
     else if (k === 's') toggleSlow();
+    else if (k === 'x') toggleExag();
     else if ((k === 'a' || k === 'b') && !S.guessed) pick(k.toUpperCase());
     else if (k === 'arrowright' && LESSONS[i + 1]) location.hash = LESSONS[i + 1].id;
     else if (k === 'arrowleft' && LESSONS[i - 1]) location.hash = LESSONS[i - 1].id;
